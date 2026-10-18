@@ -1,6 +1,6 @@
 # MASTER ESCAPE
 
-Jogo narrativo satírico e fictício para navegador mobile.
+Jogo narrativo satírico e fictício para navegador mobile. Versão 2: cartas com swipe, 4 status, baralho com consequências encadeadas, 10 finais, desafio diário e capa de jornal compartilhável.
 
 ## Execução
 
@@ -10,12 +10,18 @@ Requer [Bun](https://bun.sh/).
 bun run start
 ```
 
-O servidor utiliza a variável de ambiente `PORT` (padrão `3000`).
+O servidor utiliza a variável de ambiente `PORT` (padrão `3000`). Ele monta a página em memória a partir de `game.html`; `./build.sh` gera um `index.html` standalone (não versionado) quando for preciso um arquivo estático.
+
+## Arquivos
+
+- `game.html` — todo o jogo (estilos, baralho, mecânicas, telas).
+- `server.ts` — servidor Bun.
+- `scripts/sim.js` — joga dezenas de partidas aleatórias em Chromium headless (Playwright) e imprime a distribuição de finais e erros de console. Útil para balancear o baralho.
 
 ## Hospedagem
 
-Projeto Railway `master-escape`; serviço de origem GitHub `master-game-github`, conectado à branch `main` para deploy automático. A versão anterior permanece em serviço separado durante a migração.
+Projeto Railway `master-escape`; serviço de origem GitHub `master-game-github`, conectado à branch `main` para deploy automático.
 
-## Estado do projeto
+## Estudo de melhorias
 
-Código legado importado da Railway Function. Próxima etapa: extrair HTML, estilos, mecânicas e diálogos em arquivos separados, além de revisar as escolhas contextuais do ZapFone.
+O diagnóstico da v1 e o roteiro de lançamento estão em `projects/master-escape/ESTUDO.md` no repositório `yourdress-design-system` (branch `claude/master-game-improvements-ttz4oc`).

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Demo das cenas da home</title>
+<link rel="stylesheet" href="home-scenes.css">
+<style>
+html,body{margin:0;height:100%;background:#0d1020;color:#f3ecd9;font-family:Rubik,system-ui,sans-serif}
+.stage{position:relative;width:100%;max-width:430px;height:100%;margin:0 auto;overflow:hidden}
+/* simula o tratamento da home: desfoque leve + escurecimento */
+.stage #homeScenes{filter:blur(var(--blur,2px)) brightness(.85);transform:scale(1.04)}
+.stage h1{position:absolute;left:0;right:0;top:40%;margin:0;text-align:center;font:900 54px/1 Anton,Impact,sans-serif;letter-spacing:2px;text-shadow:0 4px 0 #0d1020}
+.ctl{position:fixed;left:8px;bottom:8px;z-index:9;display:flex;gap:6px;font-size:12px}
+.ctl button{background:#f3ecd9;border:0;border-radius:6px;padding:6px 8px}
+</style>
+</head>
+<body>
+<div class="stage"><div id="homeScenes"></div><h1>SALDO ZERO</h1></div>
+<div class="ctl"><button onclick="HomeScenes.show(0)">jato</button><button onclick="HomeScenes.show(1)">charutos</button><button onclick="HomeScenes.show(2)">resort</button><button onclick="HomeScenes.show(3)">fachada</button><button onclick="document.documentElement.style.setProperty('--blur',document.documentElement.style.getPropertyValue('--blur')==='0px'?'2px':'0px')">blur on/off</button></div>
+<script src="home-scenes.js"></script>
+<script>
+// ?scene=N fixa uma cena (para screenshots)
+var q=new URLSearchParams(location.search);
+if(q.has('scene')){var n=+q.get('scene');var w=setInterval(function(){if(document.querySelectorAll('.hs-scene').length===4){clearInterval(w);HomeScenes.show(n);HomeScenes.stop();}},50);}
+if(q.get('blur')==='0')document.documentElement.style.setProperty('--blur','0px');
+</script>
+</body>
+</html>

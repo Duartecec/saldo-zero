@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Integração: cenas de fundo da home</title></head>
+<body>
+<h1>Cenas de fundo da home (Saldo Zero)</h1>
+<p>Demo autônoma: <code>public/scenes/demo.html</code> (servir <code>public/</code> por http, ex.: <code>cd public &amp;&amp; python3 -m http.server</code> e abrir <code>/scenes/demo.html</code>; <code>?scene=0..3</code> fixa uma cena).</p>
+
+<h2>1. No &lt;head&gt; do game.html</h2>
+<pre>&lt;link rel="stylesheet" href="/scenes/home-scenes.css"&gt;</pre>
+
+<h2>2. Atrás da home (o DESIGNER aplica desfoque/escurecimento no próprio container)</h2>
+<pre>&lt;div id="homeScenes" aria-hidden="true"&gt;&lt;/div&gt;
+/* CSS do DESIGNER, ex.: */
+#homeScenes{filter:blur(2px) brightness(.8);transform:scale(1.04)}</pre>
+<p>O container precisa de um pai com <code>position:relative</code> (ou ocupar a tela com <code>position:fixed; inset:0; z-index:0</code>). O CSS das cenas já dá <code>position:absolute; inset:0</code>.</p>
+
+<h2>3. Antes de &lt;/body&gt;</h2>
+<pre>&lt;script src="/scenes/home-scenes.js" defer&gt;&lt;/script&gt;</pre>
+<p>Auto-inicia se <code>#homeScenes</code> existir. API opcional: <code>HomeScenes.pause()</code> ao entrar numa partida (congela animações e a troca), <code>HomeScenes.resume()</code> ao voltar à home, <code>HomeScenes.show(i)</code>.</p>
+
+<h2>Comportamento</h2>
+<ul>
+<li>4 SVGs (<code>scene-jato|charutos|resort|fachada.svg</code>) são buscados e injetados inline (animações CSS dentro de cada SVG; funcionam offline se estiverem no cache do SW).</li>
+<li>Troca a cada 4 s com crossfade de 1,1 s; só a cena ativa anima.</li>
+<li>Pausa com aba oculta, com <code>HomeScenes.pause()</code> e quando <code>#homeScenes</code> está com display:none.</li>
+<li><code>prefers-reduced-motion</code>: cena do jato estática, sem animação e sem alternância.</li>
+</ul>
+
+<h2>Mudanças necessárias em server.ts e public/sw.js (NÃO aplicadas aqui)</h2>
+<p><strong>server.ts</strong> (const MIME): faltava <code>css</code>. Adicionar <code>css: "text/css; charset=utf-8"</code>. svg e js já existem. Atenção: arquivos estáticos saem com <code>cache-control: public, max-age=31536000, immutable</code>; se as cenas forem alteradas depois, versionar a URL (ex.: <code>?v=2</code> nos links) ou mudar o nome.</p>
+<p><strong>public/sw.js</strong> (const SHELL): para funcionar offline desde a primeira visita, acrescentar
+<code>'/scenes/home-scenes.css', '/scenes/home-scenes.js', '/scenes/scene-jato.svg', '/scenes/scene-charutos.svg', '/scenes/scene-resort.svg', '/scenes/scene-fachada.svg'</code>.
+Sem isso, o handler existente (cache-first com preenchimento em runtime) guarda os arquivos após o primeiro acesso online.</p>
+</body></html>

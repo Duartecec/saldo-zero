@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Fachada do Banco Maxter à noite com viaturas da Polícia Federativa e fita de isolamento">
+<style>
+.f-red{animation:f-r .9s steps(1) infinite}
+.f-blu{animation:f-b .9s steps(1) infinite}
+@keyframes f-r{0%{opacity:1}50%{opacity:.08}}
+@keyframes f-b{0%{opacity:.08}50%{opacity:1}}
+.f-tape{transform-box:fill-box;transform-origin:0% 50%;animation:f-tp 3.2s ease-in-out infinite}
+.f-tape.b{animation-delay:-1.6s;animation-duration:3.8s}
+@keyframes f-tp{0%,100%{transform:rotate(-1.4deg) skewX(0)}50%{transform:rotate(.9deg) skewX(2deg)}}
+.f-win{animation:f-w 7s ease-in-out infinite}
+.f-win.b{animation-delay:-3s}.f-win.c{animation-delay:-5s}
+@keyframes f-w{0%,100%{opacity:.9}45%{opacity:.35}60%{opacity:.35}}
+.f-cloud{animation:f-c 40s linear infinite}
+@keyframes f-c{from{transform:translateX(-120px)}to{transform:translateX(480px)}}
+</style>
+<defs>
+<linearGradient id="f-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d1020"/><stop offset="1" stop-color="#232a5a"/></linearGradient>
+<radialGradient id="f-glr" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#e8283c" stop-opacity=".9"/><stop offset="1" stop-color="#e8283c" stop-opacity="0"/></radialGradient>
+<radialGradient id="f-glb" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#3b6cff" stop-opacity=".9"/><stop offset="1" stop-color="#3b6cff" stop-opacity="0"/></radialGradient>
+<pattern id="f-ht" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.1" fill="#0d1020" opacity=".2"/></pattern>
+<radialGradient id="f-vig" cx=".5" cy=".5" r=".75"><stop offset=".55" stop-color="#0d1020" stop-opacity="0"/><stop offset="1" stop-color="#0d1020" stop-opacity=".7"/></radialGradient>
+</defs>
+<rect width="400" height="800" fill="url(#f-sky)"/>
+<circle cx="320" cy="90" r="30" fill="#f3ecd9"/><circle cx="332" cy="82" r="26" fill="#0d1020" opacity=".0"/>
+<g class="f-cloud" opacity=".5"><ellipse cx="60" cy="140" rx="50" ry="10" fill="#2f3a78"/><ellipse cx="84" cy="132" rx="28" ry="9" fill="#2f3a78"/></g>
+<!-- prédio -->
+<path d="M30 250L200 170L370 250Z" fill="#e6dcc2" stroke="#1b1a24" stroke-width="4" stroke-linejoin="round"/>
+<path d="M70 244L200 186L330 244Z" fill="#d6caa8"/>
+<circle cx="200" cy="222" r="14" fill="#f5c04a" stroke="#1b1a24" stroke-width="3"/><text x="200" y="227" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="14" fill="#1b1a24">M</text>
+<rect x="30" y="250" width="340" height="56" fill="#171b33" stroke="#1b1a24" stroke-width="4"/>
+<text x="200" y="292" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="34" fill="#f5c04a" letter-spacing="5">BANCO MAXTER</text>
+<rect x="30" y="306" width="340" height="250" fill="#e6dcc2" stroke="#1b1a24" stroke-width="4"/>
+<g fill="#cdbf9c" stroke="#1b1a24" stroke-width="3">
+ <rect x="44" y="306" width="30" height="250"/><rect x="110" y="306" width="30" height="250"/><rect x="260" y="306" width="30" height="250"/><rect x="326" y="306" width="30" height="250"/>
+</g>
+<rect x="150" y="360" width="100" height="196" fill="#0d1020" stroke="#1b1a24" stroke-width="3"/>
+<path d="M200 360V556" stroke="#f5c04a" stroke-width="3"/>
+<g fill="#f5c04a"><rect class="f-win" x="76" y="340" width="28" height="44"/><rect class="f-win b" x="76" y="410" width="28" height="44"/><rect class="f-win c" x="296" y="340" width="28" height="44"/><rect class="f-win" x="296" y="410" width="28" height="44"/><rect class="f-win b" x="160" y="372" width="30" height="50" opacity=".5"/></g>
+<!-- degraus -->
+<path d="M14 556H386V574H14Z" fill="#cdbf9c" stroke="#1b1a24" stroke-width="3"/>
+<path d="M0 574H400V592H0Z" fill="#b8ab88" stroke="#1b1a24" stroke-width="3"/>
+<path d="M0 592H400V800H0Z" fill="#171b33"/>
+<!-- luzes sobre a fachada -->
+<g class="f-red"><path d="M90 640L0 300L220 540Z" fill="#e8283c" opacity=".22"/><circle cx="90" cy="630" r="150" fill="url(#f-glr)" opacity=".5"/></g>
+<g class="f-blu"><path d="M310 640L400 300L180 540Z" fill="#3b6cff" opacity=".22"/><circle cx="310" cy="630" r="150" fill="url(#f-glb)" opacity=".5"/></g>
+<!-- policiais -->
+<g stroke="#1b1a24" stroke-width="2.5">
+ <g><rect x="160" y="520" width="26" height="62" fill="#171b33"/><path d="M152 520Q152 480 173 478Q194 480 194 520Z" fill="#232a5a"/><circle cx="173" cy="462" r="13" fill="#e0a672"/><path d="M158 456H188L186 446H160Z" fill="#171b33"/><rect x="164" y="492" width="18" height="12" fill="#f3ecd9" stroke="none"/><text x="173" y="502" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="9" fill="#1b1a24" stroke="none">PF</text></g>
+ <g><rect x="212" y="520" width="26" height="62" fill="#171b33"/><path d="M204 520Q204 480 225 478Q246 480 246 520Z" fill="#232a5a"/><circle cx="225" cy="462" r="13" fill="#d49a63"/><path d="M210 456H240L238 446H212Z" fill="#171b33"/><rect x="216" y="492" width="18" height="12" fill="#f3ecd9" stroke="none"/><text x="225" y="502" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="9" fill="#1b1a24" stroke="none">PF</text></g>
+</g>
+<!-- viatura esquerda -->
+<g transform="translate(-40 618)" stroke="#1b1a24" stroke-width="3" stroke-linejoin="round">
+ <path d="M20 90L20 56Q20 44 34 44L70 44L100 14L184 14L210 44L236 44Q248 44 248 56V90Z" fill="#f3ecd9"/>
+ <path d="M20 66H248V82H20Z" fill="#232a5a" stroke="none"/>
+ <path d="M104 20L126 44H84L106 20ZM132 20H180L198 44H132Z" fill="#8fb4d9" stroke-width="2.5"/>
+ <text x="134" y="78" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="10" fill="#f3ecd9" stroke="none" letter-spacing="1">POLÍCIA FEDERATIVA</text>
+ <rect x="118" y="2" width="36" height="12" fill="#e8283c"/><rect x="154" y="2" width="36" height="12" fill="#3b6cff"/>
+ <circle cx="68" cy="94" r="20" fill="#0d1020"/><circle cx="68" cy="94" r="8" fill="#8a8470"/><circle cx="200" cy="94" r="20" fill="#0d1020"/><circle cx="200" cy="94" r="8" fill="#8a8470"/>
+</g>
+<g transform="translate(-40 618)"><g class="f-red"><circle cx="136" cy="6" r="22" fill="url(#f-glr)"/></g><g class="f-blu"><circle cx="172" cy="6" r="22" fill="url(#f-glb)"/></g></g>
+<!-- viatura direita (espelhada) -->
+<g transform="translate(440 640) scale(-1 1)" stroke="#1b1a24" stroke-width="3" stroke-linejoin="round">
+ <path d="M20 90L20 56Q20 44 34 44L70 44L100 14L184 14L210 44L236 44Q248 44 248 56V90Z" fill="#f3ecd9"/>
+ <path d="M20 66H248V82H20Z" fill="#232a5a" stroke="none"/>
+ <path d="M104 20L126 44H84L106 20ZM132 20H180L198 44H132Z" fill="#8fb4d9" stroke-width="2.5"/>
+ <rect x="118" y="2" width="36" height="12" fill="#3b6cff"/><rect x="154" y="2" width="36" height="12" fill="#e8283c"/>
+ <circle cx="68" cy="94" r="20" fill="#0d1020"/><circle cx="68" cy="94" r="8" fill="#8a8470"/><circle cx="200" cy="94" r="20" fill="#0d1020"/><circle cx="200" cy="94" r="8" fill="#8a8470"/>
+</g>
+<g transform="translate(440 640) scale(-1 1)"><g class="f-blu"><circle cx="136" cy="6" r="22" fill="url(#f-glb)"/></g><g class="f-red"><circle cx="172" cy="6" r="22" fill="url(#f-glr)"/></g></g>
+<!-- fita de isolamento -->
+<g class="f-tape"><path d="M-10 560L410 548V572L-10 584Z" fill="#f5c04a" stroke="#1b1a24" stroke-width="2.5"/><path d="M0 566L400 556" stroke="#1b1a24" stroke-width="0"/><text x="20" y="574" font-family="Anton,Impact,sans-serif" font-size="12" fill="#1b1a24" letter-spacing="2" transform="rotate(-1.6 20 574)">POLÍCIA FEDERATIVA · NÃO ULTRAPASSE · POLÍCIA FEDERATIVA · NÃO ULTRAPASSE</text></g>
+<g class="f-tape b"><path d="M-10 740L410 760V784L-10 764Z" fill="#f5c04a" stroke="#1b1a24" stroke-width="2.5"/><text x="20" y="767" font-family="Anton,Impact,sans-serif" font-size="12" fill="#1b1a24" letter-spacing="2" transform="rotate(2.7 20 767)">NÃO ULTRAPASSE · POLÍCIA FEDERATIVA · NÃO ULTRAPASSE · POLÍCIA FEDERATIVA</text></g>
+<rect width="400" height="800" fill="url(#f-ht)"/>
+<rect width="400" height="800" fill="url(#f-vig)"/>
+</svg>

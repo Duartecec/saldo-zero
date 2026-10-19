@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Homens de terno tomando vinho no terraço de um resort ao pôr do sol">
+<style>
+.r-sun{transform-box:fill-box;transform-origin:center;animation:r-sun 4s ease-in-out infinite}
+@keyframes r-sun{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.r-rf{animation:r-rf 2.4s ease-in-out infinite}
+.r-rf.b{animation-delay:-.8s}.r-rf.c{animation-delay:-1.6s}
+@keyframes r-rf{0%,100%{opacity:.25;transform:scaleX(.7)}50%{opacity:.9;transform:scaleX(1.2)}}
+.r-rf{transform-box:fill-box;transform-origin:center}
+.r-tw{transform-box:fill-box;transform-origin:center;animation:r-tw 2.6s ease-in-out infinite}
+.r-tw.b{animation-delay:-1.3s}
+@keyframes r-tw{0%,100%{opacity:0;transform:scale(.3) rotate(0)}50%{opacity:1;transform:scale(1.2) rotate(45deg)}}
+.r-palm{transform-box:fill-box;transform-origin:50% 100%;animation:r-palm 5s ease-in-out infinite}
+.r-palm.b{animation-duration:6.5s;animation-delay:-2s}
+@keyframes r-palm{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(2deg)}}
+.r-wine{transform-box:fill-box;transform-origin:center;animation:r-wine 1.6s ease-in-out infinite}
+.r-wine.b{animation-delay:-.5s}.r-wine.c{animation-delay:-1s}.r-wine.d{animation-delay:-.25s}
+@keyframes r-wine{0%,100%{transform:translateX(-2.5px) rotate(-5deg)}50%{transform:translateX(2.5px) rotate(5deg)}}
+.r-toast{animation:r-toast 4s ease-in-out infinite}
+.r-toast.b{animation-name:r-toastb}
+@keyframes r-toast{0%,55%,100%{transform:translate(0,0)}70%{transform:translate(8px,-12px)}85%{transform:translate(0,0)}}
+@keyframes r-toastb{0%,55%,100%{transform:translate(0,0)}70%{transform:translate(-8px,-12px)}85%{transform:translate(0,0)}}
+.r-pool{animation:r-pool 3.2s linear infinite}
+@keyframes r-pool{from{transform:translateX(-30px)}to{transform:translateX(30px)}}
+</style>
+<defs>
+<linearGradient id="r-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c2146"/><stop offset=".55" stop-color="#e8283c"/><stop offset="1" stop-color="#f5c04a"/></linearGradient>
+<radialGradient id="r-gl" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#f5c04a" stop-opacity=".85"/><stop offset="1" stop-color="#f5c04a" stop-opacity="0"/></radialGradient>
+<clipPath id="r-pc"><rect x="0" y="700" width="400" height="100"/></clipPath>
+<pattern id="r-ht" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.1" fill="#0d1020" opacity=".2"/></pattern>
+<radialGradient id="r-vig" cx=".5" cy=".5" r=".75"><stop offset=".55" stop-color="#0d1020" stop-opacity="0"/><stop offset="1" stop-color="#0d1020" stop-opacity=".7"/></radialGradient>
+</defs>
+<rect width="400" height="420" fill="url(#r-sky)"/>
+<circle cx="270" cy="330" r="150" fill="url(#r-gl)"/>
+<circle class="r-sun" cx="270" cy="340" r="62" fill="#f5c04a"/>
+<path d="M0 360H400V560H0Z" fill="#232a5a"/>
+<path d="M0 360H400" stroke="#f5c04a" stroke-width="3"/>
+<g fill="#f5c04a">
+ <rect class="r-rf" x="240" y="372" width="60" height="4" rx="2"/>
+ <rect class="r-rf b" x="250" y="388" width="44" height="4" rx="2"/>
+ <rect class="r-rf c" x="236" y="406" width="66" height="4" rx="2"/>
+ <rect class="r-rf" x="256" y="424" width="34" height="4" rx="2"/>
+ <rect class="r-rf b" x="244" y="444" width="54" height="4" rx="2"/>
+ <rect class="r-rf c" x="258" y="466" width="30" height="4" rx="2"/>
+</g>
+<g stroke="#2f3a78" stroke-width="3"><path d="M20 388H110M60 410H150M10 436H80M100 456H190M30 482H120M300 400H390M320 440H395M310 480H380"/></g>
+<path class="r-tw" d="M232 318l3 9 9 3-9 3-3 9-3-9-9-3 9-3z" fill="#f3ecd9"/>
+<path class="r-tw b" d="M318 300l2 6 6 2-6 2-2 6-2-6-6-2 6-2z" fill="#f3ecd9"/>
+<!-- palmeiras -->
+<g class="r-palm"><path d="M34 560Q44 440 28 330" stroke="#1b1a24" stroke-width="12" fill="none"/><g fill="#0b6b46" stroke="#1b1a24" stroke-width="2.5"><path d="M28 330Q-10 320 -20 360Q18 330 28 330Z"/><path d="M28 330Q60 296 100 316Q56 316 28 330Z"/><path d="M28 330Q10 290 -14 284Q10 306 28 330Z"/><path d="M28 330Q56 330 84 362Q50 342 28 330Z"/><path d="M28 330Q34 296 62 276Q42 308 28 330Z"/></g></g>
+<g class="r-palm b"><path d="M372 560Q360 460 380 380" stroke="#1b1a24" stroke-width="10" fill="none"/><g fill="#0b6b46" stroke="#1b1a24" stroke-width="2.5"><path d="M380 380Q420 370 430 410Q392 380 380 380Z"/><path d="M380 380Q344 348 306 366Q350 366 380 380Z"/><path d="M380 380Q396 340 420 334Q398 356 380 380Z"/><path d="M380 380Q352 384 328 414Q360 394 380 380Z"/></g></g>
+<!-- terraço -->
+<path d="M0 560H400V800H0Z" fill="#171b33"/>
+<g stroke="#f3ecd9" stroke-width="4"><path d="M0 548H400"/></g>
+<g stroke="#f3ecd9" stroke-width="3" opacity=".8"><path d="M30 548V572M90 548V572M150 548V572M210 548V572M270 548V572M330 548V572M390 548V572"/></g>
+<!-- homens -->
+<g stroke="#1b1a24" stroke-width="2.5">
+ <g><path d="M12 650Q16 560 70 548Q124 560 128 650Z" fill="#2c3260"/><path d="M52 548L70 586L88 548Z" fill="#f3ecd9"/><path d="M66 562L70 594L74 562Z" fill="#e8283c"/><circle cx="70" cy="510" r="30" fill="#e0a672"/><path d="M42 502Q70 470 98 502Q96 486 70 482Q44 486 42 502Z" fill="#3a2a22"/><circle cx="60" cy="512" r="2.4" fill="#1b1a24" stroke="none"/><circle cx="80" cy="512" r="2.4" fill="#1b1a24" stroke="none"/><path d="M60 526Q70 532 80 526" fill="none" stroke-linecap="round"/></g>
+ <g><path d="M104 650Q108 570 160 558Q212 570 216 650Z" fill="#171b33" stroke="#3a4278"/><path d="M142 558L160 596L178 558Z" fill="#f3ecd9"/><path d="M156 572L160 604L164 572Z" fill="#f5c04a"/><circle cx="160" cy="522" r="30" fill="#f0c08a"/><path d="M130 518Q130 486 160 488Q190 486 190 518Q184 498 160 498Q136 498 130 518Z" fill="#cfcabb"/><circle cx="150" cy="524" r="2.4" fill="#1b1a24" stroke="none"/><circle cx="170" cy="524" r="2.4" fill="#1b1a24" stroke="none"/><path d="M146 540Q160 550 174 540" fill="none" stroke-linecap="round"/></g>
+ <g><path d="M184 650Q188 568 240 556Q292 568 296 650Z" fill="#2c3260"/><path d="M222 556L240 594L258 556Z" fill="#f3ecd9"/><path d="M236 570L240 602L244 570Z" fill="#e8283c"/><circle cx="240" cy="518" r="31" fill="#d49a63"/><ellipse cx="228" cy="496" rx="10" ry="5" fill="#f3ecd9" opacity=".5" stroke="none"/><circle cx="230" cy="520" r="2.4" fill="#1b1a24" stroke="none"/><circle cx="250" cy="520" r="2.4" fill="#1b1a24" stroke="none"/><path d="M226 536Q240 545 254 536" fill="none" stroke-linecap="round"/><path d="M224 530Q240 526 256 530" fill="none" stroke-width="4" stroke-linecap="round"/></g>
+ <g><path d="M274 650Q278 560 332 548Q386 560 390 650Z" fill="#232a4d" stroke="#3a4278"/><path d="M314 548L332 586L350 548Z" fill="#f3ecd9"/><path d="M328 562L332 594L336 562Z" fill="#f5c04a"/><circle cx="332" cy="510" r="30" fill="#f0c08a"/><path d="M302 506Q304 474 332 474Q360 474 362 506Q352 486 332 486Q312 486 302 506Z" fill="#1b1a24"/><circle cx="322" cy="512" r="2.4" fill="#1b1a24" stroke="none"/><circle cx="342" cy="512" r="2.4" fill="#1b1a24" stroke="none"/><path d="M320 526Q332 534 344 526" fill="none" stroke-linecap="round"/></g>
+</g>
+<!-- braços/taças que brindam (homens 2 e 3) -->
+<g transform="translate(184 600)"><g class="r-toast" style="transform-box:fill-box"><path d="M-22 40Q-22 10 0 10" stroke="#171b33" stroke-width="20" fill="none" stroke-linecap="round" transform="translate(0 20)"/><g transform="translate(0 0)"><path d="M-10 -20Q-10 0 0 4Q10 0 10 -20Z" fill="#f3ecd9" fill-opacity=".3" stroke="#f3ecd9" stroke-width="2.5"/><path d="M-8 -12Q-8 0 0 3Q8 0 8 -12Z" fill="#a31527"/><path d="M0 4V22M-8 22H8" stroke="#f3ecd9" stroke-width="2.5"/></g></g></g>
+<g transform="translate(220 600)"><g class="r-toast b" style="transform-box:fill-box"><path d="M22 40Q22 10 0 10" stroke="#2c3260" stroke-width="20" fill="none" stroke-linecap="round" transform="translate(0 20)"/><g><path d="M-10 -20Q-10 0 0 4Q10 0 10 -20Z" fill="#f3ecd9" fill-opacity=".3" stroke="#f3ecd9" stroke-width="2.5"/><path d="M-8 -12Q-8 0 0 3Q8 0 8 -12Z" fill="#a31527"/><path d="M0 4V22M-8 22H8" stroke="#f3ecd9" stroke-width="2.5"/></g></g></g>
+<!-- mesa -->
+<path d="M0 640Q200 626 400 640V690H0Z" fill="#f3ecd9" stroke="#1b1a24" stroke-width="3"/>
+<path d="M0 676H400" stroke="#f5c04a" stroke-width="4"/>
+<!-- taças de mesa (homens 1 e 4) -->
+<g transform="translate(70 630)"><path d="M-12 -26Q-12 0 0 4Q12 0 12 -26Z" fill="#f3ecd9" fill-opacity=".3" stroke="#1b1a24" stroke-width="2.5"/><g clip-path="none"><ellipse class="r-wine" cx="0" cy="-8" rx="9" ry="4" fill="#a31527"/></g><path d="M-8 -8Q-8 0 0 3Q8 0 8 -8Z" fill="#a31527"/><path d="M0 4V22M-9 22H9" stroke="#1b1a24" stroke-width="2.5"/></g>
+<g transform="translate(332 630)"><path d="M-12 -26Q-12 0 0 4Q12 0 12 -26Z" fill="#f3ecd9" fill-opacity=".3" stroke="#1b1a24" stroke-width="2.5"/><ellipse class="r-wine c" cx="0" cy="-8" rx="9" ry="4" fill="#d1334a"/><path d="M-8 -8Q-8 0 0 3Q8 0 8 -8Z" fill="#a31527"/><path d="M0 4V22M-9 22H9" stroke="#1b1a24" stroke-width="2.5"/></g>
+<!-- balde de gelo com garrafa -->
+<g transform="translate(202 650)"><rect x="-4" y="-44" width="8" height="40" rx="3" fill="#0b4a35" stroke="#1b1a24" stroke-width="2"/><path d="M-22 -10H22L16 26H-16Z" fill="#8fb4d9" stroke="#1b1a24" stroke-width="2.5"/></g>
+<!-- piscina -->
+<path d="M0 690H400V800H0Z" fill="#2f3a78"/>
+<g clip-path="url(#r-pc)"><g class="r-pool" stroke="#8fb4d9" stroke-width="3" fill="none" stroke-linecap="round"><path d="M-20 720Q0 710 20 720T60 720T100 720T140 720T180 720T220 720T260 720T300 720T340 720T380 720T420 720"/><path d="M-30 756Q-10 746 10 756T50 756T90 756T130 756T170 756T210 756T250 756T290 756T330 756T370 756T410 756"/></g></g>
+<rect width="400" height="800" fill="url(#r-ht)"/>
+<rect width="400" height="800" fill="url(#r-vig)"/>
+</svg>

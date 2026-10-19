@@ -71,5 +71,9 @@ if (!cols("users").includes("favores")) db.exec("ALTER TABLE users ADD COLUMN fa
 if (!cols("users").includes("blocked")) db.exec("ALTER TABLE users ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0");
 if (!cols("users").includes("note")) db.exec("ALTER TABLE users ADD COLUMN note TEXT NOT NULL DEFAULT ''");
 if (!cols("orders").includes("value")) db.exec("ALTER TABLE orders ADD COLUMN value REAL NOT NULL DEFAULT 0");
+if (!cols("users").includes("email")) db.exec("ALTER TABLE users ADD COLUMN email TEXT");
+if (!cols("users").includes("email_verified")) db.exec("ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0");
+if (!cols("users").includes("code")) db.exec("ALTER TABLE users ADD COLUMN code TEXT; ALTER TABLE users ADD COLUMN code_kind TEXT; ALTER TABLE users ADD COLUMN code_expires INTEGER NOT NULL DEFAULT 0; ALTER TABLE users ADD COLUMN code_attempts INTEGER NOT NULL DEFAULT 0");
+db.exec("CREATE UNIQUE INDEX IF NOT EXISTS users_email ON users(email) WHERE email IS NOT NULL");
 
 export const now = () => Date.now();

@@ -40,17 +40,18 @@ export function listOrders(limit = 200) {
 export function listUsers(qstr: string, page = 1) {
   const like = "%" + qstr.replace(/[%_!]/g, (c) => "!" + c) + "%";
   const per = 50, off = (Math.max(1, page) - 1) * per;
-  const rows = db.query(`SELECT u.id, u.nick_display AS nick, u.created_at, u.last_seen, u.favores, u.blocked, u.note,
+  const rows = db.query(`SELECT u.id, u.nick_display AS nick, u.email, u.email_verified, u.created_at, u.last_seen, u.favores, u.blocked, u.note,
+      EXISTS(SELECT 1 FROM entitlements v WHERE v.user_id = u.id AND v.product_id = 'com.saldozero.vip') AS vip,
       (SELECT COUNT(*) FROM entitlements e WHERE e.user_id = u.id) AS items,
       (SELECT COALESCE(SUM(value),0) FROM orders o WHERE o.user_id = u.id AND o.status IN ${PAID}) AS spent,
       (SELECT COUNT(*) FROM results r WHERE r.user_id = u.id) AS games
-    FROM users u WHERE u.nick LIKE ? ESCAPE '!' ORDER BY u.last_seen DESC LIMIT ? OFFSET ?`).all(like, per, off);
-  const total = (db.query("SELECT COUNT(*) AS n FROM users WHERE nick LIKE ? ESCAPE '!'").get(like) as any).n;
+    FROM users u WHERE u.nick LIKE ? ESCAPE '!' OR COALESCE(u.email,'') LIKE ? ESCAPE '!' ORDER BY u.last_seen DESC LIMIT ? OFFSET ?`).all(like, like, per, off);
+  const total = (db.query("SELECT COUNT(*) AS n FROM users WHERE nick LIKE ? ESCAPE '!' OR COALESCE(email,'') LIKE ? ESCAPE '!'").get(like, like) as any).n;
   return { rows, total, page, per };
 }
 
 export function userDetail(id: number) {
-  const user = db.query("SELECT id, nick_display AS nick, created_at, last_seen, favores, blocked, note, progress FROM users WHERE id = ?").get(id) as any;
+  const user = db.query("SELECT id, nick_display AS nick, email, email_verified, created_at, last_seen, favores, blocked, note, progress FROM users WHERE id = ?").get(id) as any;
   if (!user) throw new AuthError("Usuário não encontrado.", 404);
   return {
     user,
@@ -106,6 +107,9 @@ export async function userAction(id: number, input: any) {
       try { db.run("UPDATE users SET nick = ?, nick_display = ? WHERE id = ?", [key, display, id]); } catch { throw new AuthError("Apelido já em uso.", 409); }
       break;
     }
+    case "verify":
+      db.run("UPDATE users SET email_verified = 1 WHERE id = ?", [id]);
+      break;
     case "note":
       db.run("UPDATE users SET note = ? WHERE id = ?", [String(input?.note || "").slice(0, 500), id]);
       break;

@@ -22,8 +22,18 @@ const acceptLegal = async (page) => { await page.waitForTimeout(150); if (await 
   const nick = 'tester_' + Math.random().toString(36).slice(2, 7);
   await page.fill('#nickInput', nick); await page.waitForTimeout(600);
   out.hintFree = await page.textContent('#nickHint');
-  await page.fill('#pinInput', '2719'); await page.click('#loginBtn'); await page.waitForTimeout(800);
+  out.emailShown = await page.isVisible('#emailLabel');
+  await page.fill('#emailInput', nick + '@exemplo.com'); await page.fill('#pinInput', '2719'); await page.click('#loginBtn'); await page.waitForTimeout(800);
   out.loggedIn = (await page.textContent('#accountInfo')).includes('@' + nick);
+  out.verifyBoxShown = await page.isVisible('#verifyCode');
+  // compra antes de confirmar deve ser recusada
+  await page.click('#openShop'); await page.waitForTimeout(300); await page.click('#shopList .buy[data-id="com.saldozero.favores10"]'); await page.waitForTimeout(200);
+  await page.fill('#payName', 'Danilo Testador'); await page.fill('#payEmail', 'danilo@example.com'); await page.fill('#payCpf', '529.982.247-25'); await page.click('#payForm button[type=submit]'); await page.waitForTimeout(500);
+  out.buyBeforeVerify = await page.textContent('#payError'); await page.click('#btnShopClose');
+  // confirma com o código de desenvolvimento
+  const code = await page.evaluate(() => window.__devCode); out.devCodeLen = (code || '').length;
+  await page.fill('#verifyCode', code); await page.click('#verifyBtn'); await page.waitForTimeout(800);
+  out.verified = (await page.textContent('#accountInfo')).includes('confirmado');
 
   // 2. apelido duplicado com PIN errado não entra
   const ctx2 = await browser.newContext({ viewport: { width: 390, height: 844 } });
@@ -38,6 +48,7 @@ const acceptLegal = async (page) => { await page.waitForTimeout(150); if (await 
 
   // 3. compra pelo Asaas falso, logado
   await page.click('#openShop'); await page.waitForTimeout(300);
+  out.vipCard = await page.textContent('#shopList .item.vip'); out.vipTimer = await page.textContent('#vipTimer');
   await page.click('#shopList .buy[data-id="com.saldozero.favores10"]'); await page.waitForTimeout(200);
   await page.fill('#payName', 'Danilo Testador'); await page.fill('#payEmail', 'danilo@example.com'); await page.fill('#payCpf', '529.982.247-25');
   await page.click('#payForm button[type=submit]');
@@ -52,10 +63,13 @@ const acceptLegal = async (page) => { await page.waitForTimeout(150); if (await 
   await page.click('#payForm button[type=submit]'); await page.waitForURL(/\/pay\//, { timeout: 8000 }); await page.click('#pix'); await page.waitForURL(/pedido=/, { timeout: 8000 }); await page.waitForTimeout(1500);
   out.ownedAfterPay = await page.$$eval('#shopList .owned', b => b.length);
   out.entLocal = await page.evaluate(() => [...ent]);
+  await page.click('#shopList .buy[data-id="com.saldozero.vip"]'); await page.waitForTimeout(200);
+  await page.click('#payForm button[type=submit]'); await page.waitForURL(/\/pay\//, { timeout: 8000 }); await page.click('#pix'); await page.waitForURL(/pedido=/, { timeout: 8000 }); await page.waitForTimeout(1500);
+  out.vipOwned = await page.evaluate(() => isVip());
   // jogada do Vorkaro no modo livre: gasta os 2 da partida e depois 1 da conta
   await page.click('#btnShopClose'); await page.click('#playFree'); await acceptLegal(page); if (await page.isVisible('#tut')) await page.click('#tutOk');
   for (let i = 0; i < 3; i++) { await page.click('#btnMove'); await page.waitForTimeout(150); await page.click('#moveList button[data-id="marketing"]'); await page.waitForTimeout(400); }
-  out.favoresAfterMoves = await page.evaluate(() => ({ run: s.favores, account: favores, badge: document.getElementById('favBadge').textContent, day: s.day }));
+  out.favoresAfterMoves = await page.evaluate(() => ({ run: s.favores, account: favores, badge: document.getElementById('favBadge').textContent, day: s.day, startedWith: freeFavores() }));
   // força um final por radar e usa o recurso
   await page.evaluate(() => { s.radar = 99; });
   let g = 0; while (!(await page.isVisible('#endScreen')) && g < 40) { await page.click('#btnR'); await page.waitForTimeout(260); g++; }
@@ -76,13 +90,20 @@ const acceptLegal = async (page) => { await page.waitForTimeout(150); if (await 
   await page.waitForTimeout(1500);
   out.endRank = (await page.textContent('#endAch')).includes('Ranking de hoje');
   await page.click('#btnHome'); await page.waitForTimeout(1500);
-  out.rankList = await page.textContent('#rankList');
+  out.rankList = await page.textContent('#rankList'); out.rankVip = (await page.innerHTML('#rankList')).includes('⭐');
   out.rankApi = await page.evaluate(() => api('/api/daily?day=' + todayKey()));
   out.authNow = await page.evaluate(() => auth && auth.nick);
   await page.waitForTimeout(1500); out.rankListLater = await page.textContent('#rankList');
   const me = await page.evaluate(() => api('/api/me'));
   out.serverProgress = me.user.progress; out.serverEnt = me.entitlements; out.serverFavores = me.user.favores;
   out.appealInDaily = await page.evaluate(() => canAppeal());
+  // esqueci o PIN (por último: a troca encerra todas as sessões da conta)
+  await p2.evaluate(() => { try { localStorage.removeItem('me2:auth'); } catch {} }); await p2.reload(); await p2.waitForTimeout(600);
+  await p2.fill('#nickInput', nick); await p2.waitForTimeout(500); await p2.click('#forgotLink'); await p2.waitForTimeout(500);
+  const rcode = await p2.evaluate(() => window.__devCode); await p2.fill('#resetCode', rcode || '000000'); await p2.fill('#resetPin', '9517'); await p2.click('#resetForm button[type=submit]'); await p2.waitForTimeout(600);
+  out.resetDone = await p2.isVisible('#loginForm');
+  await p2.fill('#nickInput', nick); await p2.fill('#pinInput', '9517'); await p2.waitForTimeout(400); await p2.click('#loginBtn'); await p2.waitForTimeout(800);
+  out.loginWithNewPin = (await p2.textContent('#accountInfo')).includes('@' + nick);
   out.errors = errors;
   console.log(JSON.stringify(out, null, 1));
   await browser.close();

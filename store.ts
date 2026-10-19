@@ -20,7 +20,9 @@
 
 import { db, now } from "./db";
 
-export const PRODUCTS: Record<string, { name: string; value: number; favores?: number }> = {
+export const VIP = "com.saldozero.vip";
+export const PRODUCTS: Record<string, { name: string; value: number; favores?: number; list?: number }> = {
+  [VIP]: { name: "Saldo Zero · VIP para sempre", value: 19.9, list: 59.9 },
   "com.saldozero.favores10": { name: "Saldo Zero · 10 favores", value: 9.9, favores: 10 },
   "com.saldozero.favores30": { name: "Saldo Zero · 30 favores", value: 19.9, favores: 30 },
   "com.saldozero.deck.eleicao": { name: "Saldo Zero · Baralho Ano Eleitoral", value: 9.9 },
@@ -47,7 +49,7 @@ export function storeConfig() {
     enabled: storeEnabled,
     provider: "asaas",
     env: ENV,
-    products: Object.entries(PRODUCTS).map(([id, p]) => ({ id, price: brl(p.value), value: p.value, favores: p.favores || 0 })),
+    products: Object.entries(PRODUCTS).map(([id, p]) => ({ id, price: brl(p.value), value: p.value, favores: p.favores || 0, list: p.list ? brl(p.list) : null, discount: p.list ? Math.round((1 - p.value / p.list) * 100) : 0 })),
   };
 }
 
@@ -193,4 +195,8 @@ export function webhookAuthorized(req: Request) {
   const expected = Bun.env.ASAAS_WEBHOOK_TOKEN || "";
   if (!expected) return false;
   return req.headers.get("asaas-access-token") === expected;
+}
+
+export function isVip(userId: number) {
+  return !!db.query("SELECT 1 FROM entitlements WHERE user_id = ? AND product_id = ? LIMIT 1").get(userId, VIP);
 }

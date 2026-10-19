@@ -1,6 +1,8 @@
 // Login de jogo: apelido único + PIN de 4 a 8 dígitos. Sem e-mail, sem senha longa.
 // O servidor devolve um token guardado no navegador; o mesmo apelido entra em qualquer aparelho.
 import { db, now } from "./db";
+import { sendMail, verifyEmailTemplate, resetPinTemplate } from "./mail";
+import { isVip } from "./store";
 
 export class AuthError extends Error {
   status: number;
@@ -23,7 +25,34 @@ function normalizePin(raw: unknown) {
   return pin;
 }
 
-export type UserRow = { id: number; nick: string; nick_display: string; pin_hash: string; progress: string; created_at: number; last_seen: number; favores: number; blocked: number; note: string };
+export type UserRow = { id: number; nick: string; nick_display: string; pin_hash: string; progress: string; created_at: number; last_seen: number; favores: number; blocked: number; note: string; email: string | null; email_verified: number; code: string | null; code_kind: string | null; code_expires: number; code_attempts: number };
+const DEV_CODES = Bun.env.DEV_CODES === "1";
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+export function normalizeEmail(raw: unknown) {
+  const email = String(raw || "").trim().toLowerCase();
+  if (!EMAIL_RE.test(email) || email.length > 120) throw new AuthError("Informe um e-mail válido.");
+  return email;
+}
+const newCode = () => String(Math.floor(100000 + Math.random() * 900000));
+async function issueCode(userId: number, kind: "verify" | "reset") {
+  const code = newCode();
+  db.run("UPDATE users SET code = ?, code_kind = ?, code_expires = ?, code_attempts = 0 WHERE id = ?", [code, kind, now() + 30 * 60_000, userId]);
+  const u = db.query("SELECT nick_display, email FROM users WHERE id = ?").get(userId) as { nick_display: string; email: string | null };
+  if (u?.email) {
+    const tpl = kind === "verify" ? verifyEmailTemplate(u.nick_display, code) : resetPinTemplate(u.nick_display, code);
+    await sendMail(u.email, tpl.subject, tpl.html, tpl.text);
+  }
+  return code;
+}
+function consumeCode(user: UserRow, kind: string, given: unknown) {
+  const code = String(given || "").trim();
+  if (!/^\d{6}$/.test(code)) throw new AuthError("Código: 6 números.");
+  const fresh = db.query("SELECT code, code_kind, code_expires, code_attempts FROM users WHERE id = ?").get(user.id) as any;
+  if (!fresh?.code || fresh.code_kind !== kind || fresh.code_expires < now()) throw new AuthError("Código expirado. Peça um novo.", 410);
+  if (fresh.code_attempts >= 5) throw new AuthError("Muitas tentativas. Peça um novo código.", 429);
+  if (fresh.code !== code) { db.run("UPDATE users SET code_attempts = code_attempts + 1 WHERE id = ?", [user.id]); throw new AuthError("Código incorreto.", 401); }
+  db.run("UPDATE users SET code = NULL, code_kind = NULL, code_expires = 0, code_attempts = 0 WHERE id = ?", [user.id]);
+}
 
 export function nickAvailable(raw: unknown) {
   const { key, display } = normalizeNick(raw);
@@ -65,14 +94,17 @@ export async function enter(input: any) {
     return { token: await newSession(row.id), user: publicUser(row), created: false };
   }
   if (input?.create !== true) throw new AuthError("Apelido livre. Confirme para criar sua conta.", 404);
+  const email = normalizeEmail(input?.email);
+  if (db.query("SELECT id FROM users WHERE email = ?").get(email)) throw new AuthError("Este e-mail já tem uma conta. Entre com o apelido dela ou use \"Esqueci o PIN\".", 409);
   const hash = await Bun.password.hash(pin, { algorithm: "argon2id", memoryCost: 19456, timeCost: 2 });
   try {
-    db.run("INSERT INTO users (nick, nick_display, pin_hash, created_at, last_seen) VALUES (?, ?, ?, ?, ?)", [key, display, hash, now(), now()]);
+    db.run("INSERT INTO users (nick, nick_display, pin_hash, created_at, last_seen, email) VALUES (?, ?, ?, ?, ?, ?)", [key, display, hash, now(), now(), email]);
   } catch {
     throw new AuthError("Esse apelido acabou de ser escolhido por outra pessoa.", 409);
   }
   const created = db.query("SELECT * FROM users WHERE nick = ?").get(key) as UserRow;
-  return { token: await newSession(created.id), user: publicUser(created), created: true };
+  const code = await issueCode(created.id, "verify");
+  return { token: await newSession(created.id), user: publicUser(created), created: true, ...(DEV_CODES ? { devCode: code } : {}) };
 }
 
 export function userFromRequest(req: Request): UserRow | null {
@@ -96,8 +128,55 @@ export function logout(req: Request) {
 }
 
 export function publicUser(row: UserRow) {
-  const fav = (db.query("SELECT favores FROM users WHERE id = ?").get(row.id) as { favores: number } | null)?.favores ?? 0;
-  return { id: row.id, nick: row.nick_display, createdAt: row.created_at, progress: safeJSON(row.progress), favores: fav };
+  const fresh = db.query("SELECT favores, email, email_verified FROM users WHERE id = ?").get(row.id) as { favores: number; email: string | null; email_verified: number } | null;
+  return { id: row.id, nick: row.nick_display, createdAt: row.created_at, progress: safeJSON(row.progress), favores: fresh?.favores ?? 0, email: fresh?.email ? maskEmail(fresh.email) : null, emailVerified: !!fresh?.email_verified, vip: isVip(row.id) };
+}
+const maskEmail = (e: string) => { const [u, d] = e.split("@"); return (u.length <= 2 ? u[0] + "*" : u.slice(0, 2) + "***") + "@" + d; };
+export function requireVerified(user: UserRow) {
+  const fresh = db.query("SELECT email_verified FROM users WHERE id = ?").get(user.id) as { email_verified: number };
+  if (!fresh?.email_verified) throw new AuthError("Confirme seu e-mail para continuar (menu da conta).", 403);
+}
+
+// ---- e-mail: confirmação, reenvio, troca e recuperação de PIN ----
+export async function verifyEmail(user: UserRow, input: any) {
+  consumeCode(user, "verify", input?.code);
+  db.run("UPDATE users SET email_verified = 1 WHERE id = ?", [user.id]);
+  return { ok: true };
+}
+export async function resendVerification(user: UserRow) {
+  const fresh = db.query("SELECT email, email_verified, code_expires FROM users WHERE id = ?").get(user.id) as any;
+  if (!fresh?.email) throw new AuthError("Cadastre um e-mail primeiro.");
+  if (fresh.email_verified) return { ok: true, already: true };
+  const code = await issueCode(user.id, "verify");
+  return { ok: true, ...(DEV_CODES ? { devCode: code } : {}) };
+}
+export async function setEmail(user: UserRow, input: any) {
+  const email = normalizeEmail(input?.email);
+  const other = db.query("SELECT id FROM users WHERE email = ? AND id != ?").get(email, user.id);
+  if (other) throw new AuthError("Este e-mail já está em outra conta.", 409);
+  db.run("UPDATE users SET email = ?, email_verified = 0 WHERE id = ?", [email, user.id]);
+  const code = await issueCode(user.id, "verify");
+  return { ok: true, ...(DEV_CODES ? { devCode: code } : {}) };
+}
+export async function forgotPin(input: any) {
+  const { key } = normalizeNick(input?.nick);
+  const row = db.query("SELECT * FROM users WHERE nick = ?").get(key) as UserRow | null;
+  // Resposta igual com ou sem conta, para não revelar apelidos.
+  let devCode: string | undefined;
+  if (row && row.email && !row.blocked) devCode = await issueCode(row.id, "reset");
+  return { ok: true, ...(DEV_CODES && devCode ? { devCode } : {}) };
+}
+export async function resetPin(input: any) {
+  const { key } = normalizeNick(input?.nick);
+  const row = db.query("SELECT * FROM users WHERE nick = ?").get(key) as UserRow | null;
+  if (!row) throw new AuthError("Código incorreto.", 401);
+  consumeCode(row, "reset", input?.code);
+  const pin = normalizePin(input?.pin);
+  const hash = await Bun.password.hash(pin, { algorithm: "argon2id", memoryCost: 19456, timeCost: 2 });
+  db.run("UPDATE users SET pin_hash = ?, email_verified = 1 WHERE id = ?", [hash, row.id]);
+  db.run("DELETE FROM sessions WHERE user_id = ?", [row.id]);
+  failures.delete(key);
+  return { ok: true };
 }
 function safeJSON(s: string) { try { return JSON.parse(s || "{}"); } catch { return {}; } }
 
@@ -138,7 +217,7 @@ export function submitDaily(user: UserRow, input: any) {
 
 export function leaderboard(day: string, userId?: number) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) throw new AuthError("Dia inválido.");
-  const top = db.query("SELECT u.nick_display AS nick, r.days, r.ending, r.turns FROM results r JOIN users u ON u.id = r.user_id WHERE r.day = ? ORDER BY r.days DESC, r.turns ASC, r.created_at ASC LIMIT 50").all(day) as any[];
+  const top = db.query("SELECT u.nick_display AS nick, r.days, r.ending, r.turns, EXISTS(SELECT 1 FROM entitlements e WHERE e.user_id = u.id AND e.product_id = 'com.saldozero.vip') AS vip FROM results r JOIN users u ON u.id = r.user_id WHERE r.day = ? ORDER BY r.days DESC, r.turns ASC, r.created_at ASC LIMIT 50").all(day) as any[];
   const total = (db.query("SELECT COUNT(*) AS n FROM results WHERE day = ?").get(day) as { n: number }).n;
   let me: any = null;
   if (userId) {

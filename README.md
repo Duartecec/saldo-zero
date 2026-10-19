@@ -23,10 +23,14 @@ O servidor monta a página em memória a partir de `game.html`, troca o Google F
 | `ASAAS_ENV` | `sandbox` (padrão) ou `production` |
 | `ASAAS_WEBHOOK_TOKEN` | token configurado no webhook do Asaas (header `asaas-access-token`) |
 | `ADMIN_TOKEN` | senha do painel do desenvolvedor em `/admin` (mínimo 16 caracteres) |
+| `RESEND_API_KEY` | chave do Resend para e-mails de confirmação e recuperação de PIN; sem ela o código só vai para o log |
+| `RESEND_FROM` | remetente em domínio verificado no Resend (padrão `Saldo Zero <nao-responda@vorkaro.site>`) |
+| `DEV_CODES` | `1` apenas em testes: devolve o código na resposta da API |
 
 ### Conta de jogo, loja e ranking
 
-- Conta: apelido único (3 a 16 caracteres, sem acento) + PIN de 4 a 8 números. Sem e-mail. Guarda compras, progresso e favores.
+- Conta: apelido único (3 a 16 caracteres, sem acento) + PIN de 4 a 8 números + e-mail. O e-mail recebe um código de 6 dígitos (Resend); compras e ranking exigem e-mail confirmado. "Esqueci o PIN" envia um código de troca.
+- VIP para sempre (`com.saldozero.vip`, R$ 19,90, de R$ 59,90): 15 favores por partida, baralho eleitoral, escolha de capa e destaque no ranking. A loja mostra o preço riscado, o desconto e um cronômetro de 15 minutos em loop.
 - Favores: moeda das jogadas do Vorkaro e dos recursos no modo livre. Toda partida começa com 2; pacotes de 10 e 30 ficam na conta.
 - Loja (Asaas, checkout hospedado com Pix, cartão e boleto): `POST /api/checkout` cria a cobrança, o jogador paga na página do Asaas e volta para `SITE_URL/?pedido=<ref>`; `GET /api/order/:id` confirma; `POST /api/webhook/asaas` recebe os eventos. Compras exigem login.
 - Ranking diário: `POST /api/daily` grava o primeiro resultado do dia por conta; `GET /api/daily?day=` lista o top 50.

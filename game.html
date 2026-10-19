@@ -158,7 +158,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 .srOnly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .shake{animation:shake .4s}
 @keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
-.shop{display:grid;gap:10px}.shop .item{display:flex;align-items:center;gap:12px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:12px}.shop .ico{font-size:28px}.shop .txt{flex:1;min-width:0}.shop .txt b{display:block}.shop .txt small{color:var(--mute);display:block;margin-top:2px}.shop .buy{background:linear-gradient(170deg,#ffd76a,#f0a33c);color:#2a1b05;font-family:var(--display);letter-spacing:1px;padding:10px 14px;border-radius:10px;white-space:nowrap;border-bottom:3px solid #9a5a12}.shop .buy:disabled{opacity:.5}.shop .owned{color:var(--green);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.shop{display:grid;gap:10px}.shop .item{display:flex;align-items:center;gap:12px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:12px}.shop .ico{font-size:28px}.shop .txt{flex:1;min-width:0}.shop .txt b{display:block}.shop .txt small{color:var(--mute);display:block;margin-top:2px}.shop .buy{background:linear-gradient(170deg,#ffd76a,#f0a33c);color:#2a1b05;font-family:var(--display);letter-spacing:1px;padding:10px 14px;border-radius:10px;white-space:nowrap;border-bottom:3px solid #9a5a12}.shop .buy:disabled{opacity:.5}.shop .item.vip{background:linear-gradient(150deg,#3a2f0f,#1b1a33);border:1px solid var(--gold);box-shadow:0 0 0 1px #f5c04a33,0 10px 30px #0006;flex-wrap:wrap}.shop .item.vip .ico{font-size:34px}.shop .item.vip .txt b{color:var(--gold);font-family:var(--display);font-weight:400;font-size:20px;letter-spacing:1px}.shop .vipprice{display:flex;align-items:center;gap:10px;flex-wrap:wrap;width:100%;margin-top:4px}.shop .vipprice s{color:var(--mute);font-size:14px}.shop .vipprice .now{font-family:var(--display);font-size:26px;color:var(--fg)}.shop .vipprice .off{background:var(--red);color:#fff;font-weight:800;font-size:12px;padding:3px 8px;border-radius:999px}.shop .viptimer{font-variant-numeric:tabular-nums;font-size:12px;color:#ffd98a;font-weight:700;letter-spacing:.5px}.shop .vipperks{width:100%;display:grid;gap:3px;font-size:12.5px;color:var(--mute);margin-top:6px}.shop .vipperks span::before{content:'✓ ';color:var(--green)}.rank li.vip span{color:var(--gold)}.vipbadge{display:inline-block;background:linear-gradient(170deg,#ffd76a,#f0a33c);color:#2a1b05;font-size:10px;font-weight:800;letter-spacing:1px;padding:2px 7px;border-radius:999px;vertical-align:middle}.verify{display:grid;gap:8px;margin-top:10px;padding:10px;border:1px dashed var(--gold);border-radius:12px}.verify .two{display:grid;grid-template-columns:1fr auto;gap:8px}.verify input{font:inherit;font-size:16px;padding:10px;border-radius:10px;border:1px solid var(--line);background:#0a0c18;color:var(--fg);min-width:0}
+.shop .owned{color:var(--green);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
 .form{display:grid;gap:10px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:14px}.form h3{margin:0;font-family:var(--display);font-weight:400;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)}.form label{display:grid;gap:4px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mute);font-weight:700}.form input{font:inherit;font-size:16px;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0a0c18;color:var(--fg);min-width:0}.form input:focus{outline:2px solid var(--gold)}.form .err{color:var(--red);font-size:13px;min-height:1em}.linkish{color:var(--mute);font-size:13px;text-decoration:underline;padding:8px;justify-self:center}
 .movebar{display:flex;gap:10px;align-items:center}.movebar button.move{flex:1;background:linear-gradient(160deg,#3b2f6b,#241c4a);border:1px solid #7b6fd6;border-bottom:4px solid #141033;border-radius:14px;padding:12px;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:10px}.movebar button.move b{font-size:14px}.movebar button.move small{color:#c9c2ff;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700}.fav{display:inline-flex;align-items:center;gap:4px;background:#0a0c18;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .moves{display:grid;gap:8px}.moves button{display:flex;align-items:center;gap:12px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left}.moves button:disabled{opacity:.45}.moves .ico{font-size:26px}.moves .txt{flex:1;min-width:0}.moves .txt b{display:block}.moves .txt small{color:var(--mute);display:block}.moves .cost{white-space:nowrap;color:var(--gold);font-weight:800;font-size:13px}
@@ -286,9 +287,19 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
           <label>Apelido<input id="nickInput" name="username" autocomplete="username" maxlength="16" placeholder="ex.: rei_do_pix" required></label>
           <label>PIN (4 a 8 números)<input id="pinInput" name="password" type="password" inputmode="numeric" autocomplete="current-password" maxlength="8" required></label>
         </div>
+        <label id="emailLabel" hidden>E-mail (para confirmar a conta e recuperar o PIN)<input id="emailInput" name="email" type="email" autocomplete="email" maxlength="120" placeholder="voce@exemplo.com"></label>
         <div class="err" id="nickHint" style="color:var(--mute)"></div>
         <div class="err" id="loginError"></div>
         <button class="big" type="submit" id="loginBtn">Entrar</button>
+        <button class="linkish" type="button" id="forgotLink">Esqueci o PIN</button>
+      </form>
+      <form id="resetForm" class="form" style="padding:0;border:0;background:none" hidden>
+        <h3>Recuperar PIN</h3>
+        <p style="margin:0;color:var(--mute);font-size:13px" id="resetHint">Enviamos um código de 6 números para o e-mail da conta. Digite o código e escolha o novo PIN.</p>
+        <div class="two"><label>Código<input id="resetCode" inputmode="numeric" maxlength="6" required></label><label>Novo PIN<input id="resetPin" type="password" inputmode="numeric" maxlength="8" required></label></div>
+        <div class="err" id="resetError"></div>
+        <button class="big" type="submit">Trocar PIN</button>
+        <button class="linkish" type="button" id="resetBack">Voltar</button>
       </form>
       <div id="accountInfo" hidden></div>
       <p style="margin-top:8px">Sem e-mail, sem senha longa. O apelido é único, aparece no ranking e guarda suas compras e conquistas em qualquer aparelho.</p>
@@ -328,9 +339,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
       <p><b>Cartas.</b> Cada carta é uma mensagem, reunião ou notícia. Arraste para a esquerda ou para a direita (ou use os dois botões, ou as setas do teclado) para decidir. Antes de soltar, as bolinhas sobre os indicadores mostram o tamanho do impacto; o sentido você descobre depois.</p>
       <p><b>Indicadores.</b> 💰 Caixa é o dinheiro do banco, em reais: a R$ 0 o banco quebra; com R$ 100 mi você some com tudo. 🏛️ Poder são seus amigos em Brasília: em 0 ninguém atende; em 100 você vira dono do Congresso e todos se unem contra você. 📣 Imagem é a opinião pública: em 0 você é cancelado; em 100 vira candidato. 🚨 Radar é o calor da investigação: em 100, Operação Saldo Zero. Toque em qualquer indicador no jogo para ler isso de novo.</p>
       <p><b>Consequências.</b> Escolhas de hoje voltam dias depois como chantagem, convocação ou manchete. O capítulo muda com o tempo: Ascensão, O Poder e A Crise, cada um mais perigoso.</p>
-      <p><b>🎩 Favores e jogadas do Vorkaro.</b> Toda partida começa com 2 favores. Eles pagam ações por iniciativa própria (ligar para o ministro, enterrar dinheiro em marketing, advogado de emergência…). No modo livre, 2 favores também pagam um recurso para continuar depois de cair. Pacotes extras ficam na sua conta e valem só no modo livre.</p>
+      <p><b>⭐ VIP para sempre.</b> Pagamento único: 15 favores em toda partida, baralho eleitoral, escolha da capa e destaque dourado no ranking.</p>
+      <p><b>🎩 Favores e jogadas do Vorkaro.</b> Toda partida começa com 2 favores (15 para VIP). Eles pagam ações por iniciativa própria (ligar para o ministro, enterrar dinheiro em marketing, advogado de emergência…). No modo livre, 2 favores também pagam um recurso para continuar depois de cair. Pacotes extras ficam na sua conta e valem só no modo livre.</p>
       <p><b>Diário e ranking.</b> No desafio diário todo mundo recebe a mesma sequência de cartas, com os mesmos 2 favores e sem recurso. O primeiro resultado do dia entra no ranking pelo seu apelido.</p>
-      <p><b>Conta.</b> Só apelido e PIN. Guarda compras, favores, finais e conquistas em qualquer aparelho. Esqueceu o PIN? Abra um chamado abaixo.</p>
+      <p><b>Conta.</b> Apelido, PIN e e-mail. O e-mail recebe um código de confirmação e serve para recuperar o PIN ("Esqueci o PIN" na tela inicial). Compras e ranking exigem e-mail confirmado.</p>
       <p><b>UatiZap.</b> Guarda todas as mensagens que você recebeu e respondeu na partida.</p>
       <p><b>Compras.</b> Pagamento único pelo Asaas (Pix, cartão ou boleto). O conteúdo é liberado assim que o pagamento é confirmado. Se não liberar, abra um chamado com o apelido usado na compra.</p>
       <p style="margin-top:8px"><button class="linkish" id="helpLegal" style="padding:0">Aviso legal e de conteúdo</button> · <a href="/privacidade" target="_blank" rel="noopener" style="color:var(--gold)">Política de privacidade</a></p>
@@ -440,13 +452,18 @@ function dailyNumber(){const d=new Date();const t=new Date(d.getFullYear(),d.get
 const NATIVE=window.MasterEscapeNative||null;
 function native(msg){try{window.webkit.messageHandlers.native.postMessage(msg);return true}catch{return false}}
 function shareURL(){return (NATIVE&&NATIVE.shareURL)||location.href.split('#')[0]}
+const VIP='com.saldozero.vip';
 const PRODUCTS={
+  [VIP]:{icon:'⭐',name:'VIP PARA SEMPRE',desc:'Pagamento único. Vale para sempre, em qualquer aparelho.',kind:'non',perks:['15 favores em toda partida (em vez de 2)','Baralho Ano Eleitoral liberado','Escolha da capa do jornal','Destaque dourado no ranking']},
   'com.saldozero.favores10':{icon:'🎩',name:'10 favores',desc:'Para jogadas do Vorkaro e recursos no modo livre. Ficam na sua conta.',kind:'consumable',favores:10},
   'com.saldozero.favores30':{icon:'🎩',name:'30 favores',desc:'O pacote de quem pretende durar. Ficam na sua conta.',kind:'consumable',favores:30},
   'com.saldozero.deck.eleicao':{icon:'🗳️',name:'Baralho Ano Eleitoral',desc:'12 cartas extras no modo livre: debates, pesquisas, urnas e promessas.',kind:'non'},
   'com.saldozero.capas':{icon:'📰',name:'Pacote de capas',desc:'Três jornais alternativos para estampar a sua capa final.',kind:'non'}
 };
-const FREE_FAVORES=2;
+const FREE_FAVORES=2;const VIP_FAVORES=15;
+function isVip(){return owns(VIP)}
+function freeFavores(){return isVip()?VIP_FAVORES:FREE_FAVORES}
+let acct=store.get('acct',null);function setAcct(a){acct=a;store.set('acct',a)}
 let ent=new Set(store.get('ent',[])),priceOf={},favores=store.get('favores',0);
 function owns(id){return ent.has(id)}
 window.MasterEscapeBridge={
@@ -463,16 +480,30 @@ async function api(path,opts={}){const h=Object.assign({'content-type':'applicat
   if(!r.ok)throw Object.assign(new Error(d.error||'Falha de conexão.'),{status:r.status});return d}
 function setAuth(a){auth=a;store.set('auth',a);renderAccount()}
 function renderAccount(){const f=$('loginForm'),i=$('accountInfo');if(!ONLINE){$('accountPanel').hidden=true;$('rankPanel').hidden=true;return}
-  if(auth){f.hidden=true;i.hidden=false;i.innerHTML='<p style="color:var(--fg);margin:0">Você está como <b>@'+auth.nick+'</b>.</p><div class="row" style="margin-top:8px"><button class="big alt" id="logoutBtn">Sair</button></div>';$('logoutBtn').onclick=async()=>{try{await api('/api/auth/logout',{method:'POST'})}catch{}setAuth(null);setFavores(0);loadRank()}}
+  $('resetForm').hidden=true;
+  if(auth){f.hidden=true;i.hidden=false;const a=acct||{};
+    let ver='';
+    if(!a.email)ver='<div class="verify"><b>Cadastre um e-mail</b><small style="color:var(--mute)">Serve para confirmar a conta e recuperar o PIN.</small><div class="two"><input id="addEmail" type="email" placeholder="voce@exemplo.com"><button class="big alt" id="addEmailBtn" style="padding:10px 14px;font-size:14px">Salvar</button></div><div class="err" id="verifyErr"></div></div>';
+    else if(!a.emailVerified)ver='<div class="verify"><b>Confirme seu e-mail</b><small style="color:var(--mute)">Enviamos um código de 6 números para '+esc(a.email)+'. Sem confirmar, não dá para comprar nem entrar no ranking.</small><div class="two"><input id="verifyCode" inputmode="numeric" maxlength="6" placeholder="000000"><button class="big" id="verifyBtn" style="padding:10px 14px;font-size:14px">Confirmar</button></div><div class="err" id="verifyErr"></div><div style="display:flex;gap:12px;flex-wrap:wrap"><button class="linkish" id="resendBtn" style="padding:0">Reenviar código</button><button class="linkish" id="changeEmailBtn" style="padding:0">Trocar e-mail</button></div></div>';
+    i.innerHTML='<p style="color:var(--fg);margin:0">Você está como <b>@'+auth.nick+'</b>'+(a.vip?' <span class="vipbadge">VIP</span>':'')+(a.email&&a.emailVerified?' <small style="color:var(--green)">✓ e-mail confirmado</small>':'')+'</p>'+ver+'<div class="row" style="margin-top:8px"><button class="big alt" id="logoutBtn">Sair</button></div>';
+    $('logoutBtn').onclick=async()=>{try{await api('/api/auth/logout',{method:'POST'})}catch{}setAuth(null);setAcct(null);setFavores(0);loadRank()};
+    const vb=$('verifyBtn');if(vb)vb.onclick=async()=>{$('verifyErr').textContent='';try{await api('/api/auth/verify',{method:'POST',body:JSON.stringify({code:$('verifyCode').value})});toast('E-mail confirmado!');await loadMe();renderAccount()}catch(e){$('verifyErr').textContent=e.message}};
+    const rb=$('resendBtn');if(rb)rb.onclick=async()=>{try{const d=await api('/api/auth/resend',{method:'POST'});if(d.devCode)window.__devCode=d.devCode;toast('Código reenviado.')}catch(e){$('verifyErr').textContent=e.message}};
+    const cb=$('changeEmailBtn');if(cb)cb.onclick=()=>{setAcct(Object.assign({},acct,{email:null}));renderAccount()};
+    const ab=$('addEmailBtn');if(ab)ab.onclick=async()=>{$('verifyErr').textContent='';try{const d=await api('/api/auth/email',{method:'POST',body:JSON.stringify({email:$('addEmail').value})});if(d.devCode)window.__devCode=d.devCode;toast('Código enviado para o e-mail.');await loadMe();renderAccount()}catch(e){$('verifyErr').textContent=e.message}}}
   else{f.hidden=false;i.hidden=true}}
+$('forgotLink').onclick=async()=>{const nick=$('nickInput').value.trim();if(nick.length<3){$('loginError').textContent='Digite seu apelido para recuperar o PIN.';return}$('loginError').textContent='';
+  try{const d=await api('/api/auth/forgot',{method:'POST',body:JSON.stringify({nick})});if(d.devCode)window.__devCode=d.devCode;$('loginForm').hidden=true;$('resetForm').hidden=false;$('resetError').textContent='';$('resetForm').dataset.nick=nick}catch(e){$('loginError').textContent=e.message}};
+$('resetBack').onclick=()=>{$('resetForm').hidden=true;$('loginForm').hidden=false};
+$('resetForm').onsubmit=async e=>{e.preventDefault();$('resetError').textContent='';try{await api('/api/auth/reset',{method:'POST',body:JSON.stringify({nick:$('resetForm').dataset.nick,code:$('resetCode').value,pin:$('resetPin').value})});toast('PIN trocado. Entre com o novo PIN.');$('resetForm').hidden=true;$('loginForm').hidden=false;$('pinInput').value='';$('pinInput').focus()}catch(err){$('resetError').textContent=err.message}};
 let nickTimer=null;
 $('nickInput').oninput=()=>{clearTimeout(nickTimer);const v=$('nickInput').value.trim();$('nickHint').textContent='';$('loginBtn').textContent='Entrar';if(v.length<3)return;
-  nickTimer=setTimeout(async()=>{try{const d=await api('/api/auth/check?nick='+encodeURIComponent(v));$('nickHint').textContent=d.available?'✓ Apelido livre. Escolha um PIN e crie sua conta.':'Apelido já existe. Digite o seu PIN para entrar.';$('loginBtn').textContent=d.available?'Criar conta':'Entrar'}catch(e){$('nickHint').textContent=e.message}},350)};
+  nickTimer=setTimeout(async()=>{try{const d=await api('/api/auth/check?nick='+encodeURIComponent(v));$('nickHint').textContent=d.available?'✓ Apelido livre. Informe e-mail e PIN para criar sua conta.':'Apelido já existe. Digite o seu PIN para entrar.';$('loginBtn').textContent=d.available?'Criar conta':'Entrar';$('emailLabel').hidden=!d.available;$('emailInput').required=d.available}catch(e){$('nickHint').textContent=e.message}},350)};
 $('loginForm').onsubmit=async e=>{e.preventDefault();$('loginError').textContent='';const btn=$('loginBtn');btn.disabled=true;
   try{const body={nick:$('nickInput').value.trim(),pin:$('pinInput').value,claim:(WEBSTORE.pending&&WEBSTORE.pending.ref)||null};let d;
     try{d=await api('/api/auth/enter',{method:'POST',body:JSON.stringify(body)})}
-    catch(err){if(err.status===404)d=await api('/api/auth/enter',{method:'POST',body:JSON.stringify(Object.assign(body,{create:true}))});else throw err}
-    setAuth({token:d.token,nick:d.user.nick});syncFromServer(d.user.progress,d.entitlements,d.user.favores);$('pinInput').value='';
+    catch(err){if(err.status===404){const email=$('emailInput').value.trim();if(!email){$('emailLabel').hidden=false;$('emailInput').required=true;$('emailInput').focus();throw new Error('Apelido livre: informe um e-mail para criar a conta.')}d=await api('/api/auth/enter',{method:'POST',body:JSON.stringify(Object.assign(body,{create:true,email}))})}else throw err}
+    if(d.devCode)window.__devCode=d.devCode;setAuth({token:d.token,nick:d.user.nick});setAcct({email:d.user.email,emailVerified:d.user.emailVerified,vip:d.user.vip});syncFromServer(d.user.progress,d.entitlements,d.user.favores);$('pinInput').value='';$('emailLabel').hidden=true;
     toast(d.created?'Conta criada. Bem-vindo, @'+d.user.nick+'!':'Bem-vindo de volta, @'+d.user.nick+'!');pushProgress();showStart()}
   catch(err){$('loginError').textContent=err.message}btn.disabled=false};
 function syncFromServer(progress,entitlements,fav){(entitlements||[]).forEach(grant);if(typeof fav==='number')setFavores(fav);
@@ -480,11 +511,11 @@ function syncFromServer(progress,entitlements,fav){(entitlements||[]).forEach(gr
     const ach=store.get('ach',[]);(progress.ach||[]).forEach(a=>{if(ACH[a]&&!ach.includes(a))ach.push(a)});store.set('ach',ach);store.set('best',Math.max(store.get('best',0),progress.best||0))}
   renderShop()}
 async function pushProgress(){if(!auth)return;try{await api('/api/me/progress',{method:'PUT',body:JSON.stringify({ends:store.get('ends',{}),ach:store.get('ach',[]),best:store.get('best',0)})})}catch{}}
-async function loadMe(){if(!auth)return;try{const d=await api('/api/me');syncFromServer(d.user.progress,d.entitlements,d.user.favores);if(!$('startScreen').hidden)showStart()}catch{}}
+async function loadMe(){if(!auth)return;try{const d=await api('/api/me');setAcct({email:d.user.email,emailVerified:d.user.emailVerified,vip:d.user.vip});syncFromServer(d.user.progress,d.entitlements,d.user.favores);if(!$('startScreen').hidden)showStart()}catch{}}
 async function loadRank(){if(!ONLINE)return;const el=$('rankList');
   try{const d=await api('/api/daily?day='+todayKey());
     if(!d.total){el.innerHTML='<p>Ninguém jogou o diário de hoje ainda. Seja o primeiro.</p>';return}
-    el.innerHTML='<ol class="rank">'+d.top.slice(0,10).map(r=>'<li><span>@'+r.nick+'</span><b>'+r.days+' dias '+(ENDINGS[r.ending]?ENDINGS[r.ending].e:'')+'</b></li>').join('')+'</ol>'+
+    el.innerHTML='<ol class="rank">'+d.top.slice(0,10).map(r=>'<li'+(r.vip?' class="vip"':'')+'><span>'+(r.vip?'⭐ ':'')+'@'+r.nick+'</span><b>'+r.days+' dias '+(ENDINGS[r.ending]?ENDINGS[r.ending].e:'')+'</b></li>').join('')+'</ol>'+
       (d.me?'<p style="margin-top:8px">Você: <b>'+d.me.rank+'º</b> de '+d.total+'. Durou mais que '+d.me.percentile+'% dos jogadores.</p>':auth?'<p style="margin-top:8px">Jogue o diário de hoje para entrar no ranking.</p>':'<p style="margin-top:8px">Entre com um apelido para aparecer aqui.</p>')}
   catch{el.innerHTML='<p>Ranking indisponível no momento.</p>'}}
 async function submitDailyResult(){if(!auth||s.mode!=='daily'||!ONLINE)return;
@@ -497,7 +528,7 @@ let orderTimer=null;
 function storeOn(){return !!((NATIVE&&NATIVE.store)||WEBSTORE.enabled)}
 async function initWebStore(){if(NATIVE||!/^https?:$/.test(location.protocol))return;
   try{const r=await fetch('/api/store/config',{cache:'no-store'});if(!r.ok)return;const c=await r.json();if(!c.enabled)return;
-    WEBSTORE.enabled=true;c.products.forEach(p=>{priceOf[p.id]=p.price});$('openShop').hidden=false;
+    WEBSTORE.enabled=true;c.products.forEach(p=>{priceOf[p.id]=p.price;if(p.list){listOf[p.id]=p.list;discOf[p.id]=p.discount}});$('openShop').hidden=false;
     $('legalNote').textContent='Obra de ficção e sátira. Personagens, bancos, veículos e instituições são inventados. Extras opcionais pagos pelo Asaas (Pix, cartão ou boleto).';
     $('shopLead').textContent='Pagamento único pelo Asaas: Pix, cartão ou boleto. O jogo completo continua gratuito; os extras valem no modo livre.';
     $('shopLegal').textContent='A cobrança é emitida pelo Asaas em nome do jogo. Para liberar em outro aparelho, use "Restaurar compras" com o mesmo CPF.';
@@ -530,11 +561,16 @@ $('restoreForm').onsubmit=async e=>{e.preventDefault();const btn=e.target.queryS
   try{const d=await api('/api/restore',{method:'POST',body:JSON.stringify({cpfCnpj:$('restoreCpf').value})});
     (d.products||[]).forEach(grant);renderShop();if(!$('startScreen').hidden)showStart();$('restoreForm').hidden=true;toast(d.count?'Compras restauradas: '+d.count:'Nenhuma compra encontrada para este CPF')}
   catch(err){$('restoreError').textContent=err.message}btn.disabled=false};
-function renderShop(){const el=$('shopList');if(!el)return;const sb=$('shopBalance');if(sb){sb.hidden=!storeOn();sb.innerHTML=auth?'<p style="color:var(--fg)">🎩 <b>'+favores+'</b> favores na conta de <b>@'+auth.nick+'</b>. Cada partida ainda começa com '+FREE_FAVORES+' grátis.</p>':'<p>Entre com seu apelido antes de comprar: favores e baralhos ficam guardados na conta e valem em qualquer aparelho.</p>'}el.innerHTML=Object.entries(PRODUCTS).map(([id,p])=>{const own=p.kind==='non'&&owns(id);return '<div class="item"><span class="ico">'+p.icon+'</span><div class="txt"><b>'+p.name+'</b><small>'+p.desc+'</small></div>'+(own?'<span class="owned">Adquirido ✓</span>':'<button class="buy" data-id="'+id+'">'+(priceOf[id]||'Comprar')+'</button>')+'</div>'}).join('');
+function renderShop(){const el=$('shopList');if(!el)return;const sb=$('shopBalance');if(sb){sb.hidden=!storeOn();sb.innerHTML=auth?'<p style="color:var(--fg)">🎩 <b>'+favores+'</b> favores na conta de <b>@'+auth.nick+'</b>'+(isVip()?' <span class="vipbadge">VIP</span>':'')+'. Cada partida começa com '+freeFavores()+' grátis.</p>'+((acct&&!acct.emailVerified)?'<p style="color:var(--gold)">Confirme seu e-mail (na conta, tela inicial) para comprar.</p>':''):'<p>Entre com seu apelido antes de comprar: favores e baralhos ficam guardados na conta e valem em qualquer aparelho.</p>'}el.innerHTML=Object.entries(PRODUCTS).map(([id,p])=>{const own=p.kind==='non'&&owns(id);if(id===VIP){const li=listOf[id],disc=discOf[id];return '<div class="item vip"><span class="ico">'+p.icon+'</span><div class="txt"><b>'+p.name+'</b><small>'+p.desc+'</small></div>'+(own?'<span class="owned">Você é VIP ✓</span>':'<button class="buy" data-id="'+id+'">Quero ser VIP</button>')+(own?'':'<div class="vipprice">'+(li?'<s>'+li+'</s>':'')+'<span class="now">'+(priceOf[id]||'')+'</span>'+(disc?'<span class="off">-'+disc+'%</span>':'')+'<span class="viptimer" id="vipTimer"></span></div>')+'<div class="vipperks">'+p.perks.map(x=>'<span>'+x+'</span>').join('')+'</div></div>'}
+    return '<div class="item"><span class="ico">'+p.icon+'</span><div class="txt"><b>'+p.name+'</b><small>'+p.desc+'</small></div>'+(own?'<span class="owned">Adquirido ✓</span>':'<button class="buy" data-id="'+id+'">'+(priceOf[id]||'Comprar')+'</button>')+'</div>'}).join('');tickVip();
   el.querySelectorAll('.buy').forEach(b=>b.onclick=()=>{if(NATIVE){b.disabled=true;b.textContent='…';native({type:'store',action:'buy',id:b.dataset.id});setTimeout(renderShop,6000)}else buyWeb(b.dataset.id)})}
+let listOf={},discOf={},vipTimerId=null;
+const VIP_WINDOW=15*60*1000;
+function tickVip(){const el=$('vipTimer');if(!el)return;const left=VIP_WINDOW-(Date.now()%VIP_WINDOW);const m=Math.floor(left/60000),sc=Math.floor(left%60000/1000);el.textContent='⏱ Oferta de lançamento termina em '+String(m).padStart(2,'0')+':'+String(sc).padStart(2,'0');clearInterval(vipTimerId);vipTimerId=setInterval(()=>{const e=$('vipTimer');if(!e||$('shopScreen').hidden){clearInterval(vipTimerId);return}const l=VIP_WINDOW-(Date.now()%VIP_WINDOW);e.textContent='⏱ Oferta de lançamento termina em '+String(Math.floor(l/60000)).padStart(2,'0')+':'+String(Math.floor(l%60000/1000)).padStart(2,'0')},1000)}
 function openShop(){$('shopScreen').hidden=false;$('payForm').hidden=true;$('restoreForm').hidden=true;renderShop();if(NATIVE)native({type:'store',action:'products'});else renderPending()}
 const MASTS=[['METRUPOLIS',false],['O GLOBA DIÁRIO',true],['FOLHA DE BRASÍLIA',true],['CORREIO DO PODER',true]];
-function mastIndex(){const i=store.get('mast',0);return (i>0&&!owns('com.saldozero.capas'))?0:Math.min(i,MASTS.length-1)}
+function hasCapas(){return owns('com.saldozero.capas')||isVip()}
+function mastIndex(){const i=store.get('mast',0);return (i>0&&!hasCapas())?0:Math.min(i,MASTS.length-1)}
 
 /* Nomes neutros (modo "safeNames" do app): substitui paródias por personagens inteiramente fictícios. */
 const SAFE=[['Lulinho','Juninho Guimarães'],['do Lulo','do candidato Guimarães'],['O Lulo','O candidato Guimarães'],['o Lulo','o candidato Guimarães'],['Lulo','Guimarães'],['Bolsonarinho','Ferraz'],['Círio Nogueiral','Otávio Bastos'],['Vugo Mota','Hélio Dantas'],['Rodrigo Pachuco','Caio Albuquerque'],['Pachuco','Albuquerque'],['Andrey Rodrigal','Marcos Teles'],['Paulo Goneto','Rafael Monteiro'],['Alexandre de Moraisco','Augusto Varela'],['Fernando Haddadinho','Sérgio Prado'],['Gusttavo Limão','Léo Serrano'],['Rede Globa','TV Nacional'],['Metrupolis','Portal Metrópole'],['METRUPOLIS','METRÓPOLE'],['O GLOBA DIÁRIO','DIÁRIO NACIONAL'],['Pod Pá','Papo Reto'],['Igreja Universal do Lucro','Rede Prosperar TV'],['Primo Rico de Pobre','Guru do Lucro'],['Danilo Vorkaro','Danilo Valente'],['Vorkaro','Valente']];
@@ -875,7 +911,7 @@ let s=null,rng=null,drag=null,audio=null,soundOn=store.get('sound',false);
 function newGame(mode){
   store.set('run',null);
   const seedStr=mode==='daily'?'daily:'+todayKey():'free:'+Date.now()+':'+Math.random();
-  s={mode,seed:seedStr,day:1,turn:0,caixa:55,poder:35,imagem:50,radar:15,flags:{},seen:[],queue:[],news:['Banco Maxter busca novos investidores',safe('Empresário Danilo Vorkaro ganha destaque no mercado')],ach:[],hot:0,over:null,card:null,side:null,favores:FREE_FAVORES,appeals:0,log:[],zapRead:{}};
+  s={mode,seed:seedStr,day:1,turn:0,caixa:55,poder:35,imagem:50,radar:15,flags:{},seen:[],queue:[],news:['Banco Maxter busca novos investidores',safe('Empresário Danilo Vorkaro ganha destaque no mercado')],ach:[],hot:0,over:null,card:null,side:null,favores:freeFavores(),appeals:0,log:[],zapRead:{}};
   rng=mulberry(hash(seedStr));
   s.card='entrada';
   render();dealIn();
@@ -885,7 +921,7 @@ function chapter(){return s.day<80?1:s.day<320?2:3}
 function chapterName(){return ['','ASCENSÃO','O PODER','A CRISE'][chapter()]}
 function gameDate(){const d=new Date(2016,0,1);d.setDate(d.getDate()+s.day-1);return d.toLocaleDateString('pt-BR',{day:'numeric',month:'short',year:'numeric'}).replace(/\./g,'').replace(/ de /g,' ')}
 
-function eligible(k){if(k.hidden)return false;if(k.deck&&(s.mode==='daily'||!owns('com.saldozero.deck.'+k.deck)))return false;if(!k.repeat&&s.seen.includes(k.id))return false;if(k.first)return false;if(!k.ch.includes(chapter()))return false;if(k.req&&!k.req(s))return false;return true}
+function eligible(k){if(k.hidden)return false;if(k.deck&&(s.mode==='daily'||!(owns('com.saldozero.deck.'+k.deck)||isVip())))return false;if(!k.repeat&&s.seen.includes(k.id))return false;if(k.first)return false;if(!k.ch.includes(chapter()))return false;if(k.req&&!k.req(s))return false;return true}
 function pickCard(){
   for(let q=0;q<s.queue.length;q++){s.queue[q].d--}
   const ready=s.queue.find(q=>q.d<=0);
@@ -957,7 +993,7 @@ function favTotal(){return (s?s.favores:0)+((s&&s.mode==='free'&&auth)?favores:0
 function renderFav(){const b=$('favBadge');if(b&&s)b.textContent='🎩 '+favTotal()}
 async function spendFavores(n){
   if(s.favores>=n){s.favores-=n;renderFav();return true}
-  if(s.mode!=='free'){toast('No diário todo mundo tem só os '+FREE_FAVORES+' favores da partida.');return false}
+  if(s.mode!=='free'){toast('No diário valem só os '+freeFavores()+' favores da partida.');return false}
   if(!auth){toast('Entre com seu apelido para usar os favores da conta.');return false}
   if(favores<n){toast('Favores insuficientes.');openShop();return false}
   try{const d=await api('/api/favores/spend',{method:'POST',body:JSON.stringify({n})});setFavores(d.favores);return true}catch(e){toast(e.message);if(e.status===402)openShop();return false}}
@@ -1099,7 +1135,7 @@ function showEnd(){
   $('shareText').textContent=shareText();
   const ap=$('btnAppeal');ap.hidden=!canAppeal();if(!ap.hidden)ap.textContent='⚖️ Entrar com recurso e continuar · '+APPEAL.cost+' favores ('+(favTotal())+' disponíveis)';
   $('btnShare').hidden=!(NATIVE||navigator.share);
-  const mp=$('mastPick');mp.hidden=!storeOn();if(!mp.hidden){mp.innerHTML=MASTS.map((m,i)=>'<button class="'+(i===mastIndex()?'on':'')+'" data-i="'+i+'">'+(m[1]&&!owns('com.saldozero.capas')?'🔒 ':'')+m[0]+'</button>').join('');mp.querySelectorAll('button').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(MASTS[i][1]&&!owns('com.saldozero.capas')){openShop();return}store.set('mast',i);showEnd()})}
+  const mp=$('mastPick');mp.hidden=!storeOn();if(!mp.hidden){mp.innerHTML=MASTS.map((m,i)=>'<button class="'+(i===mastIndex()?'on':'')+'" data-i="'+i+'">'+(m[1]&&!hasCapas()?'🔒 ':'')+m[0]+'</button>').join('');mp.querySelectorAll('button').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(MASTS[i][1]&&!hasCapas()){openShop();return}store.set('mast',i);showEnd()})}
   const ends=store.get('ends',{});const got=Object.keys(ENDINGS).filter(k=>ends[k]).length;
   const newAch=s.ach.map(a=>'<span>'+ACH[a][0]+' <b>'+ACH[a][1]+'</b>: '+ACH[a][2]+'</span>').join('<br>');
   $('endAch').innerHTML='<h3>Finais descobertos '+got+'/'+Object.keys(ENDINGS).length+'</h3><p>'+(ends[s.over]===1?'Final novo desbloqueado! ':'')+(newAch||'Nenhuma conquista nesta partida. Tente arriscar mais.')+'</p>';

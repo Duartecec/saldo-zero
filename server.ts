@@ -3,7 +3,8 @@
 // - Serve o PWA: manifesto, service worker, ícones e fontes locais (public/).
 // - Serve as páginas legais /privacidade e /suporte.
 import { storeEnabled, storeConfig, createCheckout, getOrder, restorePurchases, webhookAuthorized, recordPayment, claimOrder, StoreError } from "./store";
-import { enter, nickAvailable, logout, userFromRequest, requireUser, publicUser, entitlementsOf, mergeProgress, submitDaily, leaderboard, spendFavores, createTicket, myTickets, AuthError } from "./auth";
+import { enter, nickAvailable, logout, userFromRequest, requireUser, requireVerified, publicUser, entitlementsOf, mergeProgress, submitDaily, leaderboard, spendFavores, createTicket, myTickets, verifyEmail, resendVerification, setEmail, forgotPin, resetPin, AuthError } from "./auth";
+import { mailEnabled } from "./mail";
 import { adminEnabled, adminAuthorized, overview, listOrders, listUsers, userDetail, userAction, listTickets, answerTicket } from "./admin";
 
 const root = new URL("./", import.meta.url);
@@ -65,7 +66,7 @@ const privacy = legal("Política de privacidade · Saldo Zero", `
 <small>Última atualização: outubro de 2026</small>
 <p><b>Saldo Zero</b> é um jogo de ficção e sátira que roda no navegador. Ele não exige cadastro e não pede nome, e-mail, telefone, localização nem acesso a contatos, câmera ou microfone.</p>
 <h2>Conta de jogo (opcional)</h2>
-<p>Para aparecer no ranking e guardar compras, você pode criar uma conta informando apenas um <b>apelido</b> e um <b>PIN numérico</b>. Guardamos o apelido, o PIN em forma criptografada (hash, sem como recuperá-lo), o progresso (finais, conquistas, recorde), os resultados do desafio diário e o saldo de favores. O apelido é público no ranking; nada mais é exibido. Para apagar a conta e todos os dados, escreva para o e-mail abaixo informando o apelido.</p>
+<p>Para aparecer no ranking e guardar compras, você cria uma conta com <b>apelido</b>, <b>PIN numérico</b> e <b>e-mail</b>. O e-mail recebe um código de confirmação e serve para recuperar o PIN; os envios são feitos pelo serviço Resend. Guardamos o apelido, o e-mail, o PIN em forma criptografada (hash, sem como recuperá-lo), o progresso (finais, conquistas, recorde), os resultados do desafio diário e o saldo de favores. O apelido é público no ranking (com um destaque se você for VIP); o e-mail nunca é exibido nem usado para marketing. Para apagar a conta e todos os dados, escreva para o e-mail abaixo informando o apelido.</p>
 <h2>Suporte</h2>
 <p>Chamados abertos pelo menu Ajuda ficam registrados com o apelido (ou o e-mail informado), o assunto e a mensagem, para que o desenvolvedor responda. A resposta aparece no próprio menu Ajuda. Podemos bloquear contas que violem as regras do jogo ou abusem da loja.</p>
 <h2>Sem conta</h2>
@@ -125,7 +126,7 @@ function limited(req: Request, max = 30, bucket = "api") {
 }
 async function api(req: Request, pathname: string): Promise<Response | null> {
   try {
-    if (pathname === "/api/store/config") return json(storeConfig());
+    if (pathname === "/api/store/config") return json({ ...storeConfig(), mail: mailEnabled });
 
     // ---- conta de jogo ----
     if (req.method === "GET" && pathname === "/api/auth/check") {
@@ -140,6 +141,23 @@ async function api(req: Request, pathname: string): Promise<Response | null> {
       return json({ ...result, entitlements: entitlementsOf(result.user.id) });
     }
     if (req.method === "POST" && pathname === "/api/auth/logout") { logout(req); return json({ ok: true }); }
+    if (req.method === "POST" && pathname === "/api/auth/verify") return json(await verifyEmail(requireUser(req), await req.json()));
+    if (req.method === "POST" && pathname === "/api/auth/resend") {
+      if (limited(req, 5, "mail")) return json({ error: "Aguarde um minuto para pedir outro código." }, 429);
+      return json(await resendVerification(requireUser(req)));
+    }
+    if (req.method === "POST" && pathname === "/api/auth/email") {
+      if (limited(req, 5, "mail")) return json({ error: "Aguarde um minuto para tentar de novo." }, 429);
+      return json(await setEmail(requireUser(req), await req.json()));
+    }
+    if (req.method === "POST" && pathname === "/api/auth/forgot") {
+      if (limited(req, 5, "mail")) return json({ error: "Aguarde um minuto para pedir outro código." }, 429);
+      return json(await forgotPin(await req.json()));
+    }
+    if (req.method === "POST" && pathname === "/api/auth/reset") {
+      if (limited(req, 10, "auth")) return json({ error: "Muitas tentativas. Aguarde um minuto." }, 429);
+      return json(await resetPin(await req.json()));
+    }
     if (req.method === "GET" && pathname === "/api/me") {
       const u = requireUser(req);
       return json({ user: publicUser(u), entitlements: entitlementsOf(u.id) });
@@ -154,6 +172,7 @@ async function api(req: Request, pathname: string): Promise<Response | null> {
     }
     if (req.method === "POST" && pathname === "/api/daily") {
       const u = requireUser(req);
+      requireVerified(u);
       return json(submitDaily(u, await req.json()));
     }
     if (req.method === "GET" && pathname === "/api/daily") {
@@ -190,6 +209,7 @@ async function api(req: Request, pathname: string): Promise<Response | null> {
       if (limited(req, 30, "checkout")) return json({ error: "Muitas tentativas. Aguarde um minuto." }, 429);
       const u = userFromRequest(req);
       if (!u) return json({ error: "Entre com seu apelido antes de comprar: a compra fica guardada na sua conta." }, 401);
+      requireVerified(u);
       return json(await createCheckout(await req.json(), SITE, u.id));
     }
     if (req.method === "GET" && pathname.startsWith("/api/order/")) {
@@ -241,4 +261,4 @@ Bun.serve({
     return new Response(html, { headers: htmlHeaders });
   },
 });
-console.log("Saldo Zero rodando na porta " + (Bun.env.PORT || 3000) + " (cache " + version + ", loja " + (storeEnabled ? "Asaas " + (Bun.env.ASAAS_ENV || "sandbox") : "desligada") + ", site " + SITE + ")");
+console.log("Saldo Zero rodando na porta " + (Bun.env.PORT || 3000) + " (cache " + version + ", loja " + (storeEnabled ? "Asaas " + (Bun.env.ASAAS_ENV || "sandbox") : "desligada") + ", e-mail " + (mailEnabled ? "Resend" : "desligado") + ", site " + SITE + ")");

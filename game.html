@@ -51,6 +51,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 .stat .val{font-variant-numeric:tabular-nums;font-size:12px;color:var(--fg);font-weight:700;margin-top:3px;white-space:nowrap}.stat{cursor:pointer}.stat:hover{filter:brightness(1.1)}
 .stat .dot{position:absolute;top:6px;right:6px;width:0;height:0;border-radius:50%;background:#fff;box-shadow:0 0 0 2px var(--ink-2);transition:width .12s,height .12s;opacity:0}
 .stat .dot.on{opacity:1}
+.stat .dot.q{width:12px;height:12px;background:var(--red);box-shadow:0 0 0 2px var(--ink-2),0 0 12px var(--red)}
+.card.oc{outline:3px solid var(--red);outline-offset:-3px}
 .stat .dot.s1{width:7px;height:7px}.stat .dot.s2{width:11px;height:11px}.stat .dot.s3{width:16px;height:16px;background:var(--gold)}
 .stat.danger{animation:pulse 1.2s ease-in-out infinite;border-color:var(--red)}
 @keyframes pulse{50%{box-shadow:0 0 0 4px #e8283c44}}
@@ -344,6 +346,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
       <p><b>Cartas.</b> Cada carta é uma mensagem, reunião ou notícia. Arraste para a esquerda ou para a direita (ou use os dois botões, ou as setas do teclado) para decidir. Antes de soltar, as bolinhas sobre os indicadores mostram o tamanho do impacto; o sentido você descobre depois.</p>
       <p><b>Indicadores.</b> 💰 Caixa é o dinheiro do banco, em reais: a R$ 0 o banco quebra; com R$ 100 mi você some com tudo. 🏛️ Poder são seus amigos em Brasília: em 0 ninguém atende; em 100 você vira dono do Congresso e todos se unem contra você. 📣 Imagem é a opinião pública: em 0 você é cancelado; em 100 vira candidato. 🚨 Radar é o calor da investigação: em 100, Operação Saldo Zero. Toque em qualquer indicador no jogo para ler isso de novo.</p>
       <p><b>Consequências.</b> Escolhas de hoje voltam dias depois como chantagem, convocação ou manchete. O capítulo muda com o tempo: Ascensão, O Poder e A Crise, cada um mais perigoso.</p>
+      <p><b>Obsessão.</b> Três decisões seguidas puxando o mesmo indicador deixam a jogada previsível: o ganho encolhe e os outros indicadores pagam a conta. Imagem demais custa caixa e esquenta o radar; poder demais custa imagem; caixa gordo atrai o radar; sumir do radar custa caixa e poder. Jogadas do Vorkaro repetidas na mesma partida também rendem menos e custam mais.</p>
+      <p><b>Pressão.</b> Qualquer indicador acima de 70 aquece o radar a cada decisão. Acima de 80, ele começa a drenar outro: fama custa caixa, poder custa imagem, caixa gordo custa imagem. E o topo é caro: acima de 75, cada ponto ganho vale metade; acima de 90, um terço. Ninguém chega a 100 sem equilibrar o resto.</p>
+      <p><b>🚨 Ocorrências.</b> De vez em quando o Plantão traz um fato que não é sobre você, mas encosta no Maxter: uma operação da PF em outro banco, um deputado preso com mala, uma inspeção sorteada. Bolinhas vermelhas avisam que o resultado depende do que você já fez na partida. A escolha errada custa muito caro.</p>
       <p><b>⭐ VIP para sempre.</b> Pagamento único: 15 favores em toda partida, baralho eleitoral, escolha da capa e destaque dourado no ranking.</p>
       <p><b>🎩 Favores e jogadas do Vorkaro.</b> Toda partida começa com 2 favores (15 para VIP). Eles pagam ações por iniciativa própria (ligar para o ministro, enterrar dinheiro em marketing, advogado de emergência…). No modo livre, 2 favores também pagam um recurso para continuar depois de cair. Pacotes extras ficam na sua conta e valem só no modo livre.</p>
       <p><b>Diário e ranking.</b> No desafio diário todo mundo recebe a mesma sequência de cartas, com os mesmos 2 favores e sem recurso. O primeiro resultado do dia entra no ranking pelo seu apelido.</p>
@@ -692,7 +697,7 @@ const CARDS=[
   l:['Pode sim, mãe. Rende bem.',{c:5,i:3,r:2},{flag:'tia',then:'tia2',delay:9}],
   r:['Mãe, não bota a tia nisso',{i:-2,c:-1},{news:'Banqueiro diz à família que "banco é coisa séria"'}]},
  {id:'bispo',c:'bispo',ch:[1,2],t:'Deus abençoa quem investe no templo. E o templo investe em quem abençoa. R$ 2 milhões, irmão.',
-  l:['Doação de R$ 2 milhões',{c:-7,p:6,i:5},{news:'Banqueiro doa milhões a igreja e recebe título de "irmão benfeitor"'}],
+  l:['Doação de R$ 2 milhões',{c:-7,p:6,i:5},{flag:'bispo',news:'Banqueiro doa milhões a igreja e recebe título de "irmão benfeitor"'}],
   r:['Deus me livre',{i:-2,p:-1},{news:'Bispo critica "banqueiros sem fé" em culto transmitido'}]},
  {id:'premio',c:'coluna',ch:[1,2],t:'Você foi eleito Banqueiro Revelação do Ano. A cerimônia tem tapete vermelho e 300 fotógrafos.',
   l:['Vou e discurso',{i:7,p:4,r:4},{news:'Vorkaro recebe prêmio e diz que "o país precisa de ousadia"'}],
@@ -904,8 +909,64 @@ const CARDS=[
   l:['Dou os 10 minutos',{i:2,r:1},{}],r:['Sem tempo',{i:-3},{news:'Banqueiro ignora imprensa do interior e cidade reage'}]},
  {id:'f9',c:'narrador',ch:[2,3],repeat:true,t:'ALIADO EM APUROS: um deputado amigo foi pego em escândalo e pede que você o defenda em público.',
   l:['Defendo em público',{p:5,i:-6,r:4},{news:'Banqueiro defende deputado investigado'}],r:['Silêncio',{p:-6},{news:'Deputado reclama de "abandono" de aliados'}]}
+,
+ // ---------- Ocorrências: alertas aleatórios que encostam no Maxter de lado. Opção em função = resultado depende do que você já fez ----------
+ {id:'oc_pf_cambio',oc:true,c:'narrador',ch:[1,2,3],t:'ALERTA: Polícia Federal deflagra a Operação Câmbio Negro contra o Banco Pirâmide. Um contrato de câmbio liga o Pirâmide ao Maxter.',
+  l:['Rescindo o contrato e aviso o Banco Centrão',{c:-7,i:-3,r:-6},{news:'Maxter rompe com Banco Pirâmide e se antecipa ao Banco Centrão'}],
+  r:['O contrato é legal. Sigo normal',s=>s.flags.balanco||s.flags.socio_oculto||s.flags.doleiro?[{r:26,i:-12,c:-8},{news:'Segunda fase da Operação Câmbio Negro chega ao Banco Maxter'}]:[{r:7,c:2},{news:'PF ouve executivos do Maxter como testemunhas'}]]},
+ {id:'oc_cpi_influ',oc:true,c:'narrador',ch:[2,3],t:'ALERTA: CPI das Pirâmides Financeiras convoca influenciadores que venderam "investimento turbinado". O Primo Rico de Pobre está na lista.',
+  l:['Rompo o contrato dele em público',{i:-5,c:-5,r:-5},{news:'Maxter encerra parceria com influencer antes da CPI'}],
+  r:['Ele é só um parceiro comercial',s=>s.flags.cdb140?[{r:22,i:-15},{news:'Influencer cita CDB de 140% do Maxter na CPI e fala em "ordens de Vorkaro"'}]:[{i:2,r:3},{news:'CPI ouve influencer; Maxter não é citado'}]]},
+ {id:'oc_bc_inspecao',oc:true,c:'narrador',ch:[1,2,3],t:'ALERTA: Banco Centrão sorteia cinco bancos médios para inspeção-surpresa. A lista sai amanhã.',
+  l:['Me antecipo e abro os livros hoje',{c:-6,r:-7,i:3},{news:'Maxter se oferece para inspeção voluntária do Banco Centrão'}],
+  r:['Torço para não ser sorteado',(s,rng)=>rng()<(s.flags.balanco?0.55:0.3)?[{r:s.flags.balanco?24:12,c:-6},{news:'Maxter é sorteado e inspeção encontra "inconsistências" no balanço'}]:[{c:2},{news:'Maxter escapa do sorteio do Banco Centrão'}]]},
+ {id:'oc_vazamento',oc:true,c:'narrador',ch:[2,3],t:'ALERTA: fintech parceira do Maxter sofre vazamento. Dados de 200 mil clientes seus estão à venda na internet.',
+  l:['Aviso os clientes e indenizo',{c:-9,i:6,r:-3},{news:'Maxter avisa clientes e paga indenização após vazamento'}],
+  r:['A culpa é da fintech',{i:-14,r:9},{then:'f6',delay:2,news:'Maxter culpa parceira por vazamento e clientes reagem'}]},
+ {id:'oc_mala',oc:true,c:'narrador',ch:[2,3],t:'ALERTA: deputado aliado é preso com R$ 3 milhões numa mala. No celular dele, o seu número aparece 40 vezes.',
+  l:['Me afasto e nego qualquer vínculo',s=>s.flags.jantar_cirio||s.flags.emenda||s.flags.lulinho?[{p:-12,r:8,i:-4},{news:'Fotos de jantar desmentem banqueiro que negou vínculo com deputado preso'}]:[{p:-10,r:-3},{news:'Banqueiro nega relação com deputado preso'}]],
+  r:['Pago a defesa dele',{c:-10,p:8,r:14},{news:'Banqueiro banca advogados de deputado preso com mala de dinheiro'}]},
+ {id:'oc_corrida',oc:true,c:'narrador',ch:[1,2,3],t:'ALERTA: boato de quebra do Banco do Distrito gera fila de saques. Clientes perguntam se o Maxter é o próximo.',
+  l:['Garanto liquidez em rede nacional',{c:-8,i:4,r:2},{news:'Vorkaro vai à TV e garante que "o Maxter paga todo mundo"'}],
+  r:['Fico quieto e espero passar',(s,rng)=>rng()<0.5?[{c:-18,i:-8},{news:'Corrida bancária chega ao Maxter; app trava com saques'}]:[{c:1},{news:'Boato perde força e saques no Maxter voltam ao normal'}]]},
+ {id:'oc_receita',oc:true,c:'narrador',ch:[2,3],t:'ALERTA: Receita Federal cruza doações a igrejas com empréstimos de bancos médios. Pastores estão sendo ouvidos.',
+  l:['Entrego tudo antes de pedirem',{r:-5,c:-4,p:-3},{news:'Maxter entrega à Receita relatório completo de doações'}],
+  r:['Doação é doação. Não devo nada',s=>s.flags.bispo?[{r:18,i:-8,p:-4},{news:'Receita aponta "doação casada" entre Maxter e igreja'}]:[{p:2},{news:'Receita conclui apuração sem citar o Maxter'}]]},
+ {id:'oc_hacker',oc:true,c:'narrador',ch:[2,3],t:'ALERTA: grupo hacker invade e-mails de três bancos e cobra resgate. O Maxter está entre eles.',
+  l:['Pago o resgate em silêncio',{c:-10,r:6},{news:'Hackers somem após bancos pagarem resgate, diz fonte'}],
+  r:['Não pago. Publiquem',s=>s.flags.balanco||s.flags.adv_nao||s.flags.socio_oculto?[{i:-16,r:20},{news:'E-mails vazados mostram diretoria do Maxter "ajustando" números'}]:[{i:-4,r:2},{news:'E-mails do Maxter vazam e revelam apenas reuniões chatas'}]]},
+ {id:'oc_prefeito',oc:true,c:'narrador',ch:[1,2],t:'ALERTA: eleição municipal em 40 dias. Um prefeito amigo pede "ajuda não contabilizada" para a campanha.',
+  l:['Não faço caixa dois',{p:-8,i:2},{news:'Prefeito aliado reclama de "amigos que somem na hora H"'}],
+  r:['Ajudo pelo sócio',{p:10,c:-8,r:16},{flag:'caixa2',news:'Justiça Eleitoral mira doações ocultas a prefeituras'}]},
+ {id:'oc_stf',oc:true,c:'narrador',ch:[2,3],t:'ALERTA: Supremo julga se o Fisco pode quebrar sigilo bancário sem ordem judicial. A associação dos bancos quer que você assine o manifesto contra.',
+  l:['Assino e lidero',{p:6,i:-4,r:7},{news:'Vorkaro lidera manifesto de banqueiros contra quebra de sigilo'}],
+  r:['Fico fora dessa',{p:-4,r:-3},{news:'Maxter fica de fora de manifesto dos bancos'}]},
+ {id:'oc_fundo',oc:true,c:'narrador',ch:[3],t:'ALERTA: tribunal europeu condena o Fundo do Golfo por lavagem. Procuradores pedem a lista de bancos brasileiros com cotistas do fundo.',
+  l:['Devolvo o aporte e me afasto',{c:-10,r:-6,p:-3},{news:'Maxter devolve dinheiro de fundo condenado na Europa'}],
+  r:['Dinheiro não tem cheiro',s=>s.flags.arabes?[{r:25,i:-10},{news:'Maxter aparece em lista de bancos ligados a fundo condenado'}]:[{c:3},{news:'Lista europeia não cita o Maxter'}]]},
+ {id:'oc_cartel',oc:true,c:'narrador',ch:[1,2,3],t:'ALERTA: CADE investiga cartel de tarifas entre bancos médios. Uma planilha compartilhada tem a logo do Maxter.',
+  l:['Entro no acordo de leniência',{c:-6,p:-5,r:-8},{news:'Maxter firma leniência e entrega concorrentes ao CADE'}],
+  r:['Planilha é só benchmark',(s,rng)=>rng()<0.45?[{r:17,c:-12,i:-5},{news:'CADE multa Maxter por cartel e cita "benchmark"'}]:[{p:3},{news:'CADE arquiva investigação sobre cartel bancário'}]]}
 ];
 const BY_ID=Object.fromEntries(CARDS.map(k=>[k.id,k]));
+function resolveOpt(opt){if(typeof opt[1]==='function'){const r=opt[1](s,rng)||[];return {fx:Object.assign({},r[0]||{}),meta:Object.assign({},opt[2]||{},r[1]||{})}}return {fx:Object.assign({},opt[1]||{}),meta:opt[2]||{}}}
+
+/* Obsessão: três decisões seguidas puxando o mesmo indicador deixam a jogada previsível */
+const OBS={i:'Mercado nota obsessão do Maxter por imagem e cobra resultado',p:'"Banqueiro ou candidato?", ironiza coluna; clientes estranham',c:'Caixa gordo do Maxter vira alvo de perguntas do Banco Centrão',r:'Esforço de Vorkaro para sumir do radar chama atenção dos procuradores'};
+const OBS_PEN={i:{c:-2,r:7},p:{i:-5,r:5},c:{i:-4,r:7},r:{c:-2,p:-4}};
+const OBS_NAME={c:'caixa',p:'poder',i:'imagem',r:'radar'};
+function dominant(fx){let best=null,bv=1;for(const k of 'cpi'){const v=fx[k]||0;if(v>bv){bv=v;best=k}}if(-(fx.r||0)>bv)best='r';return best}
+function obsession(fx){const d=dominant(fx);s.focus=s.focus||[];const streak=d?s.focus.filter(x=>x===d).length:0;s.focus.push(d);s.focus=s.focus.slice(-4);if(!d||streak<2)return null;
+  const hard=streak>=3,gain=hard?0.3:0.5,pain=hard?2:1.6;
+  for(const k of 'cpir'){const v=fx[k]||0;if(!v)continue;const good=k==='r'?v<0:v>0;if(k===d)fx[k]=Math.round(v*gain);else if(!good)fx[k]=Math.round(v*pain)}
+  const pen=OBS_PEN[d];for(const k in pen)fx[k]=(fx[k]||0)+Math.round(pen[k]*(hard?1.5:1));return d}
+/* Pressão: indicador alto aquece o radar e, acima de 80, drena outro */
+function visibility(){let add=0;for(const k of ['caixa','poder','imagem']){const v=s[k];if(v>=70)add+=2+2*Math.floor((v-70)/10)}
+  if(s.imagem>=80)s.caixa=clamp(s.caixa-1);if(s.poder>=80)s.imagem=clamp(s.imagem-2);if(s.caixa>=80)s.imagem=clamp(s.imagem-2);
+  if(add)s.radar=clamp(s.radar+add);return add}
+/* Topo caro: acima de 75 cada ponto ganho vale metade; acima de 90, um terço */
+function taper(fx){for(const k of 'cpi'){const v=fx[k]||0;if(v<=0)continue;const cur=s[OBS_NAME[k]];if(cur>=90)fx[k]=Math.ceil(v/3);else if(cur>=75)fx[k]=Math.ceil(v/2)}}
+const HEAT=['Fama do banqueiro atrai olhares de quem investiga','Quanto mais alto o Maxter sobe, mais gente quer ver os números','Procuradores anotam o nome que mais aparece nos jornais'];
 
 /* Headline fallback generator */
 const HEAD={c:['Maxter registra captação recorde','Banco Maxter amplia caixa e mercado reage'],cm:['Rumores de aperto de caixa rondam o Maxter','Maxter corta custos e demite'],
@@ -929,11 +990,12 @@ function chapter(){return s.day<80?1:s.day<320?2:3}
 function chapterName(){return ['','ASCENSÃO','O PODER','A CRISE'][chapter()]}
 function gameDate(){const d=new Date(2016,0,1);d.setDate(d.getDate()+s.day-1);return d.toLocaleDateString('pt-BR',{day:'numeric',month:'short',year:'numeric'}).replace(/\./g,'').replace(/ de /g,' ')}
 
-function eligible(k){if(k.hidden)return false;if(k.deck&&(s.mode==='daily'||!(owns('com.saldozero.deck.'+k.deck)||isVip())))return false;if(!k.repeat&&s.seen.includes(k.id))return false;if(k.first)return false;if(!k.ch.includes(chapter()))return false;if(k.req&&!k.req(s))return false;return true}
+function eligible(k){if(k.hidden||k.oc)return false;if(k.deck&&(s.mode==='daily'||!(owns('com.saldozero.deck.'+k.deck)||isVip())))return false;if(!k.repeat&&s.seen.includes(k.id))return false;if(k.first)return false;if(!k.ch.includes(chapter()))return false;if(k.req&&!k.req(s))return false;return true}
 function pickCard(){
   for(let q=0;q<s.queue.length;q++){s.queue[q].d--}
   const ready=s.queue.find(q=>q.d<=0);
   if(ready){s.queue=s.queue.filter(q=>q!==ready);return ready.id}
+  if(s.turn>=3&&rng()<0.2){const ev=CARDS.filter(k=>k.oc&&!s.seen.includes(k.id)&&k.ch.includes(chapter())&&(!k.req||k.req(s)));if(ev.length)return ev[Math.floor(rng()*ev.length)].id}
   let pool=CARDS.filter(eligible);
   if(!pool.length)pool=CARDS.filter(k=>k.repeat&&!k.hidden);
   const w=pool.map(k=>{let x=k.repeat?0.35:1;if(k.c==='narrador')x*=0.6;if(chapter()===3&&['pf','mpf','cpi','bc'].includes(k.c))x*=1.6;return x});
@@ -941,8 +1003,9 @@ function pickCard(){
 
 function choose(side){
   if(s.over||!s.card)return;
-  const k=BY_ID[s.card],opt=side==='l'?k.l:k.r,fx=opt[1],meta=opt[2]||{};
+  const k=BY_ID[s.card],opt=side==='l'?k.l:k.r,res=resolveOpt(opt),fx=res.fx,meta=res.meta;
   s.side=side;
+  const obs=obsession(fx);taper(fx);
   (s.log=s.log||[]).push({c:k.c,t:k.t,a:opt[0],day:s.day,kind:k.c==='narrador'?'news':'msg'});
   const before={c:s.caixa,p:s.poder,i:s.imagem,r:s.radar};
   s.caixa=clamp(s.caixa+(fx.c||0));s.poder=clamp(s.poder+(fx.p||0));s.imagem=clamp(s.imagem+(fx.i||0));s.radar=clamp(s.radar+(fx.r||0));
@@ -950,14 +1013,18 @@ function choose(side){
   const ch=chapter();const span=ch===1?5+Math.floor(rng()*5):ch===2?8+Math.floor(rng()*8):14+Math.floor(rng()*14);
   s.day+=span;s.turn++;
   const press=chapter()===3?2:chapter()===2?1:0;if(press)s.radar=clamp(s.radar+press);
+  const heat=visibility();
   if(before.r>85)s.hot++;if(s.hot>=3)unlock('teflon');
   if(meta.flag)s.flags[meta.flag]=true;
   if(meta.ach)unlock(meta.ach);
   if(meta.then)s.queue.push({id:meta.then,d:meta.delay||3});
   if(!s.seen.includes(k.id))s.seen.push(k.id);
   const head=meta.news||genHeadline(fx,rng);
-  s.news.unshift(head);s.news=s.news.slice(0,8);
-  toast(head);
+  s.news.unshift(head);
+  if(obs){const o=OBS[obs];s.news.unshift(o);s.log.push({c:'narrador',t:'⚠️ '+o,a:null,day:s.day,kind:'news'})}
+  else if(heat>=2&&rng()<0.35)s.news.unshift(HEAT[Math.floor(rng()*HEAT.length)]);
+  s.news=s.news.slice(0,8);
+  toast(obs?'⚠️ Jogada previsível: só '+OBS_NAME[obs]+'? Os outros indicadores pagam a conta.':head);
   bumpStats(fx,before);
   haptic(fx);
   // endings
@@ -1007,11 +1074,14 @@ async function spendFavores(n){
   try{const d=await api('/api/favores/spend',{method:'POST',body:JSON.stringify({n})});setFavores(d.favores);return true}catch(e){toast(e.message);if(e.status===402)openShop();return false}}
 function openMoves(){if(!s||s.over)return;$('moveScreen').hidden=false;$('btnMoveShop').hidden=!(storeOn()&&s.mode==='free');
   $('moveBalance').innerHTML='🎩 <b>'+s.favores+'</b> favor'+(s.favores===1?'':'es')+' desta partida'+(s.mode==='free'?(auth?' + <b>'+favores+'</b> na conta de @'+auth.nick:' · entre para usar os favores da conta'):' · no diário não há favores extras');
-  $('moveList').innerHTML=ACTIONS.map(a=>{const ok=(!a.req||a.req(s))&&favTotal()>=a.cost;return '<button data-id="'+a.id+'" '+(ok?'':'disabled')+'><span class="ico">'+a.icon+'</span><span class="txt"><b>'+a.name+'</b><small>'+a.desc+'</small></span><span class="cost">'+a.cost+' 🎩</span></button>'}).join('');
+  $('moveList').innerHTML=ACTIONS.map(a=>{const ok=(!a.req||a.req(s))&&favTotal()>=a.cost;const used=(s.moves||{})[a.id]||0;return '<button data-id="'+a.id+'" '+(ok?'':'disabled')+'><span class="ico">'+a.icon+'</span><span class="txt"><b>'+a.name+'</b><small>'+a.desc+(used?' <em style="color:var(--gold)">Já usada '+used+'×: rende menos e custa mais.</em>':'')+'</small></span><span class="cost">'+a.cost+' 🎩</span></button>'}).join('');
   $('moveList').querySelectorAll('button').forEach(b=>b.onclick=()=>doMove(b.dataset.id))}
 async function doMove(id){const a=ACTIONS.find(x=>x.id===id);if(!a||s.over)return;if(a.req&&!a.req(s))return;
   if(!(await spendFavores(a.cost)))return;$('moveScreen').hidden=true;
-  const before={c:s.caixa,p:s.poder,i:s.imagem,r:s.radar},fx=a.fx;
+  s.moves=s.moves||{};const used=s.moves[id]||0;s.moves[id]=used+1;
+  const before={c:s.caixa,p:s.poder,i:s.imagem,r:s.radar},fx={};
+  for(const k in a.fx){const v=a.fx[k],good=k==='r'?v<0:v>0;fx[k]=Math.round(v*(good?Math.max(0.4,1-0.3*used):1+0.4*used))}
+  s.focus=(s.focus||[]).concat(dominant(fx)).slice(-4);taper(fx);
   s.caixa=clamp(s.caixa+(fx.c||0));s.poder=clamp(s.poder+(fx.p||0));s.imagem=clamp(s.imagem+(fx.i||0));s.radar=clamp(s.radar+(fx.r||0));
   s.day+=2;s.news.unshift(a.news);s.news=s.news.slice(0,8);(s.log=s.log||[]).push({c:'narrador',t:a.news,a:null,day:s.day,kind:'news',move:a.icon+' '+a.name});toast(a.news);bumpStats(fx,before);haptic(fx);sfx('swipe');
   let end=null;if(s.radar>=100)end='preso';else if(s.caixa<=0)end='falencia';else if(s.caixa>=100)end='miami';else if(s.poder>=100)end='dono';else if(s.poder<=0)end='descartado';else if(s.imagem<=0)end='cancelado';else if(s.imagem>=100)end='idolo';
@@ -1052,7 +1122,7 @@ const STAT_INFO={
   caixa:['💰 Caixa','<p><b>O que é.</b> O dinheiro do Banco Maxter, em milhões de reais. É o que paga festas, advogados, campanhas e aportes.</p><p><b>Sobe com</b> captação, vendas de carteira, investidores e lucros. <b>Desce com</b> gastos, devoluções, doações e corridas bancárias.</p><p><b>Em R$ 0</b> o banco é liquidado e a partida acaba (final Falido). <b>Em R$ 100 mi</b> você some com o caixa cheio (final Sumiu).</p>'],
   poder:['🏛️ Poder','<p><b>O que é.</b> Seus amigos em Brasília: senadores, ministros, relatores e quem atende seu telefone às 23h.</p><p><b>Sobe com</b> jantares, emendas, apoio a campanhas e favores. <b>Desce quando</b> você recusa pedidos, cola nos inimigos ou entrega aliados.</p><p><b>Em 0</b> ninguém atende mais (final Sozinho). <b>Em 100</b> você vira dono do Congresso e todos se unem contra você (final Dono).</p>'],
   imagem:['📣 Imagem','<p><b>O que é.</b> A opinião pública sobre você: redes, TV, clientes e a sua mãe.</p><p><b>Sobe com</b> transparência, doações, entrevistas bem dadas e patrocínios. <b>Desce com</b> saques travados, prints vazados e respostas arrogantes.</p><p><b>Em 0</b> você é cancelado nacionalmente (final Cancelado). <b>Em 100</b> vira candidato a presidente (final Candidato).</p>'],
-  radar:['🚨 Radar','<p><b>O que é.</b> O calor da investigação: MPF, PF, CPI, auditoria e imprensa de dados.</p><p><b>Sobe com</b> balanço "ajustado", doleiros, chantagens e concentração de favores. <b>Desce com</b> cooperação, auditoria, advogados e contatos no lugar certo. A partir do capítulo O Poder, sobe sozinho um pouco a cada carta.</p><p><b>Em 100</b> a Operação Saldo Zero chega às 6h (final Preso). No modo livre, 2 favores pagam um recurso para continuar.</p>']
+  radar:['🚨 Radar','<p><b>O que é.</b> O calor da investigação: MPF, PF, CPI, auditoria e imprensa de dados.</p><p><b>Sobe com</b> balanço "ajustado", doleiros, chantagens e concentração de favores. <b>Desce com</b> cooperação, auditoria, advogados e contatos no lugar certo. Acima de 70 em caixa, poder ou imagem, o radar sobe sozinho a cada decisão. A partir do capítulo O Poder, sobe sozinho um pouco a cada carta.</p><p><b>Em 100</b> a Operação Saldo Zero chega às 6h (final Preso). No modo livre, 2 favores pagam um recurso para continuar.</p>']
 };
 function showStat(k){const i=STAT_INFO[k];if(!i)return;$('statTitle').innerHTML=i[0].replace(/^(\S+) (.*)$/,'$1 <em>$2</em>');$('statBody').innerHTML=i[1]+(s?'<p><b>Agora:</b> '+(k==='caixa'?money(s[k]):s[k]+'/100')+'</p>':'');$('statScreen').hidden=false}
 document.querySelectorAll('.stat').forEach(el=>{el.onclick=()=>showStat(el.dataset.k);el.tabIndex=0;el.setAttribute('role','button');el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showStat(el.dataset.k)}}});
@@ -1080,7 +1150,8 @@ function render(){
   $('track').innerHTML=s.news.map(n=>'<span>◆ '+n+'</span>').join('');
   const k=BY_ID[s.card];if(!k)return;
   const c=CH[k.c];const isNews=k.c==='narrador';const isZap=!isNews&&!['diretor','juridico','auditor','bc','cpi','fazenda'].includes(k.c);
-  $('card').innerHTML='<div class="kind"><span>'+(isNews?'📰 Plantão':isZap?'💬 ZapFone':'🏢 Reunião')+'</span><span>'+chapterName()+' · dia '+s.day+'</span></div>'+
+  $('card').classList.toggle('oc',!!k.oc);
+  $('card').innerHTML='<div class="kind"><span>'+(k.oc?'🚨 Ocorrência':isNews?'📰 Plantão':isZap?'💬 ZapFone':'🏢 Reunião')+'</span><span>'+chapterName()+' · dia '+s.day+'</span></div>'+
     '<div class="who">'+avatar(k.c,60)+'<div><b>'+c.n+'</b><small>'+c.r+'</small></div></div>'+
     '<div class="say'+(isNews?' news':isZap?' zap':'')+'" id="cardText">'+k.t+'</div>'+
     '<div class="opts"><span><b>◀ '+k.l[0]+'</b></span><span><b>'+k.r[0]+' ▶</b></span></div>'+
@@ -1090,8 +1161,8 @@ function render(){
 function dealIn(){const c=$('card');c.classList.remove('out','in');c.style.transform='';void c.offsetWidth;c.classList.add('in');sfx('deal')}
 function previewDots(side,amt){
   const k=BY_ID[s.card];if(!k)return;
-  const fx=side?(side==='l'?k.l[1]:k.r[1]):{};
-  document.querySelectorAll('.stat').forEach(el=>{const v=Math.abs(fx[KEYS[el.dataset.k]]||0),d=el.querySelector('.dot');d.className='dot'+(v&&amt>0.25?' on '+(v<8?'s1':v<15?'s2':'s3'):'')})
+  const raw=side?(side==='l'?k.l[1]:k.r[1]):{};const unknown=typeof raw==='function';const fx=unknown?{}:raw;
+  document.querySelectorAll('.stat').forEach(el=>{const v=Math.abs(fx[KEYS[el.dataset.k]]||0),d=el.querySelector('.dot');d.className='dot'+(unknown&&amt>0.25?' on q':v&&amt>0.25?' on '+(v<8?'s1':v<15?'s2':'s3'):'')})
 }
 function bumpStats(fx,before){document.querySelectorAll('.stat').forEach(el=>{const v=fx[KEYS[el.dataset.k]]||0;if(v){el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump')}})}
 let toastT=null;function toast(t){$('toastText').textContent=t;$('toast').classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>$('toast').classList.remove('show'),2800)}

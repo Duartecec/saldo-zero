@@ -37,7 +37,8 @@ O servidor monta a página em memória a partir de `game.html`, troca o Google F
 - Ranking diário: `POST /api/daily` grava o primeiro resultado do dia por conta; `GET /api/daily?day=` lista o top 50.
 - Ajuda e suporte: menu Ajuda no jogo (como jogar, indicadores, favores, compras) com formulário de chamado (`POST /api/support`); o jogador vê a resposta no mesmo menu.
 - Painel do desenvolvedor em `/admin` (token em `ADMIN_TOKEN`): receita total, do mês e do dia, vendas por produto, lista de cobranças, usuários (bloquear, excluir, dar ou tirar favores, dar ou remover produtos, trocar PIN, renomear, anotação) e chamados com resposta.
-- Testes: `scripts/fake-asaas.ts` imita o Asaas; `scripts/e2e.cjs` percorre conta, compra, jogadas, recurso e ranking (Playwright).
+- Balanceamento: três decisões seguidas puxando o mesmo indicador (obsessão) encolhem o ganho e dobram os efeitos colaterais; indicador acima de 70 aquece o radar a cada turno e acima de 80 drena outro; acima de 75 cada ponto ganho vale metade (90: um terço); jogadas do Vorkaro repetidas rendem menos e custam mais. Ocorrências (`oc:true` no baralho) aparecem em ~20% dos turnos a partir do 3º, com opções cujo resultado é uma função do estado (`(s,rng)=>[fx,meta]`).
+- Testes: `scripts/fake-asaas.ts` imita o Asaas; `scripts/e2e.cjs` percorre conta, compra, jogadas, recurso e ranking (Playwright); `scripts/balance.cjs` simula estratégias (só imagem, só poder, cuidadoso, aleatório) no motor real e mostra a distribuição de finais.
 
 ## Arquivos
 

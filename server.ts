@@ -110,6 +110,7 @@ const legalNotice = legal("Aviso legal e de conteúdo · Saldo Zero", `
 
 const MIME: Record<string, string> = {
   png: "image/png", webmanifest: "application/manifest+json", woff2: "font/woff2", js: "text/javascript; charset=utf-8", json: "application/json", svg: "image/svg+xml",
+  webp: "image/webp", jpg: "image/jpeg", jpeg: "image/jpeg", mp4: "video/mp4", webm: "video/webm",
 };
 const htmlHeaders = { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" };
 const json = (data: unknown, status = 200) => Response.json(data, { status, headers: { "cache-control": "no-store" } });
@@ -253,6 +254,18 @@ Bun.serve({
     if (safe.length > 1 && MIME[ext]) {
       const file = Bun.file(new URL("./public" + safe, root));
       if (await file.exists()) {
+        // Vídeos das cenas da tela inicial: o Safari exige resposta a Range (206).
+        const range = req.headers.get("range");
+        if (range && (ext === "mp4" || ext === "webm")) {
+          const m = /^bytes=(\d*)-(\d*)$/.exec(range);
+          if (m) {
+            const size = file.size;
+            const start = m[1] ? parseInt(m[1], 10) : Math.max(0, size - parseInt(m[2] || "0", 10));
+            const end = m[1] && m[2] ? Math.min(parseInt(m[2], 10), size - 1) : size - 1;
+            if (start >= size || start > end) return new Response(null, { status: 416, headers: { "content-range": "bytes */" + size } });
+            return new Response(file.slice(start, end + 1), { status: 206, headers: { "content-type": MIME[ext], "accept-ranges": "bytes", "content-range": "bytes " + start + "-" + end + "/" + size, "cache-control": "public, max-age=31536000, immutable" } });
+          }
+        }
         return new Response(file, { headers: { "content-type": MIME[ext], "cache-control": ext === "webmanifest" ? "no-cache" : "public, max-age=31536000, immutable" } });
       }
       return new Response("not found", { status: 404 });

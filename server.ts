@@ -172,7 +172,6 @@ async function api(req: Request, pathname: string): Promise<Response | null> {
     }
     if (req.method === "POST" && pathname === "/api/daily") {
       const u = requireUser(req);
-      requireVerified(u);
       return json(submitDaily(u, await req.json()));
     }
     if (req.method === "GET" && pathname === "/api/daily") {

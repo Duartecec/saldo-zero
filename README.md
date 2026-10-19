@@ -30,7 +30,7 @@ O servidor monta a página em memória a partir de `game.html`, troca o Google F
 
 ### Conta de jogo, loja e ranking
 
-- Conta: apelido único (3 a 16 caracteres, sem acento) + PIN de 4 a 8 números + e-mail. O e-mail recebe um código de 6 dígitos (Resend); compras e ranking exigem e-mail confirmado. "Esqueci o PIN" envia um código de troca.
+- Conta: apelido único (3 a 16 caracteres, sem acento) + PIN de 4 a 8 números. O e-mail é opcional no cadastro: depois da primeira carta jogada, um lembrete fixo pede para cadastrar e confirmar (código de 6 dígitos via Resend). Compras exigem e-mail confirmado; o ranking não. "Esqueci o PIN" envia um código de troca.
 - VIP para sempre (`com.saldozero.vip`, R$ 19,90, de R$ 59,90): 15 favores por partida, baralho eleitoral, escolha de capa e destaque no ranking. A loja mostra o preço riscado, o desconto e um cronômetro de 15 minutos em loop.
 - Favores: moeda das jogadas do Vorkaro e dos recursos no modo livre. Toda partida começa com 2; pacotes de 10 e 30 ficam na conta.
 - Loja (Asaas, checkout hospedado com Pix, cartão e boleto): `POST /api/checkout` cria a cobrança, o jogador paga na página do Asaas e volta para `SITE_URL/?pedido=<ref>`; `GET /api/order/:id` confirma; `POST /api/webhook/asaas` recebe os eventos. Compras exigem login.

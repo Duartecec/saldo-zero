@@ -78,6 +78,15 @@ const acceptLegal = async (page) => { await page.waitForTimeout(150); if (await 
   out.afterAppeal = await page.evaluate(() => ({ over: s.over, radar: s.radar, appeals: s.appeals, account: favores, endHidden: document.getElementById('endScreen').hidden }));
   await page.click('#btnMenu'); await page.waitForTimeout(300);
 
+  // conta sem e-mail: cadastra só com apelido e PIN; lembrete aparece após a primeira carta
+  const ctx3 = await browser.newContext({ viewport: { width: 390, height: 844 } }); const p3 = await ctx3.newPage(); await p3.goto(BASE + '/'); await p3.waitForTimeout(600);
+  await p3.fill('#nickInput', nick + 'b'); await p3.waitForTimeout(600); await p3.fill('#pinInput', '4826'); await p3.click('#loginBtn'); await p3.waitForTimeout(800);
+  out.noEmailSignup = (await p3.textContent('#accountInfo')).includes('@' + nick + 'b');
+  out.nudgeBeforePlay = await p3.isVisible('#emailNudge');
+  await p3.click('#playFree'); await acceptLegal(p3); if (await p3.isVisible('#tut')) await p3.click('#tutOk'); await p3.click('#btnR'); await p3.waitForTimeout(400);
+  out.nudgeAfterPlay = await p3.isVisible('#emailNudge');
+  await p3.click('#nudgeBtn'); await p3.waitForTimeout(500); out.nudgeOpensAccount = await p3.isVisible('#addEmail');
+  await ctx3.close();
   // 4. outro navegador, mesmo apelido + PIN certo: compra vem junto
   await p2.fill('#nickInput', nick); await p2.fill('#pinInput', '2719'); await p2.waitForTimeout(500); await p2.click('#loginBtn'); await p2.waitForTimeout(800);
   out.entRestoredByLogin = await p2.evaluate(() => [...ent]);

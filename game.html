@@ -165,6 +165,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 .moves{display:grid;gap:8px}.moves button{display:flex;align-items:center;gap:12px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left}.moves button:disabled{opacity:.45}.moves .ico{font-size:26px}.moves .txt{flex:1;min-width:0}.moves .txt b{display:block}.moves .txt small{color:var(--mute);display:block}.moves .cost{white-space:nowrap;color:var(--gold);font-weight:800;font-size:13px}
 .legal h3{margin:0 0 8px;font-family:var(--display);font-weight:400;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)}.form select,.form textarea{font:inherit;font-size:16px;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0a0c18;color:var(--fg);min-width:0;width:100%}.ticket{border-top:1px solid var(--line);padding:10px 0}.ticket:first-of-type{border-top:0}.ticket b{display:block}.ticket .st{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-weight:700}.ticket .reply{margin-top:6px;padding:8px 10px;border-left:3px solid var(--green);background:#0a0c18;border-radius:6px;color:var(--fg)}
 .legal p{margin:0 0 10px;font-size:13.5px;line-height:1.5;color:var(--mute)}.legal p:last-child{margin:0}.legal b{color:var(--fg)}.legal .mail{color:var(--gold);user-select:all}
+.nudge{display:flex;align-items:center;justify-content:space-between;gap:10px;background:linear-gradient(120deg,#3a2f0f,#2a2340);border:1px solid var(--gold);border-radius:12px;padding:10px 12px;font-size:13px;color:var(--fg)}.nudge button{background:var(--gold);color:#2a1b05;font-family:var(--display);letter-spacing:1px;padding:8px 12px;border-radius:9px;white-space:nowrap}
 .cols{gap:14px}.col{display:flex;flex-direction:column;gap:14px;min-width:0}.form .two{display:grid;gap:10px}
 @media (min-width:600px){.form .two{grid-template-columns:1fr 1fr}}
 @media (min-width:1000px){#startScreen .inner{max-width:1080px;display:grid;grid-template-columns:1.05fr .95fr;gap:14px 40px;align-items:start}#startScreen .h1{font-size:58px}}
@@ -196,8 +197,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 @media (min-width:600px){.app{max-width:560px}.stage{height:420px}.screen .inner{max-width:560px}}
 /* Desktop: jogo à esquerda, UatiZap fixo à direita */
 @media (min-width:1000px){
-  .app{max-width:1200px;display:grid;grid-template-columns:minmax(0,520px) minmax(380px,1fr);grid-template-areas:"mast mast" "stats zap" "ticker zap" "stage zap" "choices zap" "movebar zap" "foot zap";column-gap:32px;align-items:start;padding-block:18px 32px}
-  .mast{grid-area:mast}.stats{grid-area:stats}.ticker{grid-area:ticker}.stage{grid-area:stage;height:460px}.choices{grid-area:choices}.movebar{grid-area:movebar}.foot{grid-area:foot}
+  .app{max-width:1200px;display:grid;grid-template-columns:minmax(0,520px) minmax(380px,1fr);grid-template-areas:"mast mast" "stats zap" "nudge zap" "ticker zap" "stage zap" "choices zap" "movebar zap" "foot zap";column-gap:32px;align-items:start;padding-block:18px 32px}
+  .mast{grid-area:mast}.stats{grid-area:stats}#emailNudge{grid-area:nudge}.ticker{grid-area:ticker}.stage{grid-area:stage;height:460px}.choices{grid-area:choices}.movebar{grid-area:movebar}.foot{grid-area:foot}
   #zapScreen{grid-area:zap;position:sticky;top:12px;inset:auto;padding:0;background:none;backdrop-filter:none;overflow:visible;z-index:1;max-height:calc(100vh - 24px)}
   #zapScreen[hidden]{display:block!important}
   #zapScreen .inner{max-width:none;min-height:0;max-height:calc(100vh - 24px);overflow:auto}
@@ -222,6 +223,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
     <div class="stat" data-k="imagem"><span class="ico">📣</span><span class="lbl">Imagem</span><div class="bar"><i></i></div><span class="val">0</span><span class="dot"></span></div>
     <div class="stat" data-k="radar"><span class="ico">🚨</span><span class="lbl">Radar</span><div class="bar"><i></i></div><span class="val">0</span><span class="dot"></span></div>
   </div>
+
+  <div class="nudge" id="emailNudge" hidden><span>📧 <b>Confirme seu e-mail</b> para recuperar o PIN e proteger suas compras.</span><button id="nudgeBtn">Confirmar</button></div>
 
   <div class="ticker" aria-label="Últimas notícias"><b>PLANTÃO</b><div class="win"><div class="track" id="track"></div></div></div>
 
@@ -280,6 +283,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
     <button class="big alt" id="openHelp">❓ Ajuda e suporte</button>
    </div>
    <div class="col">
+    <div class="nudge" id="emailNudgeStart" hidden><span>📧 <b>Falta confirmar seu e-mail.</b> Sem ele não dá para recuperar o PIN nem comprar.</span><button id="nudgeBtnStart">Agora</button></div>
     <div class="panel" id="accountPanel">
       <h3>Sua conta de jogo</h3>
       <form id="loginForm" class="form" style="padding:0;border:0;background:none" autocomplete="on">
@@ -287,8 +291,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
           <label>Apelido<input id="nickInput" name="username" autocomplete="username" maxlength="16" placeholder="ex.: rei_do_pix" required></label>
           <label>PIN (4 a 8 números)<input id="pinInput" name="password" type="password" inputmode="numeric" autocomplete="current-password" maxlength="8" required></label>
         </div>
-        <label id="emailLabel">E-mail · obrigatório para criar a conta<input id="emailInput" name="email" type="email" autocomplete="email" maxlength="120" placeholder="voce@exemplo.com"></label>
-        <div class="err" id="emailHint" style="color:var(--mute)">Você recebe um código de confirmação e usa o e-mail para recuperar o PIN. Quem já tem conta não precisa informar.</div>
+        <label id="emailLabel">E-mail (opcional agora)<input id="emailInput" name="email" type="email" autocomplete="email" maxlength="120" placeholder="voce@exemplo.com"></label>
+        <div class="err" id="emailHint" style="color:var(--mute)">Serve para recuperar o PIN e proteger suas compras. Dá para informar depois, na sua conta.</div>
         <div class="err" id="nickHint" style="color:var(--mute)"></div>
         <div class="err" id="loginError"></div>
         <button class="big" type="submit" id="loginBtn">Entrar</button>
@@ -303,7 +307,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
         <button class="linkish" type="button" id="resetBack">Voltar</button>
       </form>
       <div id="accountInfo" hidden></div>
-      <p style="margin-top:8px">Apelido, PIN e e-mail. Sem senha longa. O apelido é único, aparece no ranking e guarda suas compras e conquistas em qualquer aparelho.</p>
+      <p style="margin-top:8px">Só apelido e PIN para começar. O apelido é único, aparece no ranking e guarda suas compras e conquistas em qualquer aparelho.</p>
     </div>
     <div class="panel" id="rankPanel"><h3>Ranking de hoje</h3><div id="rankList"><p>Carregando…</p></div></div>
     <div class="panel">
@@ -343,7 +347,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
       <p><b>⭐ VIP para sempre.</b> Pagamento único: 15 favores em toda partida, baralho eleitoral, escolha da capa e destaque dourado no ranking.</p>
       <p><b>🎩 Favores e jogadas do Vorkaro.</b> Toda partida começa com 2 favores (15 para VIP). Eles pagam ações por iniciativa própria (ligar para o ministro, enterrar dinheiro em marketing, advogado de emergência…). No modo livre, 2 favores também pagam um recurso para continuar depois de cair. Pacotes extras ficam na sua conta e valem só no modo livre.</p>
       <p><b>Diário e ranking.</b> No desafio diário todo mundo recebe a mesma sequência de cartas, com os mesmos 2 favores e sem recurso. O primeiro resultado do dia entra no ranking pelo seu apelido.</p>
-      <p><b>Conta.</b> Apelido, PIN e e-mail. O e-mail recebe um código de confirmação e serve para recuperar o PIN ("Esqueci o PIN" na tela inicial). Compras e ranking exigem e-mail confirmado.</p>
+      <p><b>Conta.</b> Apelido e PIN bastam para começar. Depois, cadastre e confirme um e-mail: ele serve para recuperar o PIN ("Esqueci o PIN" na tela inicial) e é obrigatório para comprar.</p>
       <p><b>UatiZap.</b> Guarda todas as mensagens que você recebeu e respondeu na partida.</p>
       <p><b>Compras.</b> Pagamento único pelo Asaas (Pix, cartão ou boleto). O conteúdo é liberado assim que o pagamento é confirmado. Se não liberar, abra um chamado com o apelido usado na compra.</p>
       <p style="margin-top:8px"><button class="linkish" id="helpLegal" style="padding:0">Aviso legal e de conteúdo</button> · <a href="/privacidade" target="_blank" rel="noopener" style="color:var(--gold)">Política de privacidade</a></p>
@@ -464,7 +468,10 @@ const PRODUCTS={
 const FREE_FAVORES=2;const VIP_FAVORES=15;
 function isVip(){return owns(VIP)}
 function freeFavores(){return isVip()?VIP_FAVORES:FREE_FAVORES}
-let acct=store.get('acct',null);function setAcct(a){acct=a;store.set('acct',a)}
+let acct=store.get('acct',null);function setAcct(a){acct=a;store.set('acct',a);renderNudge()}
+function needsEmail(){return !!(auth&&acct&&(!acct.email||!acct.emailVerified))}
+function renderNudge(){const played=store.get('played',0)>=1||(s&&s.turn>=1);const on=needsEmail()&&played;const n=$('emailNudge'),m=$('emailNudgeStart');if(n)n.hidden=!on;if(m)m.hidden=!on}
+function goToAccount(){['endScreen','shopScreen','helpScreen','moveScreen','zapScreen'].forEach(id=>{const e=$(id);if(e&&id!=='zapScreen')e.hidden=true});showStart();setTimeout(()=>{$('accountPanel').scrollIntoView({behavior:'smooth',block:'start'});const i=$('addEmail')||$('verifyCode');if(i)i.focus()},150)}
 let ent=new Set(store.get('ent',[])),priceOf={},favores=store.get('favores',0);
 function owns(id){return ent.has(id)}
 window.MasterEscapeBridge={
@@ -485,7 +492,7 @@ function renderAccount(){const f=$('loginForm'),i=$('accountInfo');if(!ONLINE){$
   if(auth){f.hidden=true;i.hidden=false;const a=acct||{};
     let ver='';
     if(!a.email)ver='<div class="verify"><b>Cadastre um e-mail</b><small style="color:var(--mute)">Serve para confirmar a conta e recuperar o PIN.</small><div class="two"><input id="addEmail" type="email" placeholder="voce@exemplo.com"><button class="big alt" id="addEmailBtn" style="padding:10px 14px;font-size:14px">Salvar</button></div><div class="err" id="verifyErr"></div></div>';
-    else if(!a.emailVerified)ver='<div class="verify"><b>Confirme seu e-mail</b><small style="color:var(--mute)">Enviamos um código de 6 números para '+esc(a.email)+'. Sem confirmar, não dá para comprar nem entrar no ranking.</small><div class="two"><input id="verifyCode" inputmode="numeric" maxlength="6" placeholder="000000"><button class="big" id="verifyBtn" style="padding:10px 14px;font-size:14px">Confirmar</button></div><div class="err" id="verifyErr"></div><div style="display:flex;gap:12px;flex-wrap:wrap"><button class="linkish" id="resendBtn" style="padding:0">Reenviar código</button><button class="linkish" id="changeEmailBtn" style="padding:0">Trocar e-mail</button></div></div>';
+    else if(!a.emailVerified)ver='<div class="verify"><b>Confirme seu e-mail</b><small style="color:var(--mute)">Enviamos um código de 6 números para '+esc(a.email)+'. Sem confirmar, não dá para comprar nem recuperar o PIN.</small><div class="two"><input id="verifyCode" inputmode="numeric" maxlength="6" placeholder="000000"><button class="big" id="verifyBtn" style="padding:10px 14px;font-size:14px">Confirmar</button></div><div class="err" id="verifyErr"></div><div style="display:flex;gap:12px;flex-wrap:wrap"><button class="linkish" id="resendBtn" style="padding:0">Reenviar código</button><button class="linkish" id="changeEmailBtn" style="padding:0">Trocar e-mail</button></div></div>';
     i.innerHTML='<p style="color:var(--fg);margin:0">Você está como <b>@'+auth.nick+'</b>'+(a.vip?' <span class="vipbadge">VIP</span>':'')+(a.email&&a.emailVerified?' <small style="color:var(--green)">✓ e-mail confirmado</small>':'')+'</p>'+ver+'<div class="row" style="margin-top:8px"><button class="big alt" id="logoutBtn">Sair</button></div>';
     $('logoutBtn').onclick=async()=>{try{await api('/api/auth/logout',{method:'POST'})}catch{}setAuth(null);setAcct(null);setFavores(0);loadRank()};
     const vb=$('verifyBtn');if(vb)vb.onclick=async()=>{$('verifyErr').textContent='';try{await api('/api/auth/verify',{method:'POST',body:JSON.stringify({code:$('verifyCode').value})});toast('E-mail confirmado!');await loadMe();renderAccount()}catch(e){$('verifyErr').textContent=e.message}};
@@ -499,13 +506,13 @@ $('resetBack').onclick=()=>{$('resetForm').hidden=true;$('loginForm').hidden=fal
 $('resetForm').onsubmit=async e=>{e.preventDefault();$('resetError').textContent='';try{await api('/api/auth/reset',{method:'POST',body:JSON.stringify({nick:$('resetForm').dataset.nick,code:$('resetCode').value,pin:$('resetPin').value})});toast('PIN trocado. Entre com o novo PIN.');$('resetForm').hidden=true;$('loginForm').hidden=false;$('pinInput').value='';$('pinInput').focus()}catch(err){$('resetError').textContent=err.message}};
 let nickTimer=null;
 $('nickInput').oninput=()=>{clearTimeout(nickTimer);const v=$('nickInput').value.trim();$('nickHint').textContent='';$('loginBtn').textContent='Entrar';$('emailLabel').hidden=false;$('emailHint').hidden=false;if(v.length<3)return;
-  nickTimer=setTimeout(async()=>{try{const d=await api('/api/auth/check?nick='+encodeURIComponent(v));$('nickHint').textContent=d.available?'✓ Apelido livre. Informe e-mail e PIN para criar sua conta.':'Apelido já existe. Digite o seu PIN para entrar.';$('loginBtn').textContent=d.available?'Criar conta':'Entrar';$('emailLabel').hidden=!d.available;$('emailHint').hidden=!d.available;$('emailInput').required=d.available}catch(e){$('nickHint').textContent=e.message}},350)};
+  nickTimer=setTimeout(async()=>{try{const d=await api('/api/auth/check?nick='+encodeURIComponent(v));$('nickHint').textContent=d.available?'✓ Apelido livre. Escolha um PIN e crie sua conta.':'Apelido já existe. Digite o seu PIN para entrar.';$('loginBtn').textContent=d.available?'Criar conta':'Entrar';$('emailLabel').hidden=!d.available;$('emailHint').hidden=!d.available}catch(e){$('nickHint').textContent=e.message}},350)};
 $('loginForm').onsubmit=async e=>{e.preventDefault();$('loginError').textContent='';const btn=$('loginBtn');btn.disabled=true;
   try{const body={nick:$('nickInput').value.trim(),pin:$('pinInput').value,claim:(WEBSTORE.pending&&WEBSTORE.pending.ref)||null};let d;
     try{d=await api('/api/auth/enter',{method:'POST',body:JSON.stringify(body)})}
-    catch(err){if(err.status===404){const email=$('emailInput').value.trim();if(!email){$('emailLabel').hidden=false;$('emailInput').required=true;$('emailInput').focus();throw new Error('Apelido livre: informe um e-mail para criar a conta.')}d=await api('/api/auth/enter',{method:'POST',body:JSON.stringify(Object.assign(body,{create:true,email}))})}else throw err}
+    catch(err){if(err.status===404){const email=$('emailInput').value.trim();d=await api('/api/auth/enter',{method:'POST',body:JSON.stringify(Object.assign(body,{create:true,email:email||undefined}))})}else throw err}
     if(d.devCode)window.__devCode=d.devCode;setAuth({token:d.token,nick:d.user.nick});setAcct({email:d.user.email,emailVerified:d.user.emailVerified,vip:d.user.vip});syncFromServer(d.user.progress,d.entitlements,d.user.favores);$('pinInput').value='';$('emailInput').value='';
-    toast(d.created?(d.sent===false?'Conta criada, mas o e-mail de confirmação falhou. Use "Reenviar código" mais tarde.':'Conta criada! Enviamos um código para o seu e-mail (veja também o spam).'):'Bem-vindo de volta, @'+d.user.nick+'!');pushProgress();showStart()}
+    toast(d.created?(!d.user.email?'Conta criada. Bem-vindo, @'+d.user.nick+'!':d.sent===false?'Conta criada, mas o e-mail de confirmação falhou. Use "Reenviar código" mais tarde.':'Conta criada! Enviamos um código para o seu e-mail (veja também o spam).'):'Bem-vindo de volta, @'+d.user.nick+'!');pushProgress();showStart()}
   catch(err){$('loginError').textContent=err.message}btn.disabled=false};
 function syncFromServer(progress,entitlements,fav){(entitlements||[]).forEach(grant);if(typeof fav==='number')setFavores(fav);
   if(progress){const ends=store.get('ends',{});for(const [k,v] of Object.entries(progress.ends||{}))if(ENDINGS[k])ends[k]=Math.max(ends[k]||0,v);store.set('ends',ends);
@@ -1013,6 +1020,7 @@ function canAppeal(){return s&&s.over&&s.mode==='free'&&APPEAL.fix[s.over]&&s.ap
 async function appeal(){if(!canAppeal())return;if(!(await spendFavores(APPEAL.cost)))return;
   const [k,v]=APPEAL.fix[s.over];s[k]=v;s.appeals++;s.over=null;s.news.unshift('Recurso de última hora mantém Vorkaro no jogo');s.day+=5;
   $('endScreen').hidden=true;s.card=pickCard();render();dealIn();toast('⚖️ Recurso aceito. Por enquanto.');snapshot()}
+$('nudgeBtn').onclick=goToAccount;$('nudgeBtnStart').onclick=goToAccount;
 $('btnMove').onclick=openMoves;$('btnMoveClose').onclick=()=>{$('moveScreen').hidden=true};$('btnMoveShop').onclick=()=>{$('moveScreen').hidden=true;openShop()};$('btnAppeal').onclick=appeal;
 
 /* ============ UatiZap: conversas da partida ============ */
@@ -1067,7 +1075,7 @@ function render(){
   if(!s)return;
   $('chapter').textContent=chapterName();$('date').textContent=gameDate();
   $('modePill').textContent=s.mode==='daily'?'DIÁRIO #'+dailyNumber():'MODO LIVRE';
-  $('dayCount').textContent='Dia '+s.day+' em liberdade · '+s.turn+' decisões';renderFav();renderZap();
+  $('dayCount').textContent='Dia '+s.day+' em liberdade · '+s.turn+' decisões';renderFav();renderZap();if(s.turn>=1&&!store.get('played',0))store.set('played',1);renderNudge();
   document.querySelectorAll('.stat').forEach(el=>{const k=el.dataset.k,v=s[k];el.querySelector('.bar i').style.width=v+'%';el.querySelector('.val').textContent=k==='caixa'?money(v):v;el.classList.toggle('danger',v>=85||v<=15)});
   $('track').innerHTML=s.news.map(n=>'<span>◆ '+n+'</span>').join('');
   const k=BY_ID[s.card];if(!k)return;
@@ -1120,7 +1128,7 @@ function showStart(){
   $('bestInfo').textContent=(best?'Recorde: '+best+' dias em liberdade. ':'Nenhuma partida ainda. ')+'Conquistas: '+ach.length+'/'+Object.keys(ACH).length+'.'+(auth&&favores?' 🎩 '+favores+' favores na conta.':'');
   if(NATIVE&&NATIVE.store)$('legalNote').textContent='Obra de ficção e sátira. Personagens, bancos, veículos e instituições são inventados. Compras opcionais apenas pela App Store.';
   const run=store.get('run',null);const rb=$('btnResume');rb.hidden=!(run&&!run.over&&run.card&&BY_ID[run.card]);if(!rb.hidden)rb.textContent='▶ Continuar a partida · dia '+run.day+(run.mode==='daily'?' (diário)':' (livre)');
-  $('startScreen').hidden=false;$('endScreen').hidden=true;renderAccount();loadRank();
+  $('startScreen').hidden=false;$('endScreen').hidden=true;renderAccount();renderNudge();loadRank();
 }
 function bars(v){const n=Math.round(v/20);return '▓'.repeat(n)+'░'.repeat(5-n)}
 function shareText(){const e=ENDINGS[s.over];const tag=s.mode==='daily'?'Diário #'+dailyNumber():'Modo livre';

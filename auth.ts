@@ -98,8 +98,9 @@ export async function enter(input: any) {
     return { token: await newSession(row.id), user: publicUser(row), created: false };
   }
   if (input?.create !== true) throw new AuthError("Apelido livre. Confirme para criar sua conta.", 404);
-  const email = normalizeEmail(input?.email);
-  if (db.query("SELECT id FROM users WHERE email = ?").get(email)) throw new AuthError("Este e-mail já tem uma conta. Entre com o apelido dela ou use \"Esqueci o PIN\".", 409);
+  // E-mail é opcional no cadastro; o jogo pede depois, com um lembrete fixo.
+  const email = String(input?.email || "").trim() ? normalizeEmail(input?.email) : null;
+  if (email && db.query("SELECT id FROM users WHERE email = ?").get(email)) throw new AuthError("Este e-mail já tem uma conta. Entre com o apelido dela ou use \"Esqueci o PIN\".", 409);
   const hash = await Bun.password.hash(pin, { algorithm: "argon2id", memoryCost: 19456, timeCost: 2 });
   try {
     db.run("INSERT INTO users (nick, nick_display, pin_hash, created_at, last_seen, email) VALUES (?, ?, ?, ?, ?, ?)", [key, display, hash, now(), now(), email]);
@@ -107,8 +108,8 @@ export async function enter(input: any) {
     throw new AuthError("Esse apelido acabou de ser escolhido por outra pessoa.", 409);
   }
   const created = db.query("SELECT * FROM users WHERE nick = ?").get(key) as UserRow;
-  const code = await issueCode(created.id, "verify");
-  return { token: await newSession(created.id), user: publicUser(created), created: true, ...sentFlag(created.id), ...(DEV_CODES ? { devCode: code } : {}) };
+  const code = email ? await issueCode(created.id, "verify") : null;
+  return { token: await newSession(created.id), user: publicUser(created), created: true, ...(email ? sentFlag(created.id) : {}), ...(DEV_CODES && code ? { devCode: code } : {}) };
 }
 
 export function userFromRequest(req: Request): UserRow | null {

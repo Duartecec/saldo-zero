@@ -87,7 +87,20 @@ const support = legal("Suporte · Saldo Zero", `
 <p><b>Perdi meu progresso.</b> O progresso fica salvo no navegador. Limpar os dados do site apaga finais e conquistas.</p>
 <h2>Fale com a gente</h2>
 <p>E-mail: <a href="mailto:contato@vorkaro.site">contato@vorkaro.site</a>.</p>
-<p><a href="/privacidade">Política de privacidade</a></p>
+<p><a href="/privacidade">Política de privacidade</a> · <a href="/aviso">Aviso legal e de conteúdo</a></p>
+`);
+
+const legalNotice = legal("Aviso legal e de conteúdo · Saldo Zero", `
+<h1>Aviso legal e de conteúdo</h1>
+<p><b>1. Obra de ficção e sátira.</b> Saldo Zero é um jogo de humor e crítica social em forma de sátira. Todos os personagens, nomes, empresas, bancos, veículos de imprensa, partidos, instituições, diálogos e situações são fictícios e foram criados exclusivamente para entretenimento.</p>
+<p><b>2. Inspiração em temas de interesse público.</b> A sátira dialoga, de forma caricatural e exagerada, com temas de interesse público amplamente noticiados pela imprensa. Isso não significa que o jogo narre fatos reais nem que descreva a conduta de qualquer pessoa, empresa ou instituição real. Eventual semelhança de nomes é recurso de paródia, não identificação.</p>
+<p><b>3. Nenhum juízo de valor ou acusação.</b> O jogo não afirma, sugere nem insinua que qualquer pessoa, empresa ou instituição real tenha praticado os atos retratados. As "escolhas" e seus efeitos são mecânicas de jogo, sem relação com fatos; não expressam opinião do desenvolvedor sobre pessoas reais nem constituem aconselhamento de qualquer natureza.</p>
+<p><b>4. Sem vínculo.</b> Não há vínculo, patrocínio, endosso ou autorização de qualquer pessoa, empresa, partido ou órgão público eventualmente evocado pela paródia.</p>
+<p><b>5. Fundamento.</b> A obra se ampara na liberdade de expressão, de manifestação artística e de humor (Constituição Federal, art. 5º, incisos IV e IX, e art. 220) e na proteção às paródias (Lei nº 9.610/1998, art. 47).</p>
+<p><b>6. Uso por sua conta.</b> O jogo não oferece orientação financeira, jurídica ou política. Compras opcionais são regidas pelas condições informadas na loja e pela <a href="/privacidade">política de privacidade</a>.</p>
+<p><b>7. Público.</b> Conteúdo recomendado para maiores de 12 anos, por tratar de política e corrupção em tom de humor.</p>
+<p><b>8. Contato.</b> Se você entende que algum conteúdo o atinge indevidamente, escreva para <a href="mailto:contato@vorkaro.site">contato@vorkaro.site</a>. Analisaremos com boa-fé e rapidez.</p>
+<p><a href="/">Voltar ao jogo</a> · <a href="/suporte">Suporte</a></p>
 `);
 
 const MIME: Record<string, string> = {
@@ -184,6 +197,7 @@ Bun.serve({
     if (pathname.startsWith("/api/")) return (await api(req, pathname)) || json({ error: "Rota não encontrada." }, 404);
     if (pathname === "/privacidade" || pathname === "/privacy") return new Response(privacy, { headers: htmlHeaders });
     if (pathname === "/suporte" || pathname === "/support") return new Response(support, { headers: htmlHeaders });
+    if (pathname === "/aviso" || pathname === "/legal") return new Response(legalNotice, { headers: htmlHeaders });
     if (pathname === "/sw.js") return new Response(swSource, { headers: { "content-type": MIME.js, "cache-control": "no-cache", "service-worker-allowed": "/" } });
 
     // Arquivos estáticos de public/ (manifesto, ícones, fontes, imagem de preview).

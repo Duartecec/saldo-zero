@@ -162,6 +162,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 .form{display:grid;gap:10px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:14px}.form h3{margin:0;font-family:var(--display);font-weight:400;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)}.form label{display:grid;gap:4px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mute);font-weight:700}.form input{font:inherit;font-size:16px;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0a0c18;color:var(--fg);min-width:0}.form input:focus{outline:2px solid var(--gold)}.form .err{color:var(--red);font-size:13px;min-height:1em}.linkish{color:var(--mute);font-size:13px;text-decoration:underline;padding:8px;justify-self:center}
 .movebar{display:flex;gap:10px;align-items:center}.movebar button.move{flex:1;background:linear-gradient(160deg,#3b2f6b,#241c4a);border:1px solid #7b6fd6;border-bottom:4px solid #141033;border-radius:14px;padding:12px;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:10px}.movebar button.move b{font-size:14px}.movebar button.move small{color:#c9c2ff;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700}.fav{display:inline-flex;align-items:center;gap:4px;background:#0a0c18;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .moves{display:grid;gap:8px}.moves button{display:flex;align-items:center;gap:12px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left}.moves button:disabled{opacity:.45}.moves .ico{font-size:26px}.moves .txt{flex:1;min-width:0}.moves .txt b{display:block}.moves .txt small{color:var(--mute);display:block}.moves .cost{white-space:nowrap;color:var(--gold);font-weight:800;font-size:13px}
+.legal p{margin:0 0 10px;font-size:13.5px;line-height:1.5;color:var(--mute)}.legal p:last-child{margin:0}.legal b{color:var(--fg)}.legal .mail{color:var(--gold);user-select:all}
 .cols{gap:14px}.col{display:flex;flex-direction:column;gap:14px;min-width:0}.form .two{display:grid;gap:10px}
 @media (min-width:600px){.form .two{grid-template-columns:1fr 1fr}}
 @media (min-width:1000px){#startScreen .inner{max-width:1080px;display:grid;grid-template-columns:1.05fr .95fr;gap:14px 40px;align-items:start}#startScreen .h1{font-size:58px}}
@@ -303,7 +304,26 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
       <span>🚨 <b>Radar</b> · calor da investigação</span>
     </div>
     <p class="lead" style="font-size:12px" id="legalNote">Obra de ficção e sátira. Personagens, bancos, veículos e instituições são inventados. Nenhuma cobrança real.</p>
+    <p class="lead" style="font-size:12px"><button class="linkish" id="legalLink" style="padding:0;justify-self:start">Aviso legal e de conteúdo</button></p>
    </div>
+  </div>
+</div>
+
+<div class="screen" id="legalScreen" hidden>
+  <div class="inner" style="max-width:640px">
+    <div class="h1" style="font-size:36px">Aviso <em>legal</em> e de conteúdo</div>
+    <div class="panel legal">
+      <p><b>1. Obra de ficção e sátira.</b> Saldo Zero é um jogo de humor e crítica social em forma de sátira. Todos os personagens, nomes, empresas, bancos, veículos de imprensa, partidos, instituições, diálogos e situações são fictícios e foram criados exclusivamente para entretenimento.</p>
+      <p><b>2. Inspiração em temas de interesse público.</b> A sátira dialoga, de forma caricatural e exagerada, com temas de interesse público amplamente noticiados pela imprensa. Isso não significa que o jogo narre fatos reais nem que descreva a conduta de qualquer pessoa, empresa ou instituição real. Eventual semelhança de nomes é recurso de paródia, não identificação.</p>
+      <p><b>3. Nenhum juízo de valor ou acusação.</b> O jogo não afirma, sugere nem insinua que qualquer pessoa, empresa ou instituição real tenha praticado os atos retratados. As "escolhas" e seus efeitos são mecânicas de jogo, sem relação com fatos; não expressam opinião do desenvolvedor sobre pessoas reais nem constituem aconselhamento de qualquer natureza.</p>
+      <p><b>4. Sem vínculo.</b> Não há vínculo, patrocínio, endosso ou autorização de qualquer pessoa, empresa, partido ou órgão público eventualmente evocado pela paródia.</p>
+      <p><b>5. Fundamento.</b> A obra se ampara na liberdade de expressão, de manifestação artística e de humor (Constituição Federal, art. 5º, incisos IV e IX, e art. 220) e na proteção às paródias (Lei nº 9.610/1998, art. 47).</p>
+      <p><b>6. Uso por sua conta.</b> O jogo não oferece orientação financeira, jurídica ou política. Compras opcionais são regidas pelas condições informadas na loja e pela política de privacidade.</p>
+      <p><b>7. Público.</b> Conteúdo recomendado para maiores de 12 anos, por tratar de política e corrupção em tom de humor.</p>
+      <p><b>8. Contato.</b> Se você entende que algum conteúdo o atinge indevidamente, escreva para <span class="mail">contato@vorkaro.site</span>. Analisaremos com boa-fé e rapidez.</p>
+    </div>
+    <button class="big" id="legalOk">Li e entendi. Quero jogar.</button>
+    <button class="big alt" id="legalClose" hidden>Fechar</button>
   </div>
 </div>
 
@@ -1030,9 +1050,15 @@ $('openShop').hidden=!(NATIVE&&NATIVE.store);$('openShop').onclick=openShop;$('b
 $('btnAgain').onclick=()=>{$('endScreen').hidden=true;newGame(s.mode)};
 $('btnHome').onclick=showStart;
 $('btnMenu').onclick=showStart;
-$('playDaily').onclick=()=>{$('startScreen').hidden=true;newGame('daily')};
-$('btnResume').onclick=()=>{const run=store.get('run',null);if(!run||run.over||!BY_ID[run.card])return;s=run;s.log=s.log||[];s.zapRead=s.zapRead||{};rng=mulberry(hash(s.seed+':'+s.turn));$('startScreen').hidden=true;$('tut').hidden=true;render();dealIn()};
-$('playFree').onclick=()=>{$('startScreen').hidden=true;newGame('free')};
+/* Aviso legal: exibido uma vez antes da primeira partida; depois, acessível pelo link. */
+let legalPending=null;
+function withLegal(fn){if(store.get('legalOk',false))return fn();legalPending=fn;$('legalOk').hidden=false;$('legalClose').hidden=true;$('legalScreen').hidden=false;$('legalScreen').scrollTop=0}
+$('legalOk').onclick=()=>{store.set('legalOk',true);$('legalScreen').hidden=true;const fn=legalPending;legalPending=null;if(fn)fn()};
+$('legalClose').onclick=()=>{$('legalScreen').hidden=true};
+$('legalLink').onclick=()=>{$('legalOk').hidden=true;$('legalClose').hidden=false;$('legalScreen').hidden=false;$('legalScreen').scrollTop=0};
+$('playDaily').onclick=()=>withLegal(()=>{$('startScreen').hidden=true;newGame('daily')});
+$('btnResume').onclick=()=>withLegal(()=>{const run=store.get('run',null);if(!run||run.over||!BY_ID[run.card])return;s=run;s.log=s.log||[];s.zapRead=s.zapRead||{};rng=mulberry(hash(s.seed+':'+s.turn));$('startScreen').hidden=true;$('tut').hidden=true;render();dealIn()});
+$('playFree').onclick=()=>withLegal(()=>{$('startScreen').hidden=true;newGame('free')});
 
 /* ============ Boot (with hot-reload snapshot for the artifact viewer) ============ */
 function snapshot(){try{window.claude?.hot?.snapshot?.(()=>({s,rngState:null}))}catch{}store.set('run',(s&&!s.over)?s:null)}

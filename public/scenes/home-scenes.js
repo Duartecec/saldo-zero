@@ -7,7 +7,7 @@
   var root, scenes = [], idx = 0, timer = null, started = false, userPaused = false;
   var reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function visible() { return !document.hidden && !userPaused && root && root.offsetParent !== null; }
+  function visible() { return !document.hidden && !userPaused && root && root.getClientRects().length > 0; }
 
   function show(i) {
     if (!scenes.length) return;

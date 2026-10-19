@@ -286,9 +286,16 @@ button:focus-visible,[tabindex]:focus-visible,a:focus-visible{outline:3px solid 
 #startScreen{background:var(--ink)}
 #homeScenes{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:var(--ink)}
 #homeScenes::before{content:"";position:absolute;inset:-4%;background:var(--skyline) center bottom/cover no-repeat,var(--dots);background-size:cover,7px 7px;filter:blur(2px)}
-#homeScenes::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 40%,#10111455 0,#101114cc 100%)}
-#homeScenes .scene{position:absolute;inset:-4%;width:108%;height:108%;object-fit:cover;opacity:0;transition:opacity 1.2s var(--ease-io);filter:blur(6px) brightness(.55) saturate(.9)}
-#homeScenes .scene.on{opacity:1}
+#homeScenes::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#10111499 0,#10111433 38%,#10111433 62%,#101114bb 100%)}
+#startScreen .panel{background:#14161ccc;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+#startScreen .hero .lead{color:var(--fg);text-shadow:0 1px 8px #000a}
+#startScreen .big.alt{background:#14161cbf;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+#startScreen .h1{text-shadow:0 2px 14px #000c}
+#homeScenes .scene,#homeScenes .hs-scene{position:absolute;inset:-4%;width:108%;height:108%;object-fit:cover;opacity:0;transition:opacity 1.2s var(--ease-io);filter:blur(2.5px) brightness(.82) saturate(.95);will-change:opacity}
+#homeScenes .scene.on,#homeScenes .hs-scene.is-active{opacity:1}
+#homeScenes .hs-scene svg{display:block;width:100%;height:100%}
+#homeScenes .hs-scene:not(.is-active) svg *,#homeScenes.hs-paused svg *{animation-play-state:paused!important}
+@media (prefers-reduced-motion:reduce){#homeScenes .hs-scene{transition:none}#homeScenes svg *{animation:none!important}}
 .home-top{display:flex;flex-direction:column;gap:8px;grid-column:1/-1}
 .home-brand{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
 .home-brand .logo{font-family:var(--display);font-size:56px;line-height:.9;text-transform:uppercase;letter-spacing:1px}
@@ -402,12 +409,7 @@ button:focus-visible,[tabindex]:focus-visible,a:focus-visible{outline:3px solid 
    <div class="col">
     <div class="hero">
      <div class="h1">Sobreviva ao <em>poder</em>.<br>Até quando der.</div>
-     <p class="lead">Você é Danilo Vorkaro, dono do Banco Maxter. Senadores, ministros, jornalistas, doleiros e sua mãe vão mandar mensagem. Cada resposta mexe no caixa, no poder, na imagem e no radar da investigação.</p>
-    </div>
-    <div class="panel summary">
-      <h3>Desafio diário</h3>
-      <p id="dailyInfo">Todo mundo joga a mesma sequência de cartas hoje. Compare seu resultado com os amigos.</p>
-      <p id="bestInfo"></p>
+     <p class="lead">Você é Danilo Vorkaro, dono do Banco Maxter. Responda às mensagens do poder e fuja da PF o máximo de dias que der.</p>
     </div>
     <div class="playbtns">
      <button class="big" id="btnResume" hidden>Continuar a partida</button>
@@ -446,6 +448,11 @@ button:focus-visible,[tabindex]:focus-visible,a:focus-visible{outline:3px solid 
     </div>
    </div>
    <div class="col">
+    <div class="panel summary">
+      <h3>Desafio diário</h3>
+      <p id="dailyInfo">Todo mundo joga a mesma sequência de cartas hoje. Compare seu resultado com os amigos.</p>
+      <p id="bestInfo"></p>
+    </div>
     <div class="panel" id="rankPanel"><h3>Ranking de hoje</h3><div id="rankList"><p>Carregando…</p></div></div>
     <div class="panel">
       <h3>Finais descobertos <span id="endCount"></span></h3>
@@ -1532,3 +1539,4 @@ applySafeNames();
 if(NATIVE&&NATIVE.store)native({type:'store',action:'entitlements'});else{initWebStore();loadMe()}
 try{window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{})}catch{start({})}
 </script>
+<script src="/scenes/home-scenes.js" defer></script>

@@ -1,6 +1,6 @@
 # SALDO ZERO
 
-Jogo narrativo satírico e fictício. Você é um banqueiro tentando sobreviver ao poder: arraste cartas, segure o caixa e fuja da Operação Saldo Zero. Roda no navegador (mobile first) e como app iOS.
+Jogo narrativo satírico e fictício. Você é um banqueiro tentando sobreviver ao poder: arraste cartas, segure o caixa e fuja da Operação Saldo Zero. Roda no navegador (mobile first) como PWA: instala na tela inicial e funciona sem internet.
 
 ## Execução (web)
 
@@ -10,15 +10,15 @@ Requer [Bun](https://bun.sh/).
 bun run start
 ```
 
-O servidor usa a variável `PORT` (padrão `3000`). Ele monta a página em memória a partir de `game.html` e serve também `/privacidade` e `/suporte` (páginas exigidas pela App Store). `./build.sh` gera um `index.html` standalone (não versionado) quando for preciso um arquivo estático.
+O servidor usa a variável `PORT` (padrão `3000`) e, opcionalmente, `SITE_URL` (domínio público usado nas tags de preview). Ele monta a página em memória a partir de `game.html`, troca o Google Fonts pelas fontes locais, serve o PWA (manifesto, service worker, ícones) e as páginas `/privacidade` e `/suporte`. `./build.sh` gera um `index.html` standalone (não versionado) quando for preciso um arquivo estático.
 
 ## Arquivos
 
 - `game.html` — todo o jogo (estilos, baralho, mecânicas, telas, ponte com o app nativo).
 - `server.ts` — servidor Bun.
 - `scripts/sim.js` — joga dezenas de partidas aleatórias em Chromium headless e imprime a distribuição de finais e erros de console.
-- `ios/` — app iOS para a App Store, construído com xtool. Guia de publicação em `ios/AppStore/README.md`.
-- `.github/workflows/ios-testflight.yml` — build de distribuição e upload ao App Store Connect em runner macOS.
+- `public/` — manifesto do PWA, service worker, ícones, imagem de preview (`og.png`) e fontes.
+- App iOS (xtool + StoreKit) guardado na branch `claude/ios-app`, caso a distribuição em loja volte à pauta.
 
 ## Hospedagem
 

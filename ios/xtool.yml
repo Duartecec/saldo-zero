@@ -1,5 +1,0 @@
-version: 1
-bundleID: com.saldozero.app
-product: SaldoZero
-infoPath: Support/Info.plist
-iconPath: Resources/AppIcon.png

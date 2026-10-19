@@ -2,18 +2,17 @@
 // Protegido por ADMIN_TOKEN (variável de ambiente), enviado no header x-admin-token.
 import { db, now } from "./db";
 import { PRODUCTS, grantEntitlement } from "./store";
-import { AuthError, normalizeNick } from "./auth";
+import { AuthError, normalizeNick, normalizePin, eraseUser, adminIssueCode } from "./auth";
+import { timingSafeEqual } from "node:crypto";
 
 const TOKEN = Bun.env.ADMIN_TOKEN || "";
 export const adminEnabled = TOKEN.length >= 16;
 
 export function adminAuthorized(req: Request) {
   if (!adminEnabled) return false;
-  const given = req.headers.get("x-admin-token") || "";
-  if (given.length !== TOKEN.length) return false;
-  let diff = 0;
-  for (let i = 0; i < TOKEN.length; i++) diff |= given.charCodeAt(i) ^ TOKEN.charCodeAt(i);
-  return diff === 0;
+  const given = Buffer.from(req.headers.get("x-admin-token") || "");
+  const expected = Buffer.from(TOKEN);
+  return given.length === expected.length && timingSafeEqual(given, expected);
 }
 
 const PAID = "('RECEIVED','CONFIRMED','RECEIVED_IN_CASH')";
@@ -51,7 +50,7 @@ export function listUsers(qstr: string, page = 1) {
 }
 
 export function userDetail(id: number) {
-  const user = db.query("SELECT id, nick_display AS nick, email, email_verified, created_at, last_seen, favores, blocked, note, progress, code, code_kind, code_expires FROM users WHERE id = ?").get(id) as any;
+  const user = db.query("SELECT id, nick_display AS nick, email, email_verified, created_at, last_seen, favores, blocked, note, progress, code_kind, code_expires, pin_fails, locked_until FROM users WHERE id = ?").get(id) as any;
   if (!user) throw new AuthError("Usuário não encontrado.", 404);
   return {
     user,
@@ -75,7 +74,7 @@ export async function userAction(id: number, input: any) {
       db.run("UPDATE users SET blocked = 0 WHERE id = ?", [id]);
       break;
     case "delete":
-      db.run("DELETE FROM users WHERE id = ?", [id]);
+      eraseUser(id); // mesma exclusão do "Excluir minha conta": pedidos ficam anonimizados
       break;
     case "favores": {
       const n = Math.trunc(Number(input?.n));
@@ -86,7 +85,7 @@ export async function userAction(id: number, input: any) {
     case "grant": {
       const productId = String(input?.productId || "");
       if (!PRODUCTS[productId]) throw new AuthError("Produto inválido.");
-      grantEntitlement(id, productId, "admin-" + now());
+      grantEntitlement(id, productId, "admin-" + now() + "-" + crypto.randomUUID().slice(0, 8));
       break;
     }
     case "revoke": {
@@ -95,10 +94,9 @@ export async function userAction(id: number, input: any) {
       break;
     }
     case "pin": {
-      const pin = String(input?.pin || "");
-      if (!/^\d{4,8}$/.test(pin)) throw new AuthError("PIN: de 4 a 8 números.");
+      const pin = normalizePin(input?.pin, "new");
       const hash = await Bun.password.hash(pin, { algorithm: "argon2id", memoryCost: 19456, timeCost: 2 });
-      db.run("UPDATE users SET pin_hash = ? WHERE id = ?", [hash, id]);
+      db.run("UPDATE users SET pin_hash = ?, pin_fails = 0, locked_until = 0 WHERE id = ?", [hash, id]);
       db.run("DELETE FROM sessions WHERE user_id = ?", [id]);
       break;
     }
@@ -107,6 +105,15 @@ export async function userAction(id: number, input: any) {
       try { db.run("UPDATE users SET nick = ?, nick_display = ? WHERE id = ?", [key, display, id]); } catch { throw new AuthError("Apelido já em uso.", 409); }
       break;
     }
+    case "newcode": {
+      // O código só é guardado como hash: o painel gera um novo e mostra uma única vez para repassar ao jogador.
+      const kind = input?.kind === "reset" ? "reset" : "verify";
+      const code = await adminIssueCode(id, kind);
+      return { ok: true, code, kind };
+    }
+    case "unlock":
+      db.run("UPDATE users SET pin_fails = 0, locked_until = 0 WHERE id = ?", [id]);
+      break;
     case "verify":
       db.run("UPDATE users SET email_verified = 1 WHERE id = ?", [id]);
       break;

@@ -1,7 +1,8 @@
-// Login de jogo: apelido único + PIN de 4 a 8 dígitos. Sem e-mail, sem senha longa.
-// O servidor devolve um token guardado no navegador; o mesmo apelido entra em qualquer aparelho.
-import { db, now } from "./db";
-import { sendMail, verifyEmailTemplate, resetPinTemplate } from "./mail";
+// Login de jogo: apelido único + PIN numérico. Contas novas usam PIN de 6 a 8 dígitos; contas antigas com PIN de 4
+// continuam entrando normalmente. E-mail é opcional (serve para confirmar a conta e recuperar o PIN).
+// O servidor devolve um token guardado no navegador; no banco fica só o hash SHA-256 dele.
+import { db, now, sha256 } from "./db";
+import { sendMail, verifyEmailTemplate, resetPinTemplate, emailInUseTemplate } from "./mail";
 import { isVip } from "./store";
 
 export class AuthError extends Error {
@@ -18,14 +19,32 @@ export function normalizeNick(raw: unknown) {
   if (RESERVED.has(nick.toLowerCase())) throw new AuthError("Esse apelido é reservado.");
   return { key: nick.toLowerCase(), display: nick };
 }
-function normalizePin(raw: unknown) {
+
+// ---- PIN ----
+const COMMON_PINS = new Set(["123123", "321321", "112233", "332211", "121212", "212121", "101010", "010101", "102030", "147258", "159753", "357159", "147852", "258369", "123321", "654456", "696969", "777777", "131313", "202020", "100200", "123654", "789456", "456789", "987654"]);
+/// PIN óbvio: todos iguais, sequência crescente/decrescente, padrão repetido (1212.., 123123) ou lista comum.
+export function obviousPin(pin: string) {
+  if (/^(\d)\1+$/.test(pin)) return true;
+  const d = [...pin].map(Number);
+  const step = d[1] - d[0];
+  if ((step === 1 || step === -1) && d.every((x, i) => i === 0 || (x - d[i - 1] + 10) % 10 === (step + 10) % 10)) return true;
+  for (const len of [2, 3, 4]) if (pin.length % len === 0 && pin.length > len && pin === pin.slice(0, len).repeat(pin.length / len)) return true;
+  return COMMON_PINS.has(pin) || COMMON_PINS.has(pin.slice(0, 6));
+}
+/// "login": aceita PINs antigos (4 a 8). "new": cadastro e troca exigem 6 a 8 números e bloqueiam PINs óbvios.
+export function normalizePin(raw: unknown, mode: "login" | "new" = "login") {
   const pin = String(raw || "").trim();
-  if (!/^\d{4,8}$/.test(pin)) throw new AuthError("PIN: de 4 a 8 números.");
-  if (/^(\d)\1+$/.test(pin) || pin === "1234" || pin === "123456") throw new AuthError("Escolha um PIN menos óbvio.");
+  if (mode === "login") {
+    if (!/^\d{4,8}$/.test(pin)) throw new AuthError("PIN: de 4 a 8 números.");
+    return pin;
+  }
+  if (!/^\d{6,8}$/.test(pin)) throw new AuthError("Escolha um PIN de 6 números (até 8).");
+  if (obviousPin(pin)) throw new AuthError("Esse PIN é fácil de adivinhar (sequência ou repetição). Escolha outro.");
   return pin;
 }
+const hashPin = (pin: string) => Bun.password.hash(pin, { algorithm: "argon2id", memoryCost: 19456, timeCost: 2 });
 
-export type UserRow = { id: number; nick: string; nick_display: string; pin_hash: string; progress: string; created_at: number; last_seen: number; favores: number; blocked: number; note: string; email: string | null; email_verified: number; code: string | null; code_kind: string | null; code_expires: number; code_attempts: number };
+export type UserRow = { id: number; nick: string; nick_display: string; pin_hash: string; progress: string; created_at: number; last_seen: number; favores: number; blocked: number; note: string; email: string | null; email_verified: number; code: string | null; code_kind: string | null; code_expires: number; code_attempts: number; pin_fails: number; locked_until: number; code_window: number; code_sends: number };
 const DEV_CODES = Bun.env.DEV_CODES === "1";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 export function normalizeEmail(raw: unknown) {
@@ -33,30 +52,51 @@ export function normalizeEmail(raw: unknown) {
   if (!EMAIL_RE.test(email) || email.length > 120) throw new AuthError("Informe um e-mail válido.");
   return email;
 }
-const newCode = () => String(Math.floor(100000 + Math.random() * 900000));
+
+// ---- códigos por e-mail (6 dígitos, aleatórios de verdade, guardados como hash, 30 min) ----
+const CODE_TTL = 30 * 60_000;
+const DAY = 864e5;
+const MAX_SENDS_PER_DAY = 5;      // códigos enviados por conta em 24 h (confirmação + troca de PIN)
+const MAX_CODE_FAILS_PER_DAY = 10; // erros de código por conta em 24 h; pedir código novo NÃO zera
+function newCode() {
+  const buf = new Uint32Array(1);
+  let n: number;
+  do { crypto.getRandomValues(buf); n = buf[0]; } while (n >= 4_294_000_000); // evita viés do módulo
+  return String(n % 1_000_000).padStart(6, "0");
+}
+const codeHash = (userId: number, kind: string, code: string) => sha256("sz-code:" + userId + ":" + kind + ":" + code);
+/// Abre uma janela nova de 24 h quando a anterior venceu (zera os contadores só então).
+function rollWindow(userId: number) {
+  db.run("UPDATE users SET code_window = ?, code_sends = 0, code_attempts = 0 WHERE id = ? AND code_window < ?", [now(), userId, now() - DAY]);
+}
 async function issueCode(userId: number, kind: "verify" | "reset") {
+  rollWindow(userId);
+  const r = db.run("UPDATE users SET code_sends = code_sends + 1 WHERE id = ? AND code_sends < ?", [userId, MAX_SENDS_PER_DAY]);
+  if (r.changes === 0) return { code: null, sent: false, limited: true };
   const code = newCode();
-  db.run("UPDATE users SET code = ?, code_kind = ?, code_expires = ?, code_attempts = 0 WHERE id = ?", [code, kind, now() + 30 * 60_000, userId]);
+  db.run("UPDATE users SET code = ?, code_kind = ?, code_expires = ? WHERE id = ?", [codeHash(userId, kind, code), kind, now() + CODE_TTL, userId]);
   const u = db.query("SELECT nick_display, email FROM users WHERE id = ?").get(userId) as { nick_display: string; email: string | null };
   let sent = false;
   if (u?.email) {
     const tpl = kind === "verify" ? verifyEmailTemplate(u.nick_display, code) : resetPinTemplate(u.nick_display, code);
     sent = (await sendMail(u.email, tpl.subject, tpl.html, tpl.text)).sent;
   }
-  lastSent.set(userId, sent);
-  return code;
+  return { code, sent, limited: false };
 }
-const lastSent = new Map<number, boolean>();
-const sentFlag = (userId: number) => ({ sent: lastSent.get(userId) === true });
 function consumeCode(user: UserRow, kind: string, given: unknown) {
   const code = String(given || "").trim();
   if (!/^\d{6}$/.test(code)) throw new AuthError("Código: 6 números.");
+  rollWindow(user.id);
   const fresh = db.query("SELECT code, code_kind, code_expires, code_attempts FROM users WHERE id = ?").get(user.id) as any;
+  if (fresh.code_attempts >= MAX_CODE_FAILS_PER_DAY) throw new AuthError("Muitas tentativas erradas. Tente de novo amanhã ou fale com o suporte.", 429);
   if (!fresh?.code || fresh.code_kind !== kind || fresh.code_expires < now()) throw new AuthError("Código expirado. Peça um novo.", 410);
-  if (fresh.code_attempts >= 5) throw new AuthError("Muitas tentativas. Peça um novo código.", 429);
-  if (fresh.code !== code) { db.run("UPDATE users SET code_attempts = code_attempts + 1 WHERE id = ?", [user.id]); throw new AuthError("Código incorreto.", 401); }
+  if (fresh.code !== codeHash(user.id, kind, code)) {
+    db.run("UPDATE users SET code_attempts = code_attempts + 1 WHERE id = ?", [user.id]);
+    throw new AuthError("Código incorreto.", 401);
+  }
   db.run("UPDATE users SET code = NULL, code_kind = NULL, code_expires = 0, code_attempts = 0 WHERE id = ?", [user.id]);
 }
+const codeExtras = (r: { code: string | null; sent: boolean; limited: boolean }) => ({ sent: r.sent, ...(r.limited ? { limited: true } : {}), ...(DEV_CODES && r.code ? { devCode: r.code } : {}) });
 
 export function nickAvailable(raw: unknown) {
   const { key, display } = normalizeNick(raw);
@@ -64,61 +104,96 @@ export function nickAvailable(raw: unknown) {
   return { nick: display, available: !row };
 }
 
-// Tentativas falhas por apelido (anti força bruta no PIN).
-const failures = new Map<string, { n: number; until: number }>();
-function checkLock(key: string) {
-  const f = failures.get(key);
-  if (f && f.until > now()) throw new AuthError("Muitas tentativas. Tente de novo em alguns minutos.", 429);
+// ---- bloqueio progressivo do PIN, persistido por conta ----
+// 5 erros seguidos: 1 min; cada erro seguinte dobra (2, 4, 8 min...) até 24 h. Acertar zera.
+const FREE_FAILS = 5;
+function lockMinutes(fails: number) { return fails < FREE_FAILS ? 0 : Math.min(24 * 60, 2 ** (fails - FREE_FAILS)); }
+function checkLock(row: UserRow) {
+  if (row.locked_until > now()) {
+    const min = Math.ceil((row.locked_until - now()) / 60_000);
+    throw new AuthError("Muitas tentativas erradas. Tente de novo em " + min + " min ou use \"Esqueci o PIN\".", 429);
+  }
 }
-function noteFailure(key: string) {
-  const f = failures.get(key) || { n: 0, until: 0 };
-  f.n++;
-  if (f.n >= 6) { f.until = now() + 15 * 60_000; f.n = 0; }
-  failures.set(key, f);
+function noteFailure(row: UserRow) {
+  const fails = (row.pin_fails || 0) + 1;
+  const min = lockMinutes(fails);
+  db.run("UPDATE users SET pin_fails = ?, locked_until = ? WHERE id = ?", [fails, min ? now() + min * 60_000 : 0, row.id]);
 }
 
-async function newSession(userId: number) {
-  const token = crypto.randomUUID() + crypto.randomUUID().replace(/-/g, "");
-  db.run("INSERT INTO sessions (token, user_id, created_at, last_seen) VALUES (?, ?, ?, ?)", [token, userId, now(), now()]);
+// ---- sessões ----
+export const SESSION_MAX_AGE = 90 * DAY;   // expiração absoluta
+export const SESSION_IDLE = 30 * DAY;      // expiração por inatividade
+const TOUCH_EVERY = 60 * 60_000;           // last_seen é atualizado no máximo 1x por hora
+function newSession(userId: number) {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  const token = Buffer.from(bytes).toString("base64url") + Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString("base64url");
+  db.run("INSERT INTO sessions (token_hash, user_id, created_at, last_seen) VALUES (?, ?, ?, ?)", [sha256(token), userId, now(), now()]);
   return token;
+}
+export function cleanupSessions() {
+  const r = db.run("DELETE FROM sessions WHERE created_at < ? OR last_seen < ?", [now() - SESSION_MAX_AGE, now() - SESSION_IDLE]);
+  return r.changes;
+}
+function tokenOf(req: Request) {
+  const auth = req.headers.get("authorization") || "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  return /^[\w-]{40,120}$/.test(token) ? token : "";
 }
 
 /// Entra se o apelido existe (PIN precisa bater); cria a conta se não existe.
 export async function enter(input: any) {
   const { key, display } = normalizeNick(input?.nick);
-  const pin = normalizePin(input?.pin);
-  checkLock(key);
   const row = db.query("SELECT * FROM users WHERE nick = ?").get(key) as UserRow | null;
   if (row) {
+    const pin = normalizePin(input?.pin, "login");
     if (row.blocked) throw new AuthError("Esta conta foi bloqueada. Fale com o suporte pelo menu Ajuda.", 403);
+    checkLock(row);
     const ok = await Bun.password.verify(pin, row.pin_hash);
-    if (!ok) { noteFailure(key); throw new AuthError("PIN incorreto para este apelido.", 401); }
-    failures.delete(key);
-    db.run("UPDATE users SET last_seen = ? WHERE id = ?", [now(), row.id]);
-    return { token: await newSession(row.id), user: publicUser(row), created: false };
+    if (!ok) { noteFailure(row); throw new AuthError("PIN incorreto para este apelido.", 401); }
+    db.run("UPDATE users SET last_seen = ?, pin_fails = 0, locked_until = 0 WHERE id = ?", [now(), row.id]);
+    return { token: newSession(row.id), user: publicUser(row), created: false };
   }
   if (input?.create !== true) throw new AuthError("Apelido livre. Confirme para criar sua conta.", 404);
+  const pin = normalizePin(input?.pin, "new");
   // E-mail é opcional no cadastro; o jogo pede depois, com um lembrete fixo.
   const email = String(input?.email || "").trim() ? normalizeEmail(input?.email) : null;
-  if (email && db.query("SELECT id FROM users WHERE email = ?").get(email)) throw new AuthError("Este e-mail já tem uma conta. Entre com o apelido dela ou use \"Esqueci o PIN\".", 409);
-  const hash = await Bun.password.hash(pin, { algorithm: "argon2id", memoryCost: 19456, timeCost: 2 });
+  const hash = await hashPin(pin);
   try {
     db.run("INSERT INTO users (nick, nick_display, pin_hash, created_at, last_seen, email) VALUES (?, ?, ?, ?, ?, ?)", [key, display, hash, now(), now(), email]);
   } catch {
     throw new AuthError("Esse apelido acabou de ser escolhido por outra pessoa.", 409);
   }
   const created = db.query("SELECT * FROM users WHERE nick = ?").get(key) as UserRow;
-  const code = email ? await issueCode(created.id, "verify") : null;
-  return { token: await newSession(created.id), user: publicUser(created), created: true, ...(email ? sentFlag(created.id) : {}), ...(DEV_CODES && code ? { devCode: code } : {}) };
+  const extras = email ? await startEmailVerification(created.id, email) : {};
+  return { token: newSession(created.id), user: publicUser(created), created: true, ...extras };
+}
+
+/// Resposta igual para e-mail livre ou já confirmado em outra conta (não revela cadastros). Se já estiver em uso,
+/// o dono do endereço recebe um aviso em vez do código.
+async function startEmailVerification(userId: number, email: string) {
+  const owner = db.query("SELECT id FROM users WHERE email = ? AND email_verified = 1 AND id != ?").get(email, userId);
+  if (owner) {
+    const tpl = emailInUseTemplate();
+    return { sent: (await sendMail(email, tpl.subject, tpl.html, tpl.text)).sent };
+  }
+  return codeExtras(await issueCode(userId, "verify"));
 }
 
 export function userFromRequest(req: Request): UserRow | null {
-  const auth = req.headers.get("authorization") || "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
-  if (!/^[\w-]{40,120}$/.test(token)) return null;
-  const row = db.query("SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?").get(token) as UserRow | null;
-  if (row && row.blocked) return null;
-  if (row) db.run("UPDATE sessions SET last_seen = ? WHERE token = ?", [now(), token]);
+  const token = tokenOf(req);
+  if (!token) return null;
+  const h = sha256(token);
+  const row = db.query("SELECT u.*, s.created_at AS s_created, s.last_seen AS s_seen FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ?").get(h) as (UserRow & { s_created: number; s_seen: number }) | null;
+  if (!row || row.blocked) return null;
+  if (row.s_created < now() - SESSION_MAX_AGE || row.s_seen < now() - SESSION_IDLE) {
+    db.run("DELETE FROM sessions WHERE token_hash = ?", [h]);
+    return null;
+  }
+  if (now() - row.s_seen > TOUCH_EVERY) {
+    db.run("UPDATE sessions SET last_seen = ? WHERE token_hash = ?", [now(), h]);
+    db.run("UPDATE users SET last_seen = ? WHERE id = ?", [now(), row.id]);
+  }
   return row;
 }
 export function requireUser(req: Request) {
@@ -127,16 +202,20 @@ export function requireUser(req: Request) {
   return u;
 }
 export function logout(req: Request) {
-  const auth = req.headers.get("authorization") || "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
-  if (token) db.run("DELETE FROM sessions WHERE token = ?", [token]);
+  const token = tokenOf(req);
+  if (token) db.run("DELETE FROM sessions WHERE token_hash = ?", [sha256(token)]);
+}
+/// "Sair de todos os aparelhos": encerra todas as sessões da conta, inclusive a atual.
+export function logoutAll(user: UserRow) {
+  const r = db.run("DELETE FROM sessions WHERE user_id = ?", [user.id]);
+  return { ok: true, sessions: r.changes };
 }
 
 export function publicUser(row: UserRow) {
   const fresh = db.query("SELECT favores, email, email_verified FROM users WHERE id = ?").get(row.id) as { favores: number; email: string | null; email_verified: number } | null;
   return { id: row.id, nick: row.nick_display, createdAt: row.created_at, progress: safeJSON(row.progress), favores: fresh?.favores ?? 0, email: fresh?.email ? maskEmail(fresh.email) : null, emailVerified: !!fresh?.email_verified, vip: isVip(row.id) };
 }
-const maskEmail = (e: string) => { const [u, d] = e.split("@"); return (u.length <= 2 ? u[0] + "*" : u.slice(0, 2) + "***") + "@" + d; };
+export const maskEmail = (e: string) => { const [u, d] = e.split("@"); return (u.length <= 2 ? u[0] + "*" : u.slice(0, 2) + "***") + "@" + d; };
 export function requireVerified(user: UserRow) {
   const fresh = db.query("SELECT email_verified FROM users WHERE id = ?").get(user.id) as { email_verified: number };
   if (!fresh?.email_verified) throw new AuthError("Confirme seu e-mail para continuar (menu da conta).", 403);
@@ -145,45 +224,72 @@ export function requireVerified(user: UserRow) {
 // ---- e-mail: confirmação, reenvio, troca e recuperação de PIN ----
 export async function verifyEmail(user: UserRow, input: any) {
   consumeCode(user, "verify", input?.code);
-  db.run("UPDATE users SET email_verified = 1 WHERE id = ?", [user.id]);
+  try {
+    db.run("UPDATE users SET email_verified = 1 WHERE id = ?", [user.id]);
+  } catch {
+    throw new AuthError("Este e-mail já está confirmado em outra conta. Use \"Esqueci o PIN\" com o apelido dela.", 409);
+  }
   return { ok: true };
 }
 export async function resendVerification(user: UserRow) {
-  const fresh = db.query("SELECT email, email_verified, code_expires FROM users WHERE id = ?").get(user.id) as any;
+  const fresh = db.query("SELECT email, email_verified FROM users WHERE id = ?").get(user.id) as any;
   if (!fresh?.email) throw new AuthError("Cadastre um e-mail primeiro.");
   if (fresh.email_verified) return { ok: true, already: true };
-  const code = await issueCode(user.id, "verify");
-  return { ok: true, ...sentFlag(user.id), ...(DEV_CODES ? { devCode: code } : {}) };
+  const r = await startEmailVerification(user.id, fresh.email);
+  if ((r as any).limited) throw new AuthError("Limite de códigos de hoje atingido. Tente amanhã ou fale com o suporte.", 429);
+  return { ok: true, ...r };
 }
 export async function setEmail(user: UserRow, input: any) {
   const email = normalizeEmail(input?.email);
-  const other = db.query("SELECT id FROM users WHERE email = ? AND id != ?").get(email, user.id);
-  if (other) throw new AuthError("Este e-mail já está em outra conta.", 409);
   db.run("UPDATE users SET email = ?, email_verified = 0 WHERE id = ?", [email, user.id]);
-  const code = await issueCode(user.id, "verify");
-  return { ok: true, ...sentFlag(user.id), ...(DEV_CODES ? { devCode: code } : {}) };
+  const r = await startEmailVerification(user.id, email);
+  if ((r as any).limited) throw new AuthError("Limite de códigos de hoje atingido. Tente amanhã ou fale com o suporte.", 429);
+  return { ok: true, ...r };
 }
 export async function forgotPin(input: any) {
   const { key } = normalizeNick(input?.nick);
   const row = db.query("SELECT * FROM users WHERE nick = ?").get(key) as UserRow | null;
-  // Resposta igual com ou sem conta, para não revelar apelidos.
-  let devCode: string | undefined;
-  if (row && row.email && !row.blocked) devCode = await issueCode(row.id, "reset");
+  // Resposta igual com ou sem conta (e com ou sem limite atingido), para não revelar apelidos.
+  let devCode: string | null = null;
+  if (row && row.email && !row.blocked) devCode = (await issueCode(row.id, "reset")).code;
   return { ok: true, ...(DEV_CODES && devCode ? { devCode } : {}) };
 }
 export async function resetPin(input: any) {
   const { key } = normalizeNick(input?.nick);
   const row = db.query("SELECT * FROM users WHERE nick = ?").get(key) as UserRow | null;
   if (!row) throw new AuthError("Código incorreto.", 401);
+  const pin = normalizePin(input?.pin, "new");
   consumeCode(row, "reset", input?.code);
-  const pin = normalizePin(input?.pin);
-  const hash = await Bun.password.hash(pin, { algorithm: "argon2id", memoryCost: 19456, timeCost: 2 });
-  db.run("UPDATE users SET pin_hash = ?, email_verified = 1 WHERE id = ?", [hash, row.id]);
+  const hash = await hashPin(pin);
+  db.run("UPDATE users SET pin_hash = ?, email_verified = 1, pin_fails = 0, locked_until = 0 WHERE id = ?", [hash, row.id]);
   db.run("DELETE FROM sessions WHERE user_id = ?", [row.id]);
-  failures.delete(key);
   return { ok: true };
 }
 function safeJSON(s: string) { try { return JSON.parse(s || "{}"); } catch { return {}; } }
+
+/// Exclusão de conta (LGPD art. 18, VI). Apaga conta, sessões, chamados, resultados e itens. Os pedidos pagos
+/// ficam no banco apenas com id da cobrança, produto, valor, status e datas, SEM vínculo com a pessoa (user_id NULL),
+/// porque a cobrança é registro fiscal da Ebenix (obrigação legal, art. 16, I).
+export async function deleteAccount(user: UserRow, input: any, requirePin = true) {
+  if (requirePin) {
+    const pin = normalizePin(input?.pin, "login");
+    const ok = await Bun.password.verify(pin, user.pin_hash);
+    // 403 (e não 401): o jogo trata 401 como sessão perdida e deslogaria a pessoa por um PIN digitado errado.
+    if (!ok) { noteFailure(user); throw new AuthError("PIN incorreto.", 403); }
+  }
+  eraseUser(user.id);
+  return { ok: true };
+}
+export function eraseUser(userId: number) {
+  db.transaction(() => {
+    db.run("DELETE FROM tickets WHERE user_id = ?", [userId]);
+    db.run("UPDATE orders SET user_id = NULL WHERE user_id = ?", [userId]);
+    db.run("DELETE FROM sessions WHERE user_id = ?", [userId]);
+    db.run("DELETE FROM results WHERE user_id = ?", [userId]);
+    db.run("DELETE FROM entitlements WHERE user_id = ?", [userId]);
+    db.run("DELETE FROM users WHERE id = ?", [userId]);
+  })();
+}
 
 /// Gasta favores da conta de forma atômica; devolve o saldo novo ou lança se não houver saldo.
 export function spendFavores(user: UserRow, n: unknown) {
@@ -195,7 +301,7 @@ export function spendFavores(user: UserRow, n: unknown) {
 }
 
 export function entitlementsOf(userId: number) {
-  const rows = db.query("SELECT product_id FROM entitlements WHERE user_id = ?").all(userId) as { product_id: string }[];
+  const rows = db.query("SELECT DISTINCT product_id FROM entitlements WHERE user_id = ?").all(userId) as { product_id: string }[];
   return rows.map((r) => r.product_id);
 }
 
@@ -203,20 +309,44 @@ export function entitlementsOf(userId: number) {
 export function mergeProgress(user: UserRow, incoming: any) {
   const cur = safeJSON(user.progress);
   const strList = (list: unknown) => (Array.isArray(list) ? list : []).filter((a) => typeof a === "string" && /^[a-z0-9_]{2,24}$/.test(a)).slice(0, 100);
-  const next: any = { ends: { ...(cur.ends || {}) }, ach: [...new Set([...strList(cur.ach), ...strList(incoming?.ach)])], items: [...new Set([...strList(cur.items), ...strList(incoming?.items)])], best: Math.max(cur.best || 0, Number(incoming?.best) || 0) };
-  for (const [k, v] of Object.entries(incoming?.ends || {})) if (/^[a-z]{3,16}$/.test(k)) next.ends[k] = Math.max(next.ends[k] || 0, Math.min(10_000, Number(v) || 0));
+  const next: any = { ends: { ...(cur.ends || {}) }, ach: [...new Set([...strList(cur.ach), ...strList(incoming?.ach)])], items: [...new Set([...strList(cur.items), ...strList(incoming?.items)])], best: Math.max(cur.best || 0, Math.min(MAX_DAYS, Number(incoming?.best) || 0)) };
+  for (const [k, v] of Object.entries(incoming?.ends || {})) if (ENDINGS.has(k)) next.ends[k] = Math.max(next.ends[k] || 0, Math.min(10_000, Number(v) || 0));
   db.run("UPDATE users SET progress = ? WHERE id = ?", [JSON.stringify(next), user.id]);
   return next;
 }
 
-// Resultado do desafio diário: só o primeiro do dia conta.
+// ---- Desafio diário ----
+// O dia é sempre o de Brasília (America/Sao_Paulo), calculado no servidor.
+export function spDay(t = Date.now()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(t));
+}
+// Limites do motor (game.html): cada decisão avança 5–9 dias (capítulo 1, dia < 80), 8–15 (capítulo 2, < 320) ou
+// 14–27 (capítulo 3); o jogo acaba ao chegar no dia 730 ("lenda"). No diário só há os 2 favores da partida
+// (jogadas do Vorkaro: +2 dias cada) e não há recurso. Daí:
+//   dias >= 1 + 5 × decisões;   dias <= 1 + 27 × decisões + 2 × 2;   dias <= 729 + 27 + 4 = 760;
+//   final "lenda" exige dias >= 730; os demais finais acontecem no máximo na decisão que cruza o dia 730.
+const ENDINGS = new Set(["preso", "falencia", "miami", "dono", "descartado", "cancelado", "idolo", "delator", "exilio", "lenda"]);
+export const MAX_DAYS = 760;
+const DAILY_GRACE = 10 * 60_000; // quem começou antes da meia-noite tem 10 min para enviar o resultado de "ontem"
+export function plausibleRun(days: number, turns: number, ending: string) {
+  if (!Number.isInteger(days) || !Number.isInteger(turns)) return false;
+  if (!ENDINGS.has(ending)) return false;
+  if (days < 1 || days > MAX_DAYS || turns < 0 || turns > 160) return false;
+  if (days < 1 + 5 * turns) return false;
+  if (days > 1 + 27 * turns + 4) return false;
+  if (ending === "lenda" && days < 730) return false;
+  return true;
+}
 export function submitDaily(user: UserRow, input: any) {
   const day = String(input?.day || "");
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) throw new AuthError("Dia inválido.");
-  const days = Math.max(1, Math.min(5000, Number(input?.days) || 0));
-  const turns = Math.max(0, Math.min(500, Number(input?.turns) || 0));
+  const today = spDay(), yesterday = spDay(Date.now() - DAILY_GRACE);
+  if (day !== today && day !== yesterday) throw new AuthError("Este desafio diário já fechou. Jogue o de hoje.", 409);
+  const days = Number(input?.days), turns = Number(input?.turns);
   const ending = String(input?.ending || "");
-  if (!/^[a-z]{3,16}$/.test(ending)) throw new AuthError("Final inválido.");
+  if (!plausibleRun(days, turns, ending)) {
+    console.warn("[diário] resultado impossível recusado: conta " + user.id + " dias=" + input?.days + " decisões=" + input?.turns + " final=" + ending);
+    throw new AuthError("Resultado inválido.", 422);
+  }
   db.run("INSERT OR IGNORE INTO results (user_id, day, days, turns, ending, created_at) VALUES (?, ?, ?, ?, ?, ?)", [user.id, day, days, turns, ending, now()]);
   return leaderboard(day, user.id);
 }
@@ -244,7 +374,7 @@ export function createTicket(user: UserRow | null, input: any) {
   const message = String(input?.message || "").trim();
   if (message.length < 10 || message.length > 2000) throw new AuthError("Escreva pelo menos 10 caracteres (máximo 2000).");
   const email = String(input?.email || "").trim().toLowerCase();
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) throw new AuthError("E-mail inválido.");
+  if (email && (!EMAIL_RE.test(email) || email.length > 120)) throw new AuthError("E-mail inválido.");
   if (!user && !email) throw new AuthError("Sem conta, informe um e-mail para receber a resposta.");
   const nick = user ? user.nick_display : String(input?.nick || "").trim().slice(0, 16);
   const r = db.run("INSERT INTO tickets (user_id, nick, email, subject, message, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)", [user?.id ?? null, nick || null, email || null, subject, message, now(), now()]);
@@ -252,4 +382,11 @@ export function createTicket(user: UserRow | null, input: any) {
 }
 export function myTickets(user: UserRow) {
   return db.query("SELECT id, subject, message, status, reply, created_at, updated_at FROM tickets WHERE user_id = ? ORDER BY created_at DESC LIMIT 50").all(user.id);
+}
+
+// ---- Painel: código novo para o jogador cujo e-mail não chegou (mostrado uma vez ao administrador) ----
+export async function adminIssueCode(userId: number, kind: "verify" | "reset") {
+  db.run("UPDATE users SET code_sends = 0 WHERE id = ?", [userId]);
+  const r = await issueCode(userId, kind);
+  return r.code;
 }

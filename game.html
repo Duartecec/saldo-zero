@@ -346,7 +346,7 @@ button:focus-visible,[tabindex]:focus-visible,a:focus-visible{outline:3px solid 
 <div class="app" id="app">
   <header class="mast">
     <div class="brand">Saldo <em>Zero</em><small>SÁTIRA FICCIONAL · BANCO MAXTER</small></div>
-    <div class="mast-right"><span id="chapter">ASCENSÃO</span><b id="date">1 jan 2016</b><span class="mode" id="modePill">DIÁRIO #1</span></div>
+    <div class="mast-right"><span id="chapter">ASCENSÃO</span><b id="date">1 jan 2026</b><span class="mode" id="modePill">DIÁRIO #1</span></div>
   </header>
 
   <div class="stats" id="stats">
@@ -426,7 +426,7 @@ button:focus-visible,[tabindex]:focus-visible,a:focus-visible{outline:3px solid 
       <form id="loginForm" class="form" style="padding:0;border:0;background:none" autocomplete="on">
         <div class="two">
           <label>Apelido<input id="nickInput" name="username" autocomplete="username" maxlength="16" placeholder="ex.: rei_do_pix" required></label>
-          <label>PIN (4 a 8 números)<input id="pinInput" name="password" type="password" inputmode="numeric" autocomplete="current-password" maxlength="8" required></label>
+          <label>PIN (só números)<input id="pinInput" name="password" type="password" inputmode="numeric" autocomplete="current-password" maxlength="8" required></label>
         </div>
         <label id="emailLabel">E-mail (opcional agora)<input id="emailInput" name="email" type="email" autocomplete="email" maxlength="120" placeholder="voce@exemplo.com"></label>
         <div class="err" id="emailHint" style="color:var(--mute)">Serve para recuperar o PIN e proteger suas compras. Dá para informar depois, na sua conta.</div>
@@ -469,7 +469,7 @@ button:focus-visible,[tabindex]:focus-visible,a:focus-visible{outline:3px solid 
       <span><svg class="i" aria-hidden="true"><use href="#i-imagem"/></svg><div><b>Imagem</b> · opinião pública</div></span>
       <span><svg class="i" aria-hidden="true"><use href="#i-radar"/></svg><div><b>Radar</b> · calor da investigação</div></span>
     </div>
-    <p class="lead" style="font-size:12px" id="legalNote">Obra de ficção e sátira. Personagens, bancos, veículos e instituições são inventados. Nenhuma cobrança real.</p>
+    <p class="lead" style="font-size:12px" id="legalNote">Obra de ficção e sátira. Personagens, bancos, veículos e instituições são inventados. Compras opcionais processadas pelo Asaas para EBENIX TECNOLOGIA INOVA SIMPLES (I.S.), CNPJ 68.730.443/0001-71.</p>
     <p class="lead" style="font-size:12px"><button class="linkish" id="legalLink" style="padding:0;justify-self:start">Aviso legal e de conteúdo</button></p>
    </div>
   </div>
@@ -662,19 +662,21 @@ async function shareCover(){
 /* ============ RNG & helpers ============ */
 const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,v));
 function hash(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19}return (h>>>0)}
-function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function mulberry(a){const f=function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};f.state=()=>a|0;return f}
+/* Retomar partida: continua do estado salvo do gerador (mesmas cartas para todos no diário). Partidas antigas sem estado usam a semente. */
+function rngFor(run){return typeof run.rngState==='number'?mulberry(run.rngState):mulberry(hash(run.seed+':'+run.turn))}
 const $=id=>document.getElementById(id);
 const store={get(k,d){try{const v=localStorage.getItem('me2:'+k);return v?JSON.parse(v):d}catch{return d}},set(k,v){try{localStorage.setItem('me2:'+k,JSON.stringify(v))}catch{}}};
 const EPOCH=new Date(2026,9,18);
-function todayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function dailyNumber(){const d=new Date();const t=new Date(d.getFullYear(),d.getMonth(),d.getDate());return Math.max(1,Math.round((t-EPOCH)/864e5)+1)}
+function todayKey(){try{return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}catch{const d=new Date(Date.now()-3*36e5);return d.toISOString().slice(0,10)}}
+function dailyNumber(key){const [y,m,d]=(key||todayKey()).split('-').map(Number);return Math.max(1,Math.round((Date.UTC(y,m-1,d)-Date.UTC(EPOCH.getFullYear(),EPOCH.getMonth(),EPOCH.getDate()))/864e5)+1)}
 
 /* ============ Native bridge (app iOS) ============ */
 /* O app injeta window.MasterEscapeNative={platform,store,shareURL,safeNames} antes do carregamento e expõe
    window.webkit.messageHandlers.native. No navegador tudo isto fica inerte. */
 const NATIVE=window.MasterEscapeNative||null;
 function native(msg){try{window.webkit.messageHandlers.native.postMessage(msg);return true}catch{return false}}
-function shareURL(){return (NATIVE&&NATIVE.shareURL)||location.href.split('#')[0]}
+function shareURL(){const og=document.querySelector('meta[property="og:url"]');return (NATIVE&&NATIVE.shareURL)||(og&&/^https?:\/\//.test(og.content)?og.content:'https://vorkaro.site/')}
 const VIP='com.saldozero.vip';
 const PRODUCTS={
   [VIP]:{icon:'estrela',name:'VIP PARA SEMPRE',desc:'Pagamento único. Vale para sempre, em qualquer aparelho.',kind:'non',perks:['15 favores em toda partida (em vez de 2)','Baralho Ano Eleitoral liberado','Escolha da capa do jornal','Destaque dourado no ranking']},
@@ -704,15 +706,18 @@ async function api(path,opts={}){const h=Object.assign({'content-type':'applicat
   const r=await fetch(path,Object.assign({cache:'no-store'},opts,{headers:h}));let d={};try{d=await r.json()}catch{}
   if(r.status===401&&auth&&!path.startsWith('/api/auth/'))setAuth(null);
   if(!r.ok)throw Object.assign(new Error(d.error||'Falha de conexão.'),{status:r.status});return d}
-function setAuth(a){auth=a;store.set('auth',a);renderAccount()}
+function setAuth(a){auth=a;store.set('auth',a);if(!a){ent=new Set();store.set('ent',[])}renderAccount()}
 function renderAccount(){const f=$('loginForm'),i=$('accountInfo');if(!ONLINE){$('accountPanel').hidden=true;$('rankPanel').hidden=true;return}
   $('resetForm').hidden=true;
   if(auth){f.hidden=true;i.hidden=false;const a=acct||{};
     let ver='';
     if(!a.email)ver='<div class="verify"><b>Cadastre um e-mail</b><small style="color:var(--mute)">Serve para confirmar a conta e recuperar o PIN.</small><div class="two"><input id="addEmail" type="email" placeholder="voce@exemplo.com"><button class="big alt" id="addEmailBtn" style="padding:10px 14px;font-size:14px">Salvar</button></div><div class="err" id="verifyErr"></div></div>';
     else if(!a.emailVerified)ver='<div class="verify"><b>Confirme seu e-mail</b><small style="color:var(--mute)">Enviamos um código de 6 números para '+esc(a.email)+'. Sem confirmar, não dá para comprar nem recuperar o PIN.</small><div class="two"><input id="verifyCode" inputmode="numeric" maxlength="6" placeholder="000000"><button class="big" id="verifyBtn" style="padding:10px 14px;font-size:14px">Confirmar</button></div><div class="err" id="verifyErr"></div><div style="display:flex;gap:12px;flex-wrap:wrap"><button class="linkish" id="resendBtn" style="padding:0">Reenviar código</button><button class="linkish" id="changeEmailBtn" style="padding:0">Trocar e-mail</button></div></div>';
-    i.innerHTML='<p style="color:var(--fg);margin:0">Você está como <b>@'+auth.nick+'</b>'+(a.vip?' <span class="vipbadge">VIP</span>':'')+(a.email&&a.emailVerified?' <small style="color:var(--green)">'+ic('ok',12)+' e-mail confirmado</small>':'')+'</p>'+ver+'<div class="row" style="margin-top:8px"><button class="big alt" id="logoutBtn">Sair</button></div>';
+    i.innerHTML='<p style="color:var(--fg);margin:0">Você está como <b>@'+esc(auth.nick)+'</b>'+(a.vip?' <span class="vipbadge">VIP</span>':'')+(a.email&&a.emailVerified?' <small style="color:var(--green)">'+ic('ok',12)+' e-mail confirmado</small>':'')+'</p>'+ver+'<div class="row" style="margin-top:8px"><button class="big alt" id="logoutBtn">Sair</button></div><div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px"><button class="linkish" id="logoutAllBtn" style="padding:0">Sair de todos os aparelhos</button><button class="linkish" id="deleteAcctBtn" style="padding:0;opacity:.7">Excluir minha conta</button></div>';
     $('logoutBtn').onclick=async()=>{try{await api('/api/auth/logout',{method:'POST'})}catch{}setAuth(null);setAcct(null);setFavores(0);loadRank()};
+    $('logoutAllBtn').onclick=async()=>{if(!confirm('Encerrar a sessão em todos os aparelhos, inclusive neste?'))return;try{await api('/api/auth/logout-all',{method:'POST'})}catch{}setAuth(null);setAcct(null);setFavores(0);toast('Sessões encerradas em todos os aparelhos.');loadRank()};
+    $('deleteAcctBtn').onclick=async()=>{if(!confirm('Excluir a conta @'+auth.nick+'? Apaga progresso da conta, itens comprados, favores, resultados do ranking e chamados. Não dá para desfazer.'))return;const pin=prompt('Para confirmar, digite o PIN da conta @'+auth.nick+':');if(!pin)return;
+      try{await api('/api/me',{method:'DELETE',body:JSON.stringify({pin})});setAuth(null);setAcct(null);setFavores(0);clearPending();toast('Conta excluída.');showStart()}catch(e){toast(e.message)}};
     const vb=$('verifyBtn');if(vb)vb.onclick=async()=>{$('verifyErr').textContent='';try{await api('/api/auth/verify',{method:'POST',body:JSON.stringify({code:$('verifyCode').value})});toast('E-mail confirmado!');await loadMe();renderAccount()}catch(e){$('verifyErr').textContent=e.message}};
     const rb=$('resendBtn');if(rb)rb.onclick=async()=>{try{const d=await api('/api/auth/resend',{method:'POST'});if(d.devCode)window.__devCode=d.devCode;if(d.sent===false)$('verifyErr').textContent='O envio falhou no servidor de e-mail. Tente mais tarde ou peça o código ao suporte (menu Ajuda).';else toast('Código reenviado. Confira também a caixa de spam.')}catch(e){$('verifyErr').textContent=e.message}};
     const cb=$('changeEmailBtn');if(cb)cb.onclick=()=>{setAcct(Object.assign({},acct,{email:null}));renderAccount()};
@@ -724,29 +729,30 @@ $('resetBack').onclick=()=>{$('resetForm').hidden=true;$('loginForm').hidden=fal
 $('resetForm').onsubmit=async e=>{e.preventDefault();$('resetError').textContent='';try{await api('/api/auth/reset',{method:'POST',body:JSON.stringify({nick:$('resetForm').dataset.nick,code:$('resetCode').value,pin:$('resetPin').value})});toast('PIN trocado. Entre com o novo PIN.');$('resetForm').hidden=true;$('loginForm').hidden=false;$('pinInput').value='';$('pinInput').focus()}catch(err){$('resetError').textContent=err.message}};
 let nickTimer=null;
 $('nickInput').oninput=()=>{clearTimeout(nickTimer);const v=$('nickInput').value.trim();$('nickHint').textContent='';$('loginBtn').textContent='Entrar';$('emailLabel').hidden=false;$('emailHint').hidden=false;if(v.length<3)return;
-  nickTimer=setTimeout(async()=>{try{const d=await api('/api/auth/check?nick='+encodeURIComponent(v));$('nickHint').textContent=d.available?'✓ Apelido livre. Escolha um PIN e crie sua conta.':'Apelido já existe. Digite o seu PIN para entrar.';$('loginBtn').textContent=d.available?'Criar conta':'Entrar';$('emailLabel').hidden=!d.available;$('emailHint').hidden=!d.available}catch(e){$('nickHint').textContent=e.message}},350)};
+  nickTimer=setTimeout(async()=>{try{const d=await api('/api/auth/check?nick='+encodeURIComponent(v));$('nickHint').textContent=d.available?'✓ Apelido livre. Escolha um PIN de 6 números (sem sequências como 123456) e crie sua conta.':'Apelido já existe. Digite o seu PIN para entrar.';$('loginBtn').textContent=d.available?'Criar conta':'Entrar';$('emailLabel').hidden=!d.available;$('emailHint').hidden=!d.available}catch(e){$('nickHint').textContent=e.message}},350)};
 $('loginForm').onsubmit=async e=>{e.preventDefault();$('loginError').textContent='';const btn=$('loginBtn');btn.disabled=true;
   try{const body={nick:$('nickInput').value.trim(),pin:$('pinInput').value,claim:(WEBSTORE.pending&&WEBSTORE.pending.ref)||null};let d;
     try{d=await api('/api/auth/enter',{method:'POST',body:JSON.stringify(body)})}
     catch(err){if(err.status===404){const email=$('emailInput').value.trim();d=await api('/api/auth/enter',{method:'POST',body:JSON.stringify(Object.assign(body,{create:true,email:email||undefined}))})}else throw err}
     if(d.devCode)window.__devCode=d.devCode;setAuth({token:d.token,nick:d.user.nick});setAcct({email:d.user.email,emailVerified:d.user.emailVerified,vip:d.user.vip});syncFromServer(d.user.progress,d.entitlements,d.user.favores);$('pinInput').value='';$('emailInput').value='';
-    toast(d.created?(!d.user.email?'Conta criada. Bem-vindo, @'+d.user.nick+'!':d.sent===false?'Conta criada, mas o e-mail de confirmação falhou. Use "Reenviar código" mais tarde.':'Conta criada! Enviamos um código para o seu e-mail (veja também o spam).'):'Bem-vindo de volta, @'+d.user.nick+'!');pushProgress();showStart()}
+    toast(d.created?(!d.user.email?'Conta criada. Bem-vindo, @'+d.user.nick+'!':d.sent===false?'Conta criada, mas o e-mail de confirmação falhou. Use "Reenviar código" mais tarde.':'Conta criada! Enviamos um código para o seu e-mail (veja também o spam).'):'Bem-vindo de volta, @'+d.user.nick+'!');pushProgress();showStart();if(WEBSTORE.pending)watchOrder()}
   catch(err){$('loginError').textContent=err.message}btn.disabled=false};
-function syncFromServer(progress,entitlements,fav){(entitlements||[]).forEach(grant);if(typeof fav==='number')setFavores(fav);
+function syncFromServer(progress,entitlements,fav){ent=new Set((entitlements||[]).filter(id=>PRODUCTS[id]&&!PRODUCTS[id].favores));store.set('ent',[...ent]);if(typeof fav==='number')setFavores(fav);
   if(progress){const ends=store.get('ends',{});for(const [k,v] of Object.entries(progress.ends||{}))if(ENDINGS[k])ends[k]=Math.max(ends[k]||0,v);store.set('ends',ends);
     const ach=store.get('ach',[]);(progress.ach||[]).forEach(a=>{if(ACH[a]&&!ach.includes(a))ach.push(a)});store.set('ach',ach);
     const col=store.get('items',[]);(progress.items||[]).forEach(a=>{if(ITEMS[a]&&!col.includes(a))col.push(a)});store.set('items',col);store.set('best',Math.max(store.get('best',0),progress.best||0))}
   renderShop()}
 async function pushProgress(){if(!auth)return;try{await api('/api/me/progress',{method:'PUT',body:JSON.stringify({ends:store.get('ends',{}),ach:store.get('ach',[]),items:store.get('items',[]),best:store.get('best',0)})})}catch{}}
-async function loadMe(){if(!auth)return;try{const d=await api('/api/me');setAcct({email:d.user.email,emailVerified:d.user.emailVerified,vip:d.user.vip});syncFromServer(d.user.progress,d.entitlements,d.user.favores);if(!$('startScreen').hidden)showStart()}catch{}}
+async function loadMe(){if(!auth)return null;try{const d=await api('/api/me');setAcct({email:d.user.email,emailVerified:d.user.emailVerified,vip:d.user.vip});syncFromServer(d.user.progress,d.entitlements,d.user.favores);if(!$('startScreen').hidden)showStart();return d}catch{return null}}
 async function loadRank(){if(!ONLINE)return;const el=$('rankList');
   try{const d=await api('/api/daily?day='+todayKey());
     if(!d.total){el.innerHTML='<p>Ninguém jogou o diário de hoje ainda. Seja o primeiro.</p>';return}
-    el.innerHTML='<ol class="rank">'+d.top.slice(0,10).map(r=>'<li'+(r.vip?' class="vip"':'')+'><span>'+(r.vip?ic('estrela',13)+' ':'')+'@'+r.nick+'</span><b>'+r.days+' dias '+(ENDINGS[r.ending]?ic(ENDING_ICON[r.ending],15):'')+'</b></li>').join('')+'</ol>'+
-      (d.me?'<p style="margin-top:8px">Você: <b>'+d.me.rank+'º</b> de '+d.total+'. Durou mais que '+d.me.percentile+'% dos jogadores.</p>':auth?'<p style="margin-top:8px">Jogue o diário de hoje para entrar no ranking.</p>':'<p style="margin-top:8px">Entre com um apelido para aparecer aqui.</p>')}
+    el.innerHTML='<ol class="rank">'+d.top.slice(0,10).map(r=>'<li'+(r.vip?' class="vip"':'')+'><span>'+(r.vip?ic('estrela',13)+' ':'')+'@'+esc(r.nick)+'</span><b>'+esc(r.days)+' dias '+(ENDINGS[r.ending]?ic(ENDING_ICON[r.ending],15):'')+'</b></li>').join('')+'</ol>'+
+      (d.me?'<p style="margin-top:8px">Você: <b>'+esc(d.me.rank)+'º</b> de '+esc(d.total)+'. Durou mais que '+esc(d.me.percentile)+'% dos jogadores.</p>':auth?'<p style="margin-top:8px">Jogue o diário de hoje para entrar no ranking.</p>':'<p style="margin-top:8px">Entre com um apelido para aparecer aqui.</p>')}
   catch{el.innerHTML='<p>Ranking indisponível no momento.</p>'}}
-async function submitDailyResult(){if(!auth||s.mode!=='daily'||!ONLINE)return;
-  try{const d=await api('/api/daily',{method:'POST',body:JSON.stringify({day:todayKey(),days:s.day,turns:s.turn,ending:s.over})});
+async function submitDailyResult(){if(!auth||s.mode!=='daily'||!ONLINE)return;const run=s;
+  try{const d=await api('/api/daily',{method:'POST',body:JSON.stringify({day:run.dailyDay||todayKey(),days:run.day,turns:run.turn,ending:run.over})});
+    if(d.me&&run===s){s.pct=d.me.percentile;$('shareText').textContent=shareText()}
     if(d.me)$('endAch').innerHTML+='<p style="margin-top:8px;color:var(--fg)">'+ic('lenda')+' Ranking de hoje: <b>'+d.me.rank+'º</b> de '+d.total+'. Você durou mais que '+d.me.percentile+'% dos jogadores.</p>'}catch{}}
 
 /* ---- Loja web (Asaas): usada quando o jogo roda no navegador e o servidor tem a loja ligada ---- */
@@ -756,37 +762,46 @@ function storeOn(){return !!((NATIVE&&NATIVE.store)||WEBSTORE.enabled)}
 async function initWebStore(){if(NATIVE||!/^https?:$/.test(location.protocol))return;
   try{const r=await fetch('/api/store/config',{cache:'no-store'});if(!r.ok)return;const c=await r.json();if(!c.enabled)return;
     WEBSTORE.enabled=true;c.products.forEach(p=>{priceOf[p.id]=p.price;if(p.list){listOf[p.id]=p.list;discOf[p.id]=p.discount}});$('openShop').hidden=false;
-    $('legalNote').textContent='Obra de ficção e sátira. Personagens, bancos, veículos e instituições são inventados. Extras opcionais pagos pelo Asaas (Pix, cartão ou boleto).';
+    $('legalNote').textContent='Obra de ficção e sátira. Personagens, bancos, veículos e instituições são inventados. Compras opcionais processadas pelo Asaas (Pix, cartão ou boleto) para EBENIX TECNOLOGIA INOVA SIMPLES (I.S.), CNPJ 68.730.443/0001-71.';
     $('shopLead').textContent='Pagamento único pelo Asaas: Pix, cartão ou boleto. O jogo completo continua gratuito; os extras valem no modo livre.';
-    $('shopLegal').textContent='A cobrança é emitida pelo Asaas em nome do jogo. Para liberar em outro aparelho, use "Restaurar compras" com o mesmo CPF.';
+    $('shopLegal').textContent='Vendido por EBENIX TECNOLOGIA INOVA SIMPLES (I.S.), CNPJ 68.730.443/0001-71; a cobrança é emitida pelo Asaas. As compras ficam na sua conta: em outro aparelho, basta entrar com o mesmo apelido.';
     const q=new URLSearchParams(location.search).get('pedido');
-    if(q){WEBSTORE.pending=Object.assign({},WEBSTORE.pending||{},{ref:q});store.set('pending',WEBSTORE.pending);history.replaceState(null,'',location.pathname)}
+    // Voltou do Asaas com ?pedido=<ref>: só reaproveita o pendente se for o MESMO pedido (nunca mistura paymentId antigo com ref novo).
+    if(q){WEBSTORE.pending=(WEBSTORE.pending&&WEBSTORE.pending.ref===q)?WEBSTORE.pending:{ref:q,productId:(q.split(':')[1]||null)};store.set('pending',WEBSTORE.pending);history.replaceState(null,'',location.pathname)}
     renderShop();if(WEBSTORE.pending){openShop();watchOrder()}}catch{}}
 function buyWeb(id){if(!auth){toast('Entre com seu apelido para comprar.');$('shopScreen').hidden=true;showStart();$('accountPanel').scrollIntoView({behavior:'smooth',block:'start'});$('nickInput').focus();return}const f=$('payForm');$('restoreForm').hidden=true;f.hidden=false;f.dataset.id=id;$('payTitle').textContent=PRODUCTS[id].name+' · '+(priceOf[id]||'');
-  const b=store.get('buyer',{});$('payName').value=b.name||'';$('payEmail').value=b.email||'';$('payCpf').value=b.cpf||'';$('payError').textContent='';f.scrollIntoView({behavior:'smooth',block:'start'})}
+  const b=store.get('buyer',{});$('payName').value=b.name||'';$('payEmail').value=b.email||'';$('payCpf').value='';$('payError').textContent='';f.scrollIntoView({behavior:'smooth',block:'start'})}
 $('payBack').onclick=()=>{$('payForm').hidden=true};$('restoreBack').onclick=()=>{$('restoreForm').hidden=true};
 $('payForm').onsubmit=async e=>{e.preventDefault();const f=e.target,btn=f.querySelector('button[type=submit]');
   const body={productId:f.dataset.id,name:$('payName').value,email:$('payEmail').value,cpfCnpj:$('payCpf').value};
-  store.set('buyer',{name:body.name,email:body.email,cpf:body.cpfCnpj});btn.disabled=true;btn.textContent='Gerando cobrança…';$('payError').textContent='';
+  store.set('buyer',{name:body.name,email:body.email});btn.disabled=true;/* CPF nunca vai para o localStorage */btn.textContent='Gerando cobrança…';$('payError').textContent='';
   try{const d=await api('/api/checkout',{method:'POST',body:JSON.stringify(body)});
     WEBSTORE.pending={ref:d.ref,paymentId:d.paymentId,productId:d.productId,invoiceUrl:d.invoiceUrl};store.set('pending',WEBSTORE.pending);location.href=d.invoiceUrl}
   catch(err){$('payError').textContent=err.message;btn.disabled=false;btn.textContent='Ir para o pagamento'}};
-function clearPending(){WEBSTORE.pending=null;store.set('pending',null);clearInterval(orderTimer);orderTimer=null;$('payStatus').hidden=true}
+function clearPending(){WEBSTORE.pending=null;store.set('pending',null);clearTimeout(orderTimer);orderTimer=null;$('payStatus').hidden=true}
 function grant(productId){if(!productId||!PRODUCTS[productId]||PRODUCTS[productId].favores)return;ent.add(productId);store.set('ent',[...ent])}
 function setFavores(n){favores=Math.max(0,n|0);store.set('favores',favores);renderFav()}
-async function checkOrder(){const p=WEBSTORE.pending;if(!p)return;
-  let d;try{d=await api('/api/order/'+encodeURIComponent(p.paymentId||p.ref))}catch(err){if(err.status===404)clearPending();return}
-  try{
-    if(d.paid){clearPending();grant(d.productId);toast('Pagamento confirmado. Conteúdo liberado!');loadMe();renderShop();if(!$('startScreen').hidden)showStart();return}
-    if(d.invoiceUrl)p.invoiceUrl=d.invoiceUrl;renderPending();
-    if(['OVERDUE','REFUNDED','DELETED','REFUND_REQUESTED'].includes(d.status)){clearPending();toast('Cobrança expirada ou cancelada.')}}catch{}}
+/* Confirma o pedido no servidor (só o dono enxerga). "Liberado" só depois que /api/me mostra o item (ou, para
+   favores, que o servidor creditou este pagamento na conta). O pendente só é apagado após essa confirmação. */
+async function checkOrder(){const p=WEBSTORE.pending;if(!p||!auth)return false;
+  let d;try{d=await api('/api/order/'+encodeURIComponent(p.paymentId||p.ref))}catch(err){if(err.status===404){clearPending();toast('Pedido não encontrado nesta conta. Entre com o apelido usado na compra.')}return false}
+  if(WEBSTORE.pending!==p)return false;
+  if(d.paymentId&&!p.paymentId){p.paymentId=d.paymentId;store.set('pending',p)}
+  if(d.paid&&d.granted){const me=await loadMe();if(!me)return false;
+    const pid=d.productId,ok=PRODUCTS[pid]&&(PRODUCTS[pid].favores?true:(me.entitlements||[]).includes(pid));
+    if(ok){clearPending();toast('Pagamento confirmado. '+(PRODUCTS[pid].favores?PRODUCTS[pid].favores+' favores na sua conta!':'Conteúdo liberado!'));renderShop();if(!$('startScreen').hidden)showStart();return true}
+    return false}
+  if(d.invoiceUrl)p.invoiceUrl=d.invoiceUrl;renderPending();
+  if(['OVERDUE','REFUNDED','DELETED','REFUND_REQUESTED','REFUND_IN_PROGRESS','CHARGEBACK_REQUESTED'].includes(d.status)){clearPending();toast('Cobrança expirada, cancelada ou estornada.')}
+  return false}
 function renderPending(){const p=WEBSTORE.pending,el=$('payStatus');if(!p){el.hidden=true;return}el.hidden=false;
   el.innerHTML='<h3>Aguardando pagamento</h3><p>Assim que o Asaas confirmar, o conteúdo é liberado aqui. Pix costuma levar segundos; boleto, até 2 dias úteis.</p><div class="row" style="margin-top:10px"><button class="big alt" id="payCheck">Já paguei</button>'+(p.invoiceUrl?'<a class="big alt" style="text-decoration:none;display:flex;align-items:center;justify-content:center" href="'+p.invoiceUrl+'">Abrir cobrança</a>':'')+'</div><div style="text-align:center"><button class="linkish" id="payCancel">Descartar este pedido</button></div>';
   $('payCheck').onclick=()=>{toast('Verificando…');checkOrder()};$('payCancel').onclick=()=>{clearPending();toast('Pedido descartado. A cobrança expira sozinha.')}}
-function watchOrder(){renderPending();checkOrder();clearInterval(orderTimer);let n=0;orderTimer=setInterval(()=>{n++;if(n>45||!WEBSTORE.pending){clearInterval(orderTimer);return}checkOrder()},4000)}
+/* Polling espaçado: 5 s, 10 s, 15 s... até 60 s entre consultas; para depois de ~20 min (o botão "Já paguei" continua valendo). */
+function watchOrder(){renderPending();clearTimeout(orderTimer);let n=0;const tick=async()=>{if(!WEBSTORE.pending)return;const done=await checkOrder();n++;if(done||!WEBSTORE.pending||n>30)return;orderTimer=setTimeout(tick,Math.min(60000,5000*n))};tick()}
 $('restoreForm').onsubmit=async e=>{e.preventDefault();const btn=e.target.querySelector('button[type=submit]');btn.disabled=true;$('restoreError').textContent='';
   try{const d=await api('/api/restore',{method:'POST',body:JSON.stringify({cpfCnpj:$('restoreCpf').value})});
-    (d.products||[]).forEach(grant);renderShop();if(!$('startScreen').hidden)showStart();$('restoreForm').hidden=true;toast(d.count?'Compras restauradas: '+d.count:'Nenhuma compra encontrada para este CPF')}
+    await loadMe();renderShop();$('restoreForm').hidden=true;$('restoreCpf').value='';toast(d.count?'Compras restauradas: '+d.count:'Nenhuma compra deste CPF disponível para esta conta')}
   catch(err){$('restoreError').textContent=err.message}btn.disabled=false};
 function renderShop(){const el=$('shopList');if(!el)return;const sb=$('shopBalance');if(sb){sb.hidden=!storeOn();sb.innerHTML=auth?'<p style="color:var(--fg)">'+ic('favor')+' <b>'+favores+'</b> favores na conta de <b>@'+auth.nick+'</b>'+(isVip()?' <span class="vipbadge">VIP</span>':'')+'. Cada partida começa com '+freeFavores()+' grátis.</p>'+((acct&&!acct.emailVerified)?'<p style="color:var(--gold)">Confirme seu e-mail (na conta, tela inicial) para comprar.</p>':''):'<p>Entre com seu apelido antes de comprar: favores e baralhos ficam guardados na conta e valem em qualquer aparelho.</p>'}el.innerHTML=Object.entries(PRODUCTS).map(([id,p])=>{const own=p.kind==='non'&&owns(id);if(id===VIP){const li=listOf[id],disc=discOf[id];return '<div class="item vip"><span class="ico">'+ic(p.icon)+'</span><div class="txt"><b>'+p.name+'</b><small>'+p.desc+'</small></div>'+(own?'<span class="owned">Você é VIP '+ic('ok')+'</span>':'<button class="buy" data-id="'+id+'">Quero ser VIP</button>')+(own?'':'<div class="vipprice">'+(li?'<s>'+li+'</s>':'')+'<span class="now">'+(priceOf[id]||'')+'</span>'+(disc?'<span class="off">-'+disc+'%</span>':'')+'<span class="viptimer" id="vipTimer"></span></div>')+'<div class="vipperks">'+p.perks.map(x=>'<span>'+x+'</span>').join('')+'</div></div>'}
     return '<div class="item"><span class="ico">'+ic(p.icon)+'</span><div class="txt"><b>'+p.name+'</b><small>'+p.desc+'</small></div>'+(own?'<span class="owned">Adquirido '+ic('ok')+'</span>':'<button class="buy" data-id="'+id+'">'+(priceOf[id]||'Comprar')+'</button>')+'</div>'}).join('');tickVip();
@@ -795,12 +810,12 @@ let listOf={},discOf={},vipTimerId=null;
 const VIP_WINDOW=15*60*1000;
 function tickVip(){const el=$('vipTimer');if(!el)return;const left=VIP_WINDOW-(Date.now()%VIP_WINDOW);const m=Math.floor(left/60000),sc=Math.floor(left%60000/1000);el.textContent='Oferta de lançamento termina em '+String(m).padStart(2,'0')+':'+String(sc).padStart(2,'0');clearInterval(vipTimerId);vipTimerId=setInterval(()=>{const e=$('vipTimer');if(!e||$('shopScreen').hidden){clearInterval(vipTimerId);return}const l=VIP_WINDOW-(Date.now()%VIP_WINDOW);e.textContent='Oferta de lançamento termina em '+String(Math.floor(l/60000)).padStart(2,'0')+':'+String(Math.floor(l%60000/1000)).padStart(2,'0')},1000)}
 function openShop(){$('shopScreen').hidden=false;$('payForm').hidden=true;$('restoreForm').hidden=true;renderShop();if(NATIVE)native({type:'store',action:'products'});else renderPending()}
-const MASTS=[['METRUPOLIS',false],['O GLOBA DIÁRIO',true],['FOLHA DE BRASÍLIA',true],['CORREIO DO PODER',true]];
+const MASTS=[['METRUPOLIS',false],['O GLUBU DIÁRIO',true],['FOLHA DE BRASÍLIA',true],['CORREIO DO PODER',true]];
 function hasCapas(){return owns('com.saldozero.capas')||isVip()}
 function mastIndex(){const i=store.get('mast',0);return (i>0&&!hasCapas())?0:Math.min(i,MASTS.length-1)}
 
 /* Nomes neutros (modo "safeNames" do app): substitui paródias por personagens inteiramente fictícios. */
-const SAFE=[['Lulinho','Juninho Guimarães'],['do Lulo','do candidato Guimarães'],['O Lulo','O candidato Guimarães'],['o Lulo','o candidato Guimarães'],['Lulo','Guimarães'],['Bolsonarinho','Ferraz'],['Círio Nogueiral','Otávio Bastos'],['Vugo Mota','Hélio Dantas'],['Rodrigo Pachuco','Caio Albuquerque'],['Pachuco','Albuquerque'],['Andrey Rodrigal','Marcos Teles'],['Paulo Goneto','Rafael Monteiro'],['Alexandre de Moraisco','Augusto Varela'],['Fernando Haddadinho','Sérgio Prado'],['Gusttavo Limão','Léo Serrano'],['Rede Globa','TV Nacional'],['Metrupolis','Portal Metrópole'],['METRUPOLIS','METRÓPOLE'],['O GLOBA DIÁRIO','DIÁRIO NACIONAL'],['Pod Pá','Papo Reto'],['Igreja Universal do Lucro','Rede Prosperar TV'],['Primo Rico de Pobre','Guru do Lucro'],['Danilo Vorkaro','Danilo Valente'],['Vorkaro','Valente']];
+const SAFE=[['Lulinho','Juninho Guimarães'],['do Lulo','do candidato Guimarães'],['O Lulo','O candidato Guimarães'],['o Lulo','o candidato Guimarães'],['Lulo','Guimarães'],['Bolsonarinho','Ferraz'],['Círio Nogueiral','Otávio Bastos'],['Vugo Mota','Hélio Dantas'],['Rodrigo Pachuco','Caio Albuquerque'],['Pachuco','Albuquerque'],['Andrey Rodrigal','Marcos Teles'],['Paulo Goneto','Rafael Monteiro'],['Alexandre de Moraisco','Augusto Varela'],['Fernando Haddadinho','Sérgio Prado'],['Gusttavo Limão','Léo Serrano'],['Rede Glubu','TV Nacional'],['Metrupolis','Portal Metrópole'],['METRUPOLIS','METRÓPOLE'],['O GLUBU DIÁRIO','DIÁRIO NACIONAL'],['Pod Pá','Papo Reto'],['Igreja Universal do Lucro','Rede Prosperar TV'],['Primo Rico de Pobre','Guru do Lucro'],['Danilo Vorkaro','Danilo Valente'],['Vorkaro','Valente']];
 function safe(str){if(!NATIVE||!NATIVE.safeNames||typeof str!=='string')return str;for(const [a,b] of SAFE)str=str.split(a).join(b);return str}
 function applySafeNames(){if(!NATIVE||!NATIVE.safeNames)return;for(const k in CH){CH[k].n=safe(CH[k].n);CH[k].r=safe(CH[k].r)}
   CARDS.forEach(k=>{k.t=safe(k.t);k.l[0]=safe(k.l[0]);k.r[0]=safe(k.r[0]);for(const o of [k.l[2],k.r[2]])if(o&&o.news)o.news=safe(o.news)});
@@ -817,7 +832,7 @@ const CH={
   lulinho:{n:'Lulinho',r:'Filho de alguém importante',f:{skin:'#c98e66',hair:'#2a2733',s:0,b:1,g:0,bg:'#c29a7a'}},
   lulo:{n:'Assessor do Lulo',r:'Campanha · Esquerda',f:{skin:'#bf805b',hair:'#201f2c',s:1,b:0,g:1,bg:'#d57a7a'}},
   bolso:{n:'Assessor do Bolsonarinho',r:'Campanha · Direita',f:{skin:'#dfad84',hair:'#5b5149',s:2,b:0,g:0,bg:'#7fb28a'}},
-  globa:{n:'Repórter da Rede Globa',r:'Imprensa · TV',f:{skin:'#edb58a',hair:'#3b2a2a',s:2,b:0,g:0,bg:'#e9a3a3'}},
+  globa:{n:'Repórter da Rede Glubu',r:'Imprensa · TV',f:{skin:'#edb58a',hair:'#3b2a2a',s:2,b:0,g:0,bg:'#e9a3a3'}},
   metrupolis:{n:'Editora do Metrupolis',r:'Imprensa · portal',f:{skin:'#b9825c',hair:'#1b1b22',s:2,b:0,g:1,bg:'#c7b26e'}},
   podcast:{n:'Host do podcast Pod Pá',r:'Mídia independente',f:{skin:'#d6a078',hair:'#3c3738',s:0,b:1,g:1,bg:'#86c7c1'}},
   dados:{n:'Jornalista de dados',r:'Metrupolis · investigação',f:{skin:'#c8916b',hair:'#232831',s:1,b:0,g:1,bg:'#b4a3d5'}},
@@ -849,7 +864,7 @@ const CH={
   governo:{n:'Assessor do governo eleito',r:'Palácio',f:{skin:'#e0b08a',hair:'#2f2a2a',s:1,b:0,g:0,bg:'#b5c7a8'}},
   forum:{n:'Diretor do Fórum Brasil de Ideais',r:'Instituto jurídico · Londres',f:{skin:'#e2b48e',hair:'#4a4a52',s:1,b:1,g:1,bg:'#9fb0d8'}},
   cirao:{n:'Cirão Gomes',r:'Político · bate em todo mundo',f:{skin:'#dcae88',hair:'#8d8a8a',s:1,b:0,g:0,bg:'#d9a08c'}},
-  ministra:{n:'Vivi Moraisco',r:'Esposa do ministro · advogada',f:{skin:'#e6b996',hair:'#c98a4b',s:2,b:0,g:0,bg:'#e8b4c8'}},
+  ministra:{n:'Vivi',r:'Esposa de um ministro',f:{skin:'#e6b996',hair:'#c98a4b',s:2,b:0,g:0,bg:'#e8b4c8'}},
   narrador:{n:'Plantão',r:'Acontecimento',f:{skin:'#f3ecd9',hair:'#f3ecd9',s:0,b:0,g:0,bg:'#e8283c',news:1}}
 };
 function avatar(k,size=60){const f=CH[k].f;if(f.news)return '<svg viewBox="0 0 72 72" style="width:'+size+'px;height:'+size+'px" aria-hidden="true"><circle cx="36" cy="36" r="35" fill="'+f.bg+'"/><text x="36" y="47" text-anchor="middle" font-size="30" font-family="Anton,Impact,sans-serif" fill="#fff">!</text></svg>';
@@ -960,8 +975,8 @@ const CARDS=[
   l:['Institucional, claro',{p:10,c:-6,r:6},{flag:'pachuco',news:'Relator de CPI muda tom sobre bancos médios após "diálogo institucional"'}],
   r:['Não preciso de CPI nenhuma',{p:-3,r:-2},{}]},
  {id:'audio',c:'globa',ch:[2,3],req:s=>s.flags.balanco||s.flags.emenda,t:'Temos um áudio seu dizendo que vai "resolver" o Banco Centrão. Vai ao ar às 20h. Comenta?',
-  l:['Era brincadeira entre amigos',{i:-10,r:8},{news:'Rede Globa exibe áudio; banqueiro diz que era "piada interna"'}],
-  r:['Processo a emissora',{c:-8,i:-4,p:3,r:4},{flag:'processou',ach:'processou',news:'Banqueiro processa Rede Globa e fala em "perseguição"'}]},
+  l:['Era brincadeira entre amigos',{i:-10,r:8},{news:'Rede Glubu exibe áudio; banqueiro diz que era "piada interna"'}],
+  r:['Processo a emissora',{c:-8,i:-4,p:3,r:4},{flag:'processou',ach:'processou',news:'Banqueiro processa Rede Glubu e fala em "perseguição"'}]},
  {id:'doleiro',c:'doleiro',ch:[2],t:'Tem R$ 80 milhões parados que precisam virar dólar em Miami. Discreto, taxa boa, sem perguntas.',
   l:['Faz',{c:14,r:16},{flag:'doleiro',item:'dolar',then:'doleiro2',delay:6,news:'Remessas atípicas chamam atenção de analistas de câmbio'}],
   r:['Não conheço você',{r:-2},{}]},
@@ -1175,7 +1190,7 @@ const CARDS=[
  {id:'jato_ministra',c:'ministra',ch:[2,3],t:'O ministro não pode pedir, então peço eu: o jatinho pra Paris na sexta, eu e as meninas. Semana de moda. Voltamos domingo. Ele nem precisa saber.',
   l:['Jato liberado, com champanhe a bordo',{p:14,c:-6,r:12},{flag:'jato_ministra',item:'etiqueta',then:'jato_ministra2',delay:6,news:'Jato do Maxter faz Paris e volta no fim de semana; passageiros "da família"'}],
   r:['O jato está em manutenção',{p:-8,i:2},{news:'Esposa de ministro cancela viagem a Paris; gabinete nega pedido'}]},
- {id:'jato_ministra2',c:'dados',ch:[2,3],hidden:true,t:'O plano de voo do seu jato mostra Paris, sexta, com a esposa do ministro e três amigas a bordo. O escritório dela tem contrato com o Maxter. Publico amanhã.',
+ {id:'jato_ministra2',c:'dados',ch:[2,3],hidden:true,t:'O plano de voo do seu jato mostra Paris, sexta, com a esposa de um ministro e três amigas a bordo. Publico amanhã.',
   l:['Voo da empresa, passageiros convidados',{i:-9,r:15,p:-4},{news:'Jornal revela voo de esposa de ministro em jato de banqueiro'}],
   r:['Ligo pro ministro antes de você publicar',{p:-10,r:8,c:-5},{news:'Ministro diz que "não sabia do voo" e se afasta de banqueiro'}]},
  // ---------- Presentes ----------
@@ -1254,8 +1269,9 @@ function genHeadline(fx,rng){let best=null,bv=0;for(const k of 'cpir'){const v=M
 let s=null,rng=null,drag=null,audio=null,soundOn=store.get('sound',false);
 function newGame(mode){
   store.set('run',null);
-  const seedStr=mode==='daily'?'daily:'+todayKey():'free:'+Date.now()+':'+Math.random();
-  s={mode,seed:seedStr,day:1,turn:0,caixa:55,poder:35,imagem:50,radar:15,flags:{},seen:[],queue:[],news:['Banco Maxter busca novos investidores',safe('Empresário Danilo Vorkaro ganha destaque no mercado')],ach:[],items:[],hot:0,over:null,card:null,side:null,favores:freeFavores(),appeals:0,log:[],zapRead:{}};
+  const dailyDay=mode==='daily'?todayKey():null;
+  const seedStr=mode==='daily'?'daily:'+dailyDay:'free:'+Date.now()+':'+Math.random();
+  s={mode,seed:seedStr,dailyDay,day:1,turn:0,caixa:55,poder:35,imagem:50,radar:15,flags:{},seen:[],queue:[],news:['Banco Maxter busca novos investidores',safe('Empresário Danilo Vorkaro ganha destaque no mercado')],ach:[],items:[],hot:0,over:null,card:null,side:null,favores:mode==='daily'?FREE_FAVORES:freeFavores(),appeals:0,log:[],zapRead:{}};
   rng=mulberry(hash(seedStr));
   s.card='entrada';
   render();dealIn();
@@ -1263,7 +1279,7 @@ function newGame(mode){
 }
 function chapter(){return s.day<80?1:s.day<320?2:3}
 function chapterName(){return ['','ASCENSÃO','O PODER','A CRISE'][chapter()]}
-function gameDate(){const d=new Date(2016,0,1);d.setDate(d.getDate()+s.day-1);return d.toLocaleDateString('pt-BR',{day:'numeric',month:'short',year:'numeric'}).replace(/\./g,'').replace(/ de /g,' ')}
+function gameDate(){const d=new Date(2026,0,1);d.setDate(d.getDate()+s.day-1);return d.toLocaleDateString('pt-BR',{day:'numeric',month:'short',year:'numeric'}).replace(/\./g,'').replace(/ de /g,' ')}
 
 function eligible(k){if(k.hidden||k.oc)return false;if(k.deck&&(s.mode==='daily'||!(owns('com.saldozero.deck.'+k.deck)||isVip())))return false;if(!k.repeat&&s.seen.includes(k.id))return false;if(k.first)return false;if(!k.ch.includes(chapter()))return false;if(k.req&&!k.req(s))return false;return true}
 function pickCard(){
@@ -1324,7 +1340,7 @@ function finish(end){
   const achs=store.get('ach',[]);s.ach.forEach(a=>{if(!achs.includes(a))achs.push(a)});store.set('ach',achs);
   const col=store.get('items',[]);(s.items||[]).forEach(a=>{if(!col.includes(a))col.push(a)});store.set('items',col);
   const best=store.get('best',0);if(s.day>best)store.set('best',s.day);
-  if(s.mode==='daily'){const d=store.get('daily',{});if(!d[todayKey()])d[todayKey()]={day:s.day,end};store.set('daily',d)}
+  if(s.mode==='daily'){const d=store.get('daily',{}),k=s.dailyDay||todayKey();if(!d[k])d[k]={day:s.day,end};store.set('daily',d)}
   store.set('run',null);
   render();showEnd();snapshot();pushProgress();submitDailyResult();
 }
@@ -1410,7 +1426,7 @@ $('btnHelp').onclick=openHelp;$('openHelp').onclick=openHelp;$('helpClose').oncl
 $('helpLegal').onclick=()=>{$('legalOk').hidden=true;$('legalClose').hidden=false;$('legalScreen').hidden=false;$('legalScreen').scrollTop=0};
 async function loadMyTickets(){const el=$('myTickets');if(!auth||!ONLINE){el.hidden=true;return}
   try{const d=await api('/api/support');if(!d.tickets.length){el.hidden=true;return}el.hidden=false;
-    el.innerHTML='<h3>Meus chamados</h3>'+d.tickets.map(t=>'<div class="ticket"><span class="st">#'+t.id+' · '+t.subject+' · '+t.status+'</span><b>'+esc(t.message.slice(0,140))+(t.message.length>140?'…':'')+'</b>'+(t.reply?'<div class="reply">'+esc(t.reply)+'</div>':'<small style="color:var(--mute)">Aguardando resposta.</small>')+'</div>').join('')}
+    el.innerHTML='<h3>Meus chamados</h3>'+d.tickets.map(t=>'<div class="ticket"><span class="st">#'+esc(t.id)+' · '+esc(t.subject)+' · '+esc(t.status)+'</span><b>'+esc(t.message.slice(0,140))+(t.message.length>140?'…':'')+'</b>'+(t.reply?'<div class="reply">'+esc(t.reply)+'</div>':'<small style="color:var(--mute)">Aguardando resposta.</small>')+'</div>').join('')}
   catch{el.hidden=true}}
 function esc(x){return String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 $('supportForm').onsubmit=async e=>{e.preventDefault();if(!ONLINE){$('supError').textContent='Sem conexão com o servidor.';return}const btn=e.target.querySelector('button[type=submit]');btn.disabled=true;$('supError').textContent='';
@@ -1422,7 +1438,7 @@ const KEYS={caixa:'c',poder:'p',imagem:'i',radar:'r'};
 function render(){
   if(!s)return;
   $('chapter').textContent=chapterName();$('date').textContent=gameDate();
-  $('modePill').textContent=s.mode==='daily'?'DIÁRIO #'+dailyNumber():'MODO LIVRE';
+  $('modePill').textContent=s.mode==='daily'?'DIÁRIO #'+dailyNumber(s.dailyDay):'MODO LIVRE';
   $('dayCount').textContent='Dia '+s.day+' em liberdade · '+s.turn+' decisões';renderFav();renderZap();if(s.turn>=1&&!store.get('played',0))store.set('played',1);renderNudge();
   document.querySelectorAll('.stat').forEach(el=>{const k=el.dataset.k,v=s[k];el.querySelector('.bar i').style.width=v+'%';el.querySelector('.val').textContent=k==='caixa'?money(v):v;const dg=v>=85||v<=15;el.classList.toggle('danger',dg);const mt=el.querySelector('.bar');mt.setAttribute('aria-valuenow',v);mt.setAttribute('aria-valuetext',(k==='caixa'?money(v):v+' de 100')+(dg?', nível crítico':''))});
   renderTicker();
@@ -1491,11 +1507,12 @@ function showStart(){
   $('startScreen').hidden=false;$('endScreen').hidden=true;renderAccount();renderNudge();loadRank();
 }
 function bars(v){const n=Math.round(v/20);return '▓'.repeat(n)+'░'.repeat(5-n)}
-function shareText(){const e=ENDINGS[s.over];const tag=s.mode==='daily'?'Diário #'+dailyNumber():'Modo livre';
-  return 'SALDO ZERO 🏦 '+tag+(auth?' · @'+auth.nick:'')+'\n'+e.e+' '+e.t+'\n⏱ '+s.day+' dias em liberdade · '+s.turn+' decisões'+((s.items||[]).length?' · 🎁 '+s.items.length+' na coleção':'')+'\n💰'+bars(s.caixa)+' 🏛️'+bars(s.poder)+'\n📣'+bars(s.imagem)+' 🚨'+bars(s.radar)+(s.ach.length?'\n🏅 '+s.ach.map(a=>ACH[a][1]).join(', '):'')+'\nConsegue durar mais? '+shareURL()}
+function shareText(){const e=ENDINGS[s.over];const tag=s.mode==='daily'?'Diário #'+dailyNumber(s.dailyDay):'Modo livre';
+  const pct=s.mode==='daily'&&typeof s.pct==='number'?'\n📊 Durei mais que '+s.pct+'% dos jogadores do diário de hoje.':'';
+  return 'SALDO ZERO 🏦 '+tag+'\n'+e.e+' '+e.t+'\nDurei '+s.day+' dias. Quantos você dura?'+pct+'\n'+shareURL()}
 function showEnd(){
   const e=ENDINGS[s.over];
-  $('paper').innerHTML='<div class="pmast">'+MASTS[mastIndex()][0]+'</div><div class="pmeta"><span>'+gameDate()+'</span><span>'+(s.mode==='daily'?'Diário #'+dailyNumber():'Modo livre')+'</span><span>R$ 2,50</span></div>'+
+  $('paper').innerHTML='<div class="pmast">'+MASTS[mastIndex()][0]+'</div><div class="pmeta"><span>'+gameDate()+'</span><span>'+(s.mode==='daily'?'Diário #'+dailyNumber(s.dailyDay):'Modo livre')+'</span><span>R$ 2,50</span></div>'+
     '<div class="extra"><span>EDIÇÃO EXTRA</span><i>PLANTÃO</i></div>'+
     '<div class="ptitle">'+e.t+'</div>'+
     '<div class="pbody"><p class="psub">'+e.s+'</p><div class="days"><span>DIAS</span><b>'+s.day+'</b><span>LIVRE</span></div></div>'+
@@ -1515,7 +1532,7 @@ function showEnd(){
 }
 $('btnCopy').onclick=async()=>{const t=shareText();try{await navigator.clipboard.writeText(t);$('btnCopy').textContent='Copiado ✓'}catch{const r=document.createRange();r.selectNodeContents($('shareText'));const sel=getSelection();sel.removeAllRanges();sel.addRange(r);$('btnCopy').textContent='Selecionado: copie'}setTimeout(()=>$('btnCopy').textContent='Copiar resultado',2000)};
 $('btnShare').onclick=async()=>{if(NATIVE){native({type:'share',text:shareText()});return}shareCover()};
-$('openShop').hidden=!(NATIVE&&NATIVE.store);$('openShop').onclick=openShop;$('btnShopClose').onclick=()=>{$('shopScreen').hidden=true};$('btnRestore').onclick=()=>{if(NATIVE){toast('Verificando compras…');native({type:'store',action:'restore'});return}$('payForm').hidden=true;const f=$('restoreForm');f.hidden=false;$('restoreCpf').value=(store.get('buyer',{}).cpf)||'';f.scrollIntoView({behavior:'smooth',block:'start'})};
+$('openShop').hidden=!(NATIVE&&NATIVE.store);$('openShop').onclick=openShop;$('btnShopClose').onclick=()=>{$('shopScreen').hidden=true};$('btnRestore').onclick=()=>{if(NATIVE){toast('Verificando compras…');native({type:'store',action:'restore'});return}$('payForm').hidden=true;if(WEBSTORE.enabled&&!auth){toast('Entre com seu apelido para restaurar compras.');return}const f=$('restoreForm');f.hidden=false;$('restoreCpf').value='';f.scrollIntoView({behavior:'smooth',block:'start'})};
 $('btnAgain').onclick=()=>{$('endScreen').hidden=true;newGame(s.mode)};
 $('btnHome').onclick=showStart;
 $('btnMenu').onclick=showStart;
@@ -1526,17 +1543,18 @@ $('legalOk').onclick=()=>{store.set('legalOk',true);$('legalScreen').hidden=true
 $('legalClose').onclick=()=>{$('legalScreen').hidden=true};
 $('legalLink').onclick=()=>{$('legalOk').hidden=true;$('legalClose').hidden=false;$('legalScreen').hidden=false;$('legalScreen').scrollTop=0};
 $('playDaily').onclick=()=>withLegal(()=>{$('startScreen').hidden=true;newGame('daily')});
-$('btnResume').onclick=()=>withLegal(()=>{const run=store.get('run',null);if(!run||run.over||!BY_ID[run.card])return;s=run;s.log=s.log||[];s.zapRead=s.zapRead||{};rng=mulberry(hash(s.seed+':'+s.turn));$('startScreen').hidden=true;$('tut').hidden=true;render();dealIn()});
+$('btnResume').onclick=()=>withLegal(()=>{const run=store.get('run',null);if(!run||run.over||!BY_ID[run.card])return;s=run;s.log=s.log||[];s.zapRead=s.zapRead||{};rng=rngFor(s);$('startScreen').hidden=true;$('tut').hidden=true;render();dealIn()});
 $('playFree').onclick=()=>withLegal(()=>{$('startScreen').hidden=true;newGame('free')});
 
 /* ============ Boot (with hot-reload snapshot for the artifact viewer) ============ */
-function snapshot(){try{window.claude?.hot?.snapshot?.(()=>({s,rngState:null}))}catch{}store.set('run',(s&&!s.over)?s:null)}
+function snapshot(){if(s&&rng&&rng.state)s.rngState=rng.state();try{window.claude?.hot?.snapshot?.(()=>({s,rngState:s&&s.rngState}))}catch{}store.set('run',(s&&!s.over)?s:null)}
 function start(data){
-  if(data&&data.s&&!data.s.over&&data.s.card){s=data.s;rng=mulberry(hash(s.seed+':'+s.turn));render();dealIn();$('startScreen').hidden=true;$('tut').hidden=true}
+  if(data&&data.s&&!data.s.over&&data.s.card){s=data.s;rng=rngFor(s);render();dealIn();$('startScreen').hidden=true;$('tut').hidden=true}
   else{showStart()}
 }
 applySafeNames();
-if(NATIVE&&NATIVE.store)native({type:'store',action:'entitlements'});else{initWebStore();loadMe()}
+{const b=store.get('buyer',null);if(b&&b.cpf)store.set('buyer',{name:b.name,email:b.email})}
+if(NATIVE&&NATIVE.store)native({type:'store',action:'entitlements'});else{if(ONLINE&&!auth){ent=new Set();store.set('ent',[])}initWebStore();loadMe()}
 try{window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{})}catch{start({})}
 </script>
 <script src="/scenes/home-scenes.js" defer></script>

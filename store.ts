@@ -1,15 +1,19 @@
 // Loja web do Saldo Zero com Asaas (Pix, cartão e boleto no checkout hospedado do Asaas).
 //
 // Fluxo:
-//   1. POST /api/checkout  { productId, name, email, cpfCnpj }
+//   1. POST /api/checkout  { productId, name, email, cpfCnpj }  (exige login e e-mail confirmado)
 //        -> encontra/cria o cliente no Asaas, cria uma cobrança com billingType UNDEFINED
-//           (o pagador escolhe Pix, cartão ou boleto na página do Asaas) e devolve invoiceUrl.
-//   2. O jogo redireciona para invoiceUrl. Ao pagar, o Asaas devolve o jogador a SITE_URL/?pedido=<id>.
-//   3. GET /api/order/:id -> consulta a cobrança; paga quando RECEIVED, CONFIRMED ou RECEIVED_IN_CASH.
-//   4. POST /api/restore { cpfCnpj } -> lista cobranças pagas do cliente e devolve os produtos.
-//   5. POST /api/webhook/asaas -> confirma o token e registra o evento (a confirmação de fato vem da consulta).
+//           (o pagador escolhe Pix, cartão ou boleto na página do Asaas), grava o pedido com o dono e devolve invoiceUrl.
+//   2. O jogo redireciona para invoiceUrl. Ao pagar, o Asaas devolve o jogador a SITE_URL/?pedido=<ref>.
+//   3. GET /api/order/:id -> só o dono do pedido; responde pelo banco local e consulta o Asaas apenas se o pedido
+//        está pendente há mais de 30 s (e no máximo a cada 15 s).
+//   4. POST /api/restore { cpfCnpj } -> exige login; liga ao usuário só pedidos dele ou ainda sem dono cuja cobrança
+//        é do mesmo CPF/CNPJ. Um pagamento libera produto para uma única conta.
+//   5. POST /api/webhook/asaas -> confere o token (comparação em tempo constante), reconsulta a cobrança no Asaas e
+//        registra; estorno e chargeback revogam o que foi liberado.
 //
-// Não há banco de dados: o Asaas é a fonte de verdade das compras; o navegador guarda o que foi liberado.
+// O banco local (SQLite, tabelas orders e entitlements) é a fonte de verdade do que cada conta possui; o Asaas é a
+// fonte de verdade do status de cada cobrança. O navegador só guarda cache e recebe a lista em /api/me.
 //
 // Variáveis de ambiente:
 //   ASAAS_API_KEY        chave da API (sandbox ou produção). Sem ela a loja fica desligada.
@@ -18,6 +22,7 @@
 //   ASAAS_WEBHOOK_TOKEN  token configurado no webhook do Asaas (header asaas-access-token).
 //   SITE_URL             domínio público, usado no redirecionamento de volta.
 
+import { timingSafeEqual } from "node:crypto";
 import { db, now } from "./db";
 
 export const VIP = "com.saldozero.vip";
@@ -28,7 +33,16 @@ export const PRODUCTS: Record<string, { name: string; value: number; favores?: n
   "com.saldozero.deck.eleicao": { name: "Saldo Zero · Baralho Ano Eleitoral", value: 9.9 },
   "com.saldozero.capas": { name: "Saldo Zero · Pacote de capas", value: 5.9 },
 };
-const PAID = new Set(["RECEIVED", "CONFIRMED", "RECEIVED_IN_CASH"]);
+export const PAID = new Set(["RECEIVED", "CONFIRMED", "RECEIVED_IN_CASH"]);
+// Estorno e chargeback: o que foi liberado é revogado. Se o chargeback for revertido, o status volta a pago e o produto volta.
+export const REVOKED = new Set(["REFUNDED", "REFUND_IN_PROGRESS", "CHARGEBACK_REQUESTED", "CHARGEBACK_DISPUTE", "AWAITING_CHARGEBACK_REVERSAL"]);
+/// Status nunca regride: pago não volta a pendente/vencido; REFUNDED é final; os demais seguem o Asaas.
+export function nextStatus(old: string | null | undefined, incoming: string) {
+  if (!old) return incoming;
+  if (old === "REFUNDED") return old;
+  if (PAID.has(old) && !PAID.has(incoming) && !REVOKED.has(incoming)) return old;
+  return incoming;
+}
 const REF_PREFIX = "sz:";
 
 const KEY = Bun.env.ASAAS_API_KEY || "";
@@ -56,6 +70,7 @@ export function storeConfig() {
 async function asaas(path: string, init: RequestInit = {}) {
   const res = await fetch(BASE + path, {
     ...init,
+    signal: AbortSignal.timeout(15_000),
     headers: { access_token: KEY, "content-type": "application/json", accept: "application/json", "user-agent": "SaldoZero/1.0", ...(init.headers || {}) },
   });
   const text = await res.text();
@@ -99,7 +114,7 @@ async function findOrCreateCustomer(b: { name: string; email: string; cpfCnpj: s
 }
 
 // ---- checkout ----
-export async function createCheckout(input: any, siteURL: string, userId: number | null = null) {
+export async function createCheckout(input: any, siteURL: string, userId: number) {
   if (!storeEnabled) throw new StoreError("Loja desligada.", 503);
   const productId = String(input?.productId || "");
   const product = PRODUCTS[productId];
@@ -120,35 +135,64 @@ export async function createCheckout(input: any, siteURL: string, userId: number
       callback: { successUrl: siteURL + "/?pedido=" + encodeURIComponent(ref), autoRedirect: true },
     }),
   });
-  db.run("INSERT OR IGNORE INTO orders (payment_id, ref, user_id, product_id, status, created_at, value) VALUES (?, ?, ?, ?, ?, ?, ?)", [payment.id, ref, userId, productId, payment.status || "PENDING", now(), product.value]);
+  // O webhook pode chegar antes desta linha: nesse caso o pedido já existe sem dono e recebe o dono aqui
+  // (sem trocar o dono de quem já tem; o status gravado pelo webhook é mantido).
+  db.transaction(() => {
+    db.run("INSERT INTO orders (payment_id, ref, user_id, product_id, status, created_at, value) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(payment_id) DO UPDATE SET user_id = COALESCE(orders.user_id, excluded.user_id)",
+      [payment.id, ref, userId, productId, payment.status || "PENDING", now(), product.value]);
+    syncEntitlement(payment.id);
+  })();
   return { paymentId: payment.id as string, ref, invoiceUrl: payment.invoiceUrl as string, productId };
 }
 
-/// Registra o estado de uma cobrança e, se paga e ligada a um usuário, libera o produto na conta.
+/// Registra o estado de uma cobrança (vindo do Asaas, nunca do navegador) e sincroniza o que a conta dona possui.
 export function recordPayment(p: { id: string; status: string; externalReference?: string | null }) {
   const productId = productFromRef(p.externalReference);
-  if (!productId) return null;
-  const paid = PAID.has(p.status);
-  db.run("INSERT INTO orders (payment_id, ref, user_id, product_id, status, created_at, paid_at, value) VALUES (?, ?, NULL, ?, ?, ?, ?, ?) ON CONFLICT(payment_id) DO UPDATE SET status = excluded.status, paid_at = COALESCE(orders.paid_at, excluded.paid_at)",
-    [p.id, p.externalReference, productId, p.status, now(), paid ? now() : null, PRODUCTS[productId].value]);
-  if (paid) {
-    const order = db.query("SELECT user_id FROM orders WHERE payment_id = ?").get(p.id) as { user_id: number | null } | null;
-    if (order?.user_id) grantEntitlement(order.user_id, productId, p.id);
-  }
-  return { productId, paid };
+  if (!productId || !p.id || !p.status) return null;
+  return db.transaction(() => {
+    const old = db.query("SELECT status FROM orders WHERE payment_id = ?").get(p.id) as { status: string } | null;
+    const status = nextStatus(old?.status, p.status);
+    const paid = PAID.has(status);
+    db.run("INSERT INTO orders (payment_id, ref, user_id, product_id, status, created_at, paid_at, value, checked_at) VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?) ON CONFLICT(payment_id) DO UPDATE SET status = excluded.status, paid_at = COALESCE(orders.paid_at, excluded.paid_at), checked_at = excluded.checked_at",
+      [p.id, p.externalReference ?? "", productId, status, now(), paid ? now() : null, PRODUCTS[productId].value, now()]);
+    syncEntitlement(p.id);
+    return { productId, paid, status };
+  })();
 }
-/// Idempotente: a chave (usuário, pagamento) garante que um pacote de favores só é creditado uma vez.
+/// Deixa entitlements coerente com o pedido: pago e com dono -> libera; estornado/contestado -> revoga.
+function syncEntitlement(paymentId: string) {
+  const o = db.query("SELECT user_id, product_id, status FROM orders WHERE payment_id = ?").get(paymentId) as { user_id: number | null; product_id: string; status: string } | null;
+  if (!o) return;
+  if (PAID.has(o.status) && o.user_id) grantEntitlement(o.user_id, o.product_id, paymentId);
+  else if (REVOKED.has(o.status)) revokeEntitlement(paymentId);
+}
+/// Idempotente: payment_id é único em entitlements (entre todas as contas), então um pacote de favores só é creditado
+/// uma vez, e para uma conta só.
 export function grantEntitlement(userId: number, productId: string, paymentId: string) {
   const r = db.run("INSERT OR IGNORE INTO entitlements (user_id, product_id, payment_id, created_at) VALUES (?, ?, ?, ?)", [userId, productId, paymentId, now()]);
   const favores = PRODUCTS[productId]?.favores || 0;
   if (favores && r.changes > 0) db.run("UPDATE users SET favores = favores + ? WHERE id = ?", [favores, userId]);
   return r.changes > 0;
 }
-/// Liga um pedido ainda sem dono ao usuário que acabou de entrar (ex.: comprou deslogado e depois criou a conta).
+/// Estorno/chargeback: remove o produto e desconta os favores do pacote. O saldo de favores PODE ficar negativo:
+/// quem gastou os favores e depois estornou fica devendo; o servidor não deixa gastar sem saldo e a próxima compra
+/// cobre a diferença. Produtos não consumíveis (VIP, baralho, capas) deixam de valer.
+export function revokeEntitlement(paymentId: string) {
+  const e = db.query("SELECT user_id, product_id FROM entitlements WHERE payment_id = ?").get(paymentId) as { user_id: number; product_id: string } | null;
+  if (!e) return false;
+  db.run("DELETE FROM entitlements WHERE payment_id = ?", [paymentId]);
+  const favores = PRODUCTS[e.product_id]?.favores || 0;
+  if (favores) db.run("UPDATE users SET favores = favores - ? WHERE id = ?", [favores, e.user_id]);
+  console.warn("[loja] pagamento " + paymentId + " estornado/contestado: " + e.product_id + " revogado da conta " + e.user_id);
+  return true;
+}
+/// Liga um pedido ainda sem dono ao usuário que acabou de entrar. Nunca troca o dono de um pedido que já tem dono.
 export function claimOrder(ref: string, userId: number) {
-  db.run("UPDATE orders SET user_id = ? WHERE ref = ? AND user_id IS NULL", [userId, ref]);
-  const o = db.query("SELECT payment_id, product_id, status FROM orders WHERE ref = ? AND user_id = ?").get(ref, userId) as any;
-  if (o && PAID.has(o.status)) grantEntitlement(userId, o.product_id, o.payment_id);
+  db.transaction(() => {
+    db.run("UPDATE orders SET user_id = ? WHERE ref = ? AND user_id IS NULL", [userId, ref]);
+    const o = db.query("SELECT payment_id FROM orders WHERE ref = ? AND user_id = ?").get(ref, userId) as { payment_id: string } | null;
+    if (o) syncEntitlement(o.payment_id);
+  })();
 }
 
 // ---- consulta ----
@@ -157,23 +201,32 @@ function productFromRef(ref: string | null | undefined) {
   const id = ref.slice(REF_PREFIX.length).split(":")[0];
   return PRODUCTS[id] ? id : null;
 }
-function summarize(p: any) {
-  recordPayment(p);
-  return { paymentId: p.id, status: p.status, paid: PAID.has(p.status), productId: productFromRef(p.externalReference), invoiceUrl: p.invoiceUrl };
-}
-export async function getOrder(idOrRef: string) {
+type OrderRow = { payment_id: string; ref: string; user_id: number | null; product_id: string; status: string; created_at: number; checked_at: number };
+/// Pedido do próprio usuário. Responde pelo banco; consulta o Asaas só se pendente há mais de 30 s (no máximo a cada 15 s).
+export async function getOrder(idOrRef: string, userId: number) {
   if (!storeEnabled) throw new StoreError("Loja desligada.", 503);
-  if (idOrRef.startsWith(REF_PREFIX)) {
-    const list = await asaas("/payments?externalReference=" + encodeURIComponent(idOrRef) + "&limit=1");
-    if (!list?.data?.length) throw new StoreError("Pedido não encontrado.", 404);
-    return summarize(list.data[0]);
+  if (!/^[\w:.-]{3,80}$/.test(idOrRef)) throw new StoreError("Pedido inválido.");
+  const find = () => db.query("SELECT payment_id, ref, user_id, product_id, status, created_at, checked_at FROM orders WHERE (payment_id = ? OR ref = ?) AND user_id = ?").get(idOrRef, idOrRef, userId) as OrderRow | null;
+  let o = find();
+  if (!o) throw new StoreError("Pedido não encontrado.", 404);
+  const settled = PAID.has(o.status) || REVOKED.has(o.status);
+  let invoiceUrl: string | undefined;
+  if (!settled && now() - o.created_at > 30_000 && now() - o.checked_at > 15_000) {
+    db.run("UPDATE orders SET checked_at = ? WHERE payment_id = ?", [now(), o.payment_id]);
+    try {
+      const p = await asaas("/payments/" + encodeURIComponent(o.payment_id));
+      if (p?.id === o.payment_id) { recordPayment(p); invoiceUrl = p.invoiceUrl; }
+    } catch (e) { console.error("[loja] consulta do pedido " + o.payment_id + " falhou: " + (e as Error).message); }
+    o = find()!;
   }
-  if (!/^[\w-]{3,64}$/.test(idOrRef)) throw new StoreError("Pedido inválido.");
-  return summarize(await asaas("/payments/" + idOrRef));
+  const granted = !!db.query("SELECT 1 FROM entitlements WHERE payment_id = ? AND user_id = ?").get(o.payment_id, userId);
+  return { paymentId: o.payment_id, ref: o.ref, status: o.status, paid: PAID.has(o.status), granted, productId: o.product_id, ...(invoiceUrl ? { invoiceUrl } : {}) };
 }
 
 // ---- restauração ----
-export async function restorePurchases(input: any, userId: number | null = null) {
+/// Exige login. Para cada cobrança paga do CPF/CNPJ informado: se o pedido é do usuário, garante o produto; se ainda
+/// não tem dono (ou é anterior ao banco), grava o usuário como dono; se é de outra conta, ignora sem revelar nada.
+export async function restorePurchases(input: any, userId: number) {
   if (!storeEnabled) throw new StoreError("Loja desligada.", 503);
   const doc = digits(String(input?.cpfCnpj || ""));
   if (!(validCPF(doc) || validCNPJ(doc))) throw new StoreError("CPF ou CNPJ inválido.");
@@ -181,10 +234,20 @@ export async function restorePurchases(input: any, userId: number | null = null)
   const products = new Set<string>();
   let count = 0;
   for (const c of customers?.data || []) {
-    const payments = await asaas("/payments?customer=" + c.id + "&limit=100");
+    if (digits(String(c?.cpfCnpj || "")) !== doc) continue;   // a cobrança precisa ser do mesmo CPF/CNPJ
+    const payments = await asaas("/payments?customer=" + encodeURIComponent(c.id) + "&limit=100");
     for (const p of payments?.data || []) {
       const id = productFromRef(p.externalReference);
-      if (id && PAID.has(p.status)) { count++; if (!PRODUCTS[id].favores) products.add(id); if (userId) grantEntitlement(userId, id, p.id); }
+      if (!id || !PAID.has(p.status) || p.customer !== c.id) continue;
+      const mine = db.transaction(() => {
+        recordPayment(p);
+        db.run("UPDATE orders SET user_id = ? WHERE payment_id = ? AND user_id IS NULL", [userId, p.id]);
+        const o = db.query("SELECT user_id, status FROM orders WHERE payment_id = ?").get(p.id) as { user_id: number | null; status: string } | null;
+        if (!o || o.user_id !== userId || !PAID.has(o.status)) return false;
+        syncEntitlement(p.id);
+        return !!db.query("SELECT 1 FROM entitlements WHERE payment_id = ? AND user_id = ?").get(p.id, userId);
+      })();
+      if (mine) { count++; if (!PRODUCTS[id].favores) products.add(id); }
     }
   }
   return { products: [...products], count };
@@ -192,9 +255,20 @@ export async function restorePurchases(input: any, userId: number | null = null)
 
 // ---- webhook ----
 export function webhookAuthorized(req: Request) {
-  const expected = Bun.env.ASAAS_WEBHOOK_TOKEN || "";
-  if (!expected) return false;
-  return req.headers.get("asaas-access-token") === expected;
+  const expected = Buffer.from(Bun.env.ASAAS_WEBHOOK_TOKEN || "");
+  if (expected.length < 8) return false;
+  const given = Buffer.from(req.headers.get("asaas-access-token") || "");
+  return given.length === expected.length && timingSafeEqual(given, expected);
+}
+/// Webhook: não confia no corpo. Reconsulta a cobrança no Asaas e só então registra (libera ou revoga).
+export async function handleWebhook(event: any) {
+  const id = String(event?.payment?.id || "");
+  if (!/^[\w-]{3,64}$/.test(id)) return { ignored: true };
+  const p = await asaas("/payments/" + encodeURIComponent(id));
+  if (p?.id !== id) throw new Error("Asaas devolveu outra cobrança");
+  const r = recordPayment(p);
+  console.log("[asaas webhook] " + event?.event + " " + id + " -> " + p.status + " " + (r ? r.productId : "(não é do jogo)"));
+  return { ok: true };
 }
 
 export function isVip(userId: number) {

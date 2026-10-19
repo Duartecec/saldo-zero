@@ -24,7 +24,8 @@ O servidor monta a página em memória a partir de `game.html`, troca o Google F
 | `ASAAS_WEBHOOK_TOKEN` | token configurado no webhook do Asaas (header `asaas-access-token`) |
 | `ADMIN_TOKEN` | senha do painel do desenvolvedor em `/admin` (mínimo 16 caracteres) |
 | `RESEND_API_KEY` | chave do Resend para e-mails de confirmação e recuperação de PIN; sem ela o código só vai para o log |
-| `RESEND_FROM` | remetente em domínio verificado no Resend (padrão `Saldo Zero <nao-responda@vorkaro.site>`) |
+| `RESEND_FROM` | remetente em domínio verificado no Resend (padrão `Saldo Zero <contato@vorkaro.site>`) |
+| `RESEND_REPLY_TO` | endereço que recebe respostas aos e-mails (padrão o e-mail de suporte) |
 | `DEV_CODES` | `1` apenas em testes: devolve o código na resposta da API |
 
 ### Conta de jogo, loja e ranking

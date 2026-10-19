@@ -1220,7 +1220,7 @@ function render(){
   $('modePill').textContent=s.mode==='daily'?'DIÁRIO #'+dailyNumber():'MODO LIVRE';
   $('dayCount').textContent='Dia '+s.day+' em liberdade · '+s.turn+' decisões';renderFav();renderZap();if(s.turn>=1&&!store.get('played',0))store.set('played',1);renderNudge();
   document.querySelectorAll('.stat').forEach(el=>{const k=el.dataset.k,v=s[k];el.querySelector('.bar i').style.width=v+'%';el.querySelector('.val').textContent=k==='caixa'?money(v):v;el.classList.toggle('danger',v>=85||v<=15)});
-  $('track').innerHTML=s.news.map(n=>'<span>◆ '+n+'</span>').join('');
+  renderTicker();
   const k=BY_ID[s.card];if(!k)return;
   const c=CH[k.c];const isNews=k.c==='narrador';const isZap=!isNews&&!['diretor','juridico','auditor','bc','cpi','fazenda'].includes(k.c);
   $('card').classList.toggle('oc',!!k.oc);
@@ -1231,6 +1231,10 @@ function render(){
     '<div class="tag l">'+k.l[0]+'</div><div class="tag r">'+k.r[0]+'</div>';
   $('lblL').textContent=k.l[0];$('lblR').textContent=k.r[0];
 }
+let lastTrack='';
+function renderTicker(){const tr=$('track');const html=s.news.slice(0,5).map(n=>'<span>◆ '+n+'</span>').join('');if(html===lastTrack)return;lastTrack=html;tr.innerHTML=html;
+  // reinicia a animação com a manchete nova na frente e velocidade constante (70 px/s)
+  tr.style.animation='none';void tr.offsetWidth;tr.style.animation='';tr.style.animationDuration=Math.max(10,Math.round(tr.scrollWidth/70))+'s'}
 function dealIn(){const c=$('card');c.classList.remove('out','in');c.style.transform='';void c.offsetWidth;c.classList.add('in');sfx('deal')}
 function previewDots(side,amt){
   const k=BY_ID[s.card];if(!k)return;

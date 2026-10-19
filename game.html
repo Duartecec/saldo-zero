@@ -633,6 +633,8 @@ const CH={
   cliente:{n:'Dona Cida',r:'Cliente desde 2016',f:{skin:'#e3b08c',hair:'#8d8a8a',s:2,b:0,g:1,bg:'#b6d0b0'}},
   tse:{n:'Ministra do Tribunal Eleitoral',r:'Justiça Eleitoral',f:{skin:'#c98e66',hair:'#2a2a2a',s:2,b:0,g:1,bg:'#a9b9d6'}},
   governo:{n:'Assessor do governo eleito',r:'Palácio',f:{skin:'#e0b08a',hair:'#2f2a2a',s:1,b:0,g:0,bg:'#b5c7a8'}},
+  forum:{n:'Diretor do Fórum Brasil de Ideais',r:'Instituto jurídico · Londres',f:{skin:'#e2b48e',hair:'#4a4a52',s:1,b:1,g:1,bg:'#9fb0d8'}},
+  cirao:{n:'Cirão Gomes',r:'Político · bate em todo mundo',f:{skin:'#dcae88',hair:'#8d8a8a',s:1,b:0,g:0,bg:'#d9a08c'}},
   narrador:{n:'Plantão',r:'Acontecimento',f:{skin:'#f3ecd9',hair:'#f3ecd9',s:0,b:0,g:0,bg:'#e8283c',news:1}}
 };
 function avatar(k,size=60){const f=CH[k].f;if(f.news)return '<svg viewBox="0 0 72 72" style="width:'+size+'px;height:'+size+'px" aria-hidden="true"><circle cx="36" cy="36" r="35" fill="'+f.bg+'"/><text x="36" y="47" text-anchor="middle" font-size="30" font-family="Anton,Impact,sans-serif" fill="#fff">!</text></svg>';
@@ -662,7 +664,9 @@ const ACH={
   picanha:['🥩','Churrasco institucional','Levou picanha ao churrasco do ministro'],
   cripto:['📈','140% do CDI','Confiou em um influencer financeiro'],
   queimado:['🔥','Curto-circuito','Os HDs "queimaram sozinhos"'],
-  rapido:['⚡','Carreira meteórica','Caiu antes do dia 60']
+  rapido:['⚡','Carreira meteórica','Caiu antes do dia 60'],
+  londres:['🥂','Brinde em Londres','Patrocinou o fórum com meia República na plateia'],
+  macallan:['🥃','Single malt','Serviu uísque de R$ 60 mil para quem decide']
 };
 
 /* ============ Deck ============ */
@@ -910,6 +914,28 @@ const CARDS=[
  {id:'f9',c:'narrador',ch:[2,3],repeat:true,t:'ALIADO EM APUROS: um deputado amigo foi pego em escândalo e pede que você o defenda em público.',
   l:['Defendo em público',{p:5,i:-6,r:4},{news:'Banqueiro defende deputado investigado'}],r:['Silêncio',{p:-6},{news:'Deputado reclama de "abandono" de aliados'}]}
 ,
+ // ---------- Londres, uísque e charutos ----------
+ {id:'londres',c:'forum',ch:[1,2],t:'O 1º Fórum Jurídico de Londres precisa de um patrocinador-máster. Vai ter ministro do Supremo, procurador-geral, diretor da PF, ex-presidente. Taça de champanhe e vídeo institucional. R$ 8 milhões.',
+  l:['Patrocino e apareço no vídeo',{c:-10,p:14,i:-3,r:9},{flag:'londres',ach:'londres',then:'londres2',delay:6,news:'Banco Maxter patrocina fórum jurídico em Londres com meia República na plateia'}],
+  r:['Patrocino, mas sem vídeo e sem meu nome',{c:-8,p:7,r:3},{flag:'londres_discreto',news:'Fórum em Londres reúne autoridades; patrocinador "prefere discrição"'}]},
+ {id:'londres2',c:'globa',ch:[1,2,3],hidden:true,t:'Vazou o vídeo de Londres: você brindando entre o diretor da PF e o procurador-geral, todos de taça na mão. Vai ao ar às 20h. Quer comentar?',
+  l:['Evento institucional, todos convidados',{i:-8,r:10,p:-4},{news:'Vídeo de brinde em Londres expõe autoridades ao lado do banqueiro'}],
+  r:['Peço que cortem o vídeo',{c:-6,r:8,p:-8},{news:'Banqueiro tenta barrar vídeo do brinde em Londres; vídeo viraliza'}]},
+ {id:'macallan',c:'marketeiro',ch:[1,2],req:s=>s.flags.londres||s.flags.londres_discreto,t:'Para o jantar de Londres: degustação de Macallan, R$ 60 mil a garrafa, e cada convidado leva uma pra casa. Ministro lembra de quem dá o uísque. Orçamento: US$ 640 mil.',
+  l:['Abre o Macallan, uma garrafa pra cada',{c:-12,p:12,r:8},{flag:'macallan',ach:'macallan',then:'macallan2',delay:8,news:'Degustação de uísque de R$ 60 mil reúne ministros e banqueiro em Londres'}],
+  r:['Serve o da casa e ninguém leva nada',{c:-2,p:-3,i:2},{news:'Jantar de banqueiro em Londres termina cedo e sem lembrancinha'}]},
+ {id:'macallan2',c:'dados',ch:[1,2,3],hidden:true,t:'Cruzei a nota do hotel de Londres com a lista de convidados. Ministro, procurador, diretor da PF: cada um saiu com uma garrafa de R$ 60 mil paga pelo Maxter. Publico amanhã. Quer explicar?',
+  l:['Presente de cortesia, não tem valor',{i:-10,r:14,p:-6},{news:'"Garrafa de cortesia" de R$ 60 mil vira manchete e constrange autoridades'}],
+  r:['Era do instituto, não do banco',{r:9,i:-4,c:-4},{news:'Instituto assume conta do uísque; jornalistas duvidam'}]},
+ {id:'charutos',c:'coluna',ch:[2,3],req:s=>s.flags.londres||s.flags.macallan||s.flags.jantar_cirio,t:'Tenho uma foto sua com o procurador-geral entre copos de uísque e charutos cubanos. Publico com a legenda "amigos" ou "investigado e investigador"?',
+  l:['Me liga, a gente resolve',{c:-8,p:4,i:-2,r:6},{flag:'charuto',news:'Colunista "perde" foto de banqueiro com procurador entre charutos'}],
+  r:['Publica. Charuto não é crime',{i:-9,r:10,p:-5},{news:'Foto de banqueiro com procurador entre charutos e uísque vira capa'}]},
+ {id:'cirao1',c:'juridico',ch:[2],t:'O Cirão Gomes topou jantar. Ele vem batendo nos seus precatórios em todo podcast. Levo o Macallan de R$ 60 mil ou vamos só com os números?',
+  l:['Leva o Macallan',{c:-5,p:6,r:5},{then:'cirao2',delay:5,news:'Banqueiro leva uísque raro a jantar com crítico dos precatórios'}],
+  r:['Só os números, sem garrafa',{i:4,r:-3,p:-2},{news:'Crítico sai de jantar com banqueiro "ainda desconfiado"'}]},
+ {id:'cirao2',c:'cirao',ch:[2,3],hidden:true,t:'Gostei do uísque. Não gostei dos precatórios. Vou falar dos dois no podcast amanhã. A garrafa, eu devolvo ou fico?',
+  l:['Fica com a garrafa',{i:-6,r:8},{news:'Cirão Gomes conta em podcast que ganhou uísque de banqueiro "para esquecer os precatórios"'}],
+  r:['Devolve, e esquece que eu existo',{p:-6,i:2,r:2},{news:'Político devolve uísque de banqueiro e vira meme'}]},
  // ---------- Ocorrências: alertas aleatórios que encostam no Maxter de lado. Opção em função = resultado depende do que você já fez ----------
  {id:'oc_pf_cambio',oc:true,c:'narrador',ch:[1,2,3],t:'ALERTA: Polícia Federal deflagra a Operação Câmbio Negro contra o Banco Pirâmide. Um contrato de câmbio liga o Pirâmide ao Maxter.',
   l:['Rescindo o contrato e aviso o Banco Centrão',{c:-7,i:-3,r:-6},{news:'Maxter rompe com Banco Pirâmide e se antecipa ao Banco Centrão'}],

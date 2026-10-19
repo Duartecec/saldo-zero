@@ -764,7 +764,7 @@ async function initWebStore(){if(NATIVE||!/^https?:$/.test(location.protocol))re
     WEBSTORE.enabled=true;c.products.forEach(p=>{priceOf[p.id]=p.price;if(p.list){listOf[p.id]=p.list;discOf[p.id]=p.discount}});$('openShop').hidden=false;
     $('legalNote').textContent='Obra de ficção e sátira. Personagens, bancos, veículos e instituições são inventados. Compras opcionais processadas pelo Asaas (Pix, cartão ou boleto) para EBENIX TECNOLOGIA INOVA SIMPLES (I.S.), CNPJ 68.730.443/0001-71.';
     $('shopLead').textContent='Pagamento único pelo Asaas: Pix, cartão ou boleto. O jogo completo continua gratuito; os extras valem no modo livre.';
-    $('shopLegal').textContent='Vendido por EBENIX TECNOLOGIA INOVA SIMPLES (I.S.), CNPJ 68.730.443/0001-71; a cobrança é emitida pelo Asaas. As compras ficam na sua conta: em outro aparelho, basta entrar com o mesmo apelido.';
+    $('shopLegal').textContent='Vendido por EBENIX TECNOLOGIA INOVA SIMPLES (I.S.), CNPJ 68.730.443/0001-71, Av. das Américas, 1342, Parnamirim/RN; a cobrança é emitida pelo Asaas. As compras ficam na sua conta: em outro aparelho, basta entrar com o mesmo apelido.';
     const q=new URLSearchParams(location.search).get('pedido');
     // Voltou do Asaas com ?pedido=<ref>: só reaproveita o pendente se for o MESMO pedido (nunca mistura paymentId antigo com ref novo).
     if(q){WEBSTORE.pending=(WEBSTORE.pending&&WEBSTORE.pending.ref===q)?WEBSTORE.pending:{ref:q,productId:(q.split(':')[1]||null)};store.set('pending',WEBSTORE.pending);history.replaceState(null,'',location.pathname)}

@@ -3,7 +3,7 @@
 // - Serve o PWA: manifesto, service worker, ícones e fontes locais (public/).
 // - Serve as páginas legais /privacidade, /suporte e /aviso.
 // - Cabeçalhos de segurança (CSP com hash dos scripts inline, HSTS etc.), limites por IP e backup diário do SQLite.
-import { storeEnabled, storeConfig, createCheckout, getOrder, restorePurchases, webhookAuthorized, handleWebhook, claimOrder, StoreError } from "./store";
+import { storeEnabled, storeConfig, createCheckout, getOrder, restorePurchases, webhookAuthorized, handleWebhook, noteWebhookFailure, reconcilePayments, claimOrder, StoreError } from "./store";
 import { enter, nickAvailable, logout, logoutAll, userFromRequest, requireUser, requireVerified, publicUser, entitlementsOf, mergeProgress, submitDaily, leaderboard, spendFavores, createTicket, myTickets, verifyEmail, resendVerification, setEmail, forgotPin, resetPin, deleteAccount, cleanupSessions, spDay, AuthError } from "./auth";
 import { mailEnabled } from "./mail";
 import { adminEnabled, adminAuthorized, overview, listOrders, listUsers, userDetail, userAction, listTickets, answerTicket } from "./admin";
@@ -33,7 +33,7 @@ const swSource = (await Bun.file(new URL("./public/sw.js", root)).text()).replac
 
 const SITE = (Bun.env.SITE_URL || "https://vorkaro.site").replace(/\/$/, "");
 const SUPPORT_EMAIL = "contato@vorkaro.site";
-const VENDOR = "EBENIX TECNOLOGIA INOVA SIMPLES (I.S.), CNPJ 68.730.443/0001-71";
+const VENDOR = "EBENIX TECNOLOGIA INOVA SIMPLES (I.S.), CNPJ 68.730.443/0001-71, Av. das Américas, 1342, Parnamirim/RN";
 const title = "Saldo Zero · Você é o banqueiro. Quantos dias até a PF chegar?";
 const description = "Sátira ficcional de cartas: você comanda o Banco Maxter, negocia com o poder e tenta escapar da Operação Saldo Zero. Desafio diário com as mesmas cartas para todos. Quantos dias você dura?";
 
@@ -334,7 +334,10 @@ async function api(req: Request, pathname: string, ip: string): Promise<Response
       if (!webhookAuthorized(req)) { console.warn("[asaas webhook] token inválido de " + ip); return json({ error: "token inválido" }, 401); }
       const event = await req.json().catch(() => ({}));
       try { await handleWebhook(event); }
-      catch (e) { console.error("[asaas webhook] erro ao processar " + (event?.event || "?") + " " + (event?.payment?.id || "?") + ": " + (e as Error).message); }
+      catch (e) {
+        console.error("[asaas webhook] erro ao processar " + (event?.event || "?") + " " + (event?.payment?.id || "?") + ": " + (e as Error).message);
+        try { noteWebhookFailure(String(event?.payment?.id || ""), String(event?.event || "")); } catch {}
+      }
       return json({ received: true });
     }
 
@@ -413,6 +416,11 @@ async function route(req: Request, ip: string): Promise<Response> {
 // ---- rotinas ----
 const HOUR = 3600_000;
 setInterval(() => { try { const n = cleanupSessions(); if (n) console.log("[sessões] expiradas removidas: " + n); } catch (e) { console.error("[sessões]", e); } }, HOUR).unref?.();
+if (storeEnabled) {
+  const reconcile = () => reconcilePayments().catch((e) => console.error("[conciliação]", e));
+  setTimeout(reconcile, Number(Bun.env.RECONCILE_FIRST_MS || 60_000)).unref?.();
+  setInterval(reconcile, HOUR).unref?.();
+}
 if (Bun.env.BACKUP_DISABLED !== "1") {
   setTimeout(backupNow, 5_000).unref?.();            // logo após subir
   setInterval(backupNow, HOUR).unref?.();             // gera no máximo 1 por dia (pula se o do dia já existe)

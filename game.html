@@ -134,6 +134,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 .ends div{aspect-ratio:1;max-width:100%;display:flex;align-items:center;justify-content:center;font-size:26px;border-radius:12px;background:#0a0c18;border:1px solid var(--line)}
 .ends div.locked{opacity:.3;filter:grayscale(1)}
 .ends div[title]{cursor:help}
+.ends div.r1{border-color:#6b7cff;box-shadow:inset 0 0 0 1px #6b7cff55}.ends div.r2{border-color:var(--gold);box-shadow:inset 0 0 0 1px #f5c04a66,0 0 12px #f5c04a33}
+.ends.items div{font-size:24px}
 
 /* Newspaper front page (end screen, made to be screenshotted) */
 .paper{background:var(--paper);color:var(--paper-ink);border-radius:6px;padding:14px 16px 16px;box-shadow:0 20px 50px #000a;position:relative;overflow:hidden;
@@ -317,6 +319,11 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
       <div class="ends" id="endGrid"></div>
       <p style="margin-top:8px" id="bestInfo"></p>
     </div>
+    <div class="panel">
+      <h3>🎁 Coleção <span id="itemCount"></span></h3>
+      <div class="ends items" id="itemGrid"></div>
+      <p style="margin-top:8px;color:var(--mute);font-size:13px">Presentes e lembranças que as partidas deixam. Toque para ver a história de cada um. Ficam na sua conta mesmo quando a PF apreende tudo.</p>
+    </div>
     <div class="panel legend">
       <span>💰 <b>Caixa</b> · dinheiro do banco (R$ 0 = falência)</span>
       <span>🏛️ <b>Poder</b> · amigos em Brasília</span>
@@ -349,6 +356,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
       <p><b>Obsessão.</b> Três decisões seguidas puxando o mesmo indicador deixam a jogada previsível: o ganho encolhe e os outros indicadores pagam a conta. Imagem demais custa caixa e esquenta o radar; poder demais custa imagem; caixa gordo atrai o radar; sumir do radar custa caixa e poder. Jogadas do Vorkaro repetidas na mesma partida também rendem menos e custam mais.</p>
       <p><b>Pressão.</b> Qualquer indicador acima de 70 aquece o radar a cada decisão. Acima de 80, ele começa a drenar outro: fama custa caixa, poder custa imagem, caixa gordo custa imagem. E o topo é caro: acima de 75, cada ponto ganho vale metade; acima de 90, um terço. Ninguém chega a 100 sem equilibrar o resto.</p>
       <p><b>🚨 Ocorrências.</b> De vez em quando o Plantão traz um fato que não é sobre você, mas encosta no Maxter: uma operação da PF em outro banco, um deputado preso com mala, uma inspeção sorteada. Bolinhas vermelhas avisam que o resultado depende do que você já fez na partida. A escolha errada custa muito caro.</p>
+      <p><b>🎁 Coleção.</b> Uísque de R$ 60 mil, charutos, vinho, relógio, troféu, mala de couro: alguns presentes e lembranças ficam na sua coleção, na tela inicial, com a história de cada um. Aceitar presente quase sempre esquenta o radar. Quando você é preso, a PF apreende tudo e lacra no Supremo, mas a coleção continua na sua conta.</p>
       <p><b>⭐ VIP para sempre.</b> Pagamento único: 15 favores em toda partida, baralho eleitoral, escolha da capa e destaque dourado no ranking.</p>
       <p><b>🎩 Favores e jogadas do Vorkaro.</b> Toda partida começa com 2 favores (15 para VIP). Eles pagam ações por iniciativa própria (ligar para o ministro, enterrar dinheiro em marketing, advogado de emergência…). No modo livre, 2 favores também pagam um recurso para continuar depois de cair. Pacotes extras ficam na sua conta e valem só no modo livre.</p>
       <p><b>Diário e ranking.</b> No desafio diário todo mundo recebe a mesma sequência de cartas, com os mesmos 2 favores e sem recurso. O primeiro resultado do dia entra no ranking pelo seu apelido.</p>
@@ -521,9 +529,10 @@ $('loginForm').onsubmit=async e=>{e.preventDefault();$('loginError').textContent
   catch(err){$('loginError').textContent=err.message}btn.disabled=false};
 function syncFromServer(progress,entitlements,fav){(entitlements||[]).forEach(grant);if(typeof fav==='number')setFavores(fav);
   if(progress){const ends=store.get('ends',{});for(const [k,v] of Object.entries(progress.ends||{}))if(ENDINGS[k])ends[k]=Math.max(ends[k]||0,v);store.set('ends',ends);
-    const ach=store.get('ach',[]);(progress.ach||[]).forEach(a=>{if(ACH[a]&&!ach.includes(a))ach.push(a)});store.set('ach',ach);store.set('best',Math.max(store.get('best',0),progress.best||0))}
+    const ach=store.get('ach',[]);(progress.ach||[]).forEach(a=>{if(ACH[a]&&!ach.includes(a))ach.push(a)});store.set('ach',ach);
+    const col=store.get('items',[]);(progress.items||[]).forEach(a=>{if(ITEMS[a]&&!col.includes(a))col.push(a)});store.set('items',col);store.set('best',Math.max(store.get('best',0),progress.best||0))}
   renderShop()}
-async function pushProgress(){if(!auth)return;try{await api('/api/me/progress',{method:'PUT',body:JSON.stringify({ends:store.get('ends',{}),ach:store.get('ach',[]),best:store.get('best',0)})})}catch{}}
+async function pushProgress(){if(!auth)return;try{await api('/api/me/progress',{method:'PUT',body:JSON.stringify({ends:store.get('ends',{}),ach:store.get('ach',[]),items:store.get('items',[]),best:store.get('best',0)})})}catch{}}
 async function loadMe(){if(!auth)return;try{const d=await api('/api/me');setAcct({email:d.user.email,emailVerified:d.user.emailVerified,vip:d.user.vip});syncFromServer(d.user.progress,d.entitlements,d.user.favores);if(!$('startScreen').hidden)showStart()}catch{}}
 async function loadRank(){if(!ONLINE)return;const el=$('rankList');
   try{const d=await api('/api/daily?day='+todayKey());
@@ -654,6 +663,26 @@ const ENDINGS={
   exilio:{e:'✈️',t:'Banqueiro embarca para Lisboa "a passeio" e não volta',s:'O passaporte estava na mesa. O pastel de nata, também.',k:'x'},
   lenda:{e:'🏆',t:'Dois anos depois, Vorkaro segue solto, rico e sorrindo',s:'Sobreviveu às eleições, às CPIs e à própria família. Lenda do mercado.',k:'x'}
 };
+/* Coleção: presentes e lembranças que a partida deixa na conta. [emoji, nome, descrição, raridade 0-2, dica] */
+const ITEMS={
+  macallan:['🥃','Macallan 1926','Uísque de R$ 60 mil, caixa de madeira com dedicatória. Cada convidado de Londres levou um.',2,'Abra o Macallan no jantar de Londres.'],
+  champanhe:['🍾','Taça de Londres','A taça do brinde com meia República. O vídeo veio junto.',1,'Patrocine o fórum de Londres e apareça no vídeo.'],
+  charutos:['🚬','Caixa de Cohiba','Charutos cubanos do jantar com o procurador. Faltam dois.',1,'Resolva "no telefone" a foto da colunista.'],
+  vinho:['🍷','Romanée-Conti 1990','Vinho de R$ 120 mil levado ao jantar do senador. Ele guardou a rolha.',2,'Leve o vinho ao jantar do senador.'],
+  relogio:['⌚','Patek Philippe Nautilus','R$ 1,2 milhão. "Lembrança" dos investidores do Golfo.',2,'Venda 30% do banco sem perguntas.'],
+  rolex:['⌚','Rolex do senador','Presente "de amigo". Não declarado.',1,'Aceite o presente do senador.'],
+  caneta:['🖋️','Montblanc da emenda','Assinou a emenda com ela. O relator ficou com a tampa.',0,'Patrocine uma emenda na Câmara.'],
+  camisa:['👕','Camisa do Flamingo','Autografada pelo elenco. O patrocínio custou R$ 40 mi.',0,'Feche o patrocínio master do Flamingo.'],
+  biblia:['📖','Bíblia de capa de couro','Dedicatória do bispo: "ao irmão benfeitor".',0,'Doe R$ 2 milhões ao templo.'],
+  trofeu:['🏆','Banqueiro Revelação','O troféu da cerimônia de 300 fotógrafos.',0,'Vá à premiação e discurse.'],
+  faca:['🔪','Faca do churrasco','Gravada com o nome do ministro. "Evento social".',1,'Leve a picanha ao churrasco.'],
+  violao:['🎸','Violão autografado','Do show privado de R$ 3 milhões. O story foi apagado.',1,'Feche o show de aniversário.'],
+  mala:['💼','Mala de couro','Igual à do deputado. Vazia, oficialmente.',1,'Pague a defesa de um deputado preso com mala.'],
+  jatinho:['✈️','Miniatura do jato','Lembrança do voo para o comício em Goiânia.',0,'Libere o jatinho para a campanha.'],
+  dolar:['💵','Dólar emoldurado','O primeiro dólar da remessa para Miami. Tony Câmbio insistiu.',1,'Aceite a remessa do operador de câmbio.'],
+  quadro:['🖼️','Quadro de 2 metros','Presente de um cliente. Sua mãe chama de "a prova".',0,'Pendure o quadro que chegou em casa.']
+};
+const RARITY=['comum','raro','lendário'];
 const ACH={
   muro:['🧱','Em cima do muro','Financiou os dois lados da eleição'],
   teflon:['🍳','Teflon','Jogou 3 cartas com o radar acima de 85 sem ser preso'],
@@ -677,7 +706,7 @@ const CARDS=[
   l:['Entro com tudo, no meu nome',{c:-15,p:8,i:6,r:4},{flag:'dono',news:'Empresário assume controle do Banco Maxter e promete "nova era"'}],
   r:['Entro, mas com um sócio oculto',{c:-5,p:5,i:2,r:12},{flag:'socio_oculto',news:'Mercado especula sobre quem está por trás da capitalização do Maxter'}]},
  {id:'jantar_cirio',c:'cirio',ch:[1,2],t:'Jantar na minha casa sábado. Vai ter meio Senado. Sem fotógrafo, claro. Você leva o vinho?',
-  l:['Levo o vinho e a agenda',{p:12,i:-3,r:8},{flag:'jantar_cirio',news:'Coluna cita "jantar discreto" entre senadores e novo banqueiro'}],
+  l:['Levo o vinho e a agenda',{p:12,i:-3,r:8},{flag:'jantar_cirio',item:'vinho',news:'Coluna cita "jantar discreto" entre senadores e novo banqueiro'}],
   r:['Mando um presente e não vou',{p:3,c:-2,i:2},{news:'Banqueiro recusa convites e mantém perfil discreto'}]},
  {id:'materia1',c:'metrupolis',ch:[1],t:'Estamos fechando uma matéria sobre a expansão do banco. Você responde ou publico "procurado, não respondeu"?',
   l:['Mando os números completos',{i:8,r:-5,p:-2},{news:'Metrupolis: Maxter abre as contas e cresce 40% em um ano'}],
@@ -689,7 +718,7 @@ const CARDS=[
   l:['Amigos são pra isso',{c:-6,p:10,r:10},{flag:'lulinho',news:'Bastidores: filho de liderança política circula com banqueiro'}],
   r:['Só com garantia e contrato',{p:-4,i:3},{news:'Banqueiro nega crédito a herdeiro político, dizem assessores'}]},
  {id:'emenda',c:'vugo',ch:[1,2],t:'A Câmara vota o marco das fintechs semana que vem. Uma emendinha ajudaria o Maxter, né? Emendas custam.',
-  l:['Patrocino a emenda',{c:-10,p:14,r:8},{flag:'emenda',then:'emenda2',delay:4,news:'Emenda surpresa beneficia bancos médios no marco das fintechs'}],
+  l:['Patrocino a emenda',{c:-10,p:14,r:8},{flag:'emenda',item:'caneta',then:'emenda2',delay:4,news:'Emenda surpresa beneficia bancos médios no marco das fintechs'}],
   r:['Deixa o mercado decidir',{p:-5,i:4},{news:'Marco das fintechs avança sem mudanças de última hora'}]},
  {id:'basileia1',c:'diretor',ch:[1,2],t:'Nosso capital está abaixo do mínimo. Ou cortamos 30 agências ou "ajustamos" o balanço.',
   l:['Cortar as agências',{c:4,i:-8,p:-3},{news:'Maxter fecha 30 agências e demite 400'}],
@@ -701,10 +730,10 @@ const CARDS=[
   l:['Pode sim, mãe. Rende bem.',{c:5,i:3,r:2},{flag:'tia',then:'tia2',delay:9}],
   r:['Mãe, não bota a tia nisso',{i:-2,c:-1},{news:'Banqueiro diz à família que "banco é coisa séria"'}]},
  {id:'bispo',c:'bispo',ch:[1,2],t:'Deus abençoa quem investe no templo. E o templo investe em quem abençoa. R$ 2 milhões, irmão.',
-  l:['Doação de R$ 2 milhões',{c:-7,p:6,i:5},{flag:'bispo',news:'Banqueiro doa milhões a igreja e recebe título de "irmão benfeitor"'}],
+  l:['Doação de R$ 2 milhões',{c:-7,p:6,i:5},{flag:'bispo',item:'biblia',news:'Banqueiro doa milhões a igreja e recebe título de "irmão benfeitor"'}],
   r:['Deus me livre',{i:-2,p:-1},{news:'Bispo critica "banqueiros sem fé" em culto transmitido'}]},
  {id:'premio',c:'coluna',ch:[1,2],t:'Você foi eleito Banqueiro Revelação do Ano. A cerimônia tem tapete vermelho e 300 fotógrafos.',
-  l:['Vou e discurso',{i:7,p:4,r:4},{news:'Vorkaro recebe prêmio e diz que "o país precisa de ousadia"'}],
+  l:['Vou e discurso',{i:7,p:4,r:4},{item:'trofeu',news:'Vorkaro recebe prêmio e diz que "o país precisa de ousadia"'}],
   r:['Mando o diretor buscar',{i:2,r:-1},{news:'Banqueiro revelação não comparece à própria premiação'}]},
  {id:'cliente',c:'cliente',ch:[1,2,3],repeat:true,t:'Seu Danilo, sou cliente desde o começo. Meu neto quer abrir conta. Vocês ainda são um banco de gente?',
   l:['Abro a conta eu mesmo',{i:4,c:-1},{news:'Banqueiro abre conta de cliente pessoalmente e vídeo viraliza'}],
@@ -716,7 +745,7 @@ const CARDS=[
   l:['Aprovo a campanha',{c:-12,i:11,r:4},{news:'Jingle "Maxter é confiança" toca em todo intervalo da TV'}],
   r:['Só o jingle',{c:-3,i:5},{news:'Jingle do Maxter vira trend nas redes'}]},
  {id:'flamingo',c:'flamingo',ch:[1,2],t:'Patrocínio master do Flamingo: R$ 40 milhões por temporada. Seu nome na camisa de 40 milhões de torcedores.',
-  l:['Fecho o patrocínio',{c:-14,i:12,p:3,r:3},{flag:'flamingo',news:'Maxter estampa camisa do Flamingo e torcida comemora'}],
+  l:['Fecho o patrocínio',{c:-14,i:12,p:3,r:3},{flag:'flamingo',item:'camisa',news:'Maxter estampa camisa do Flamingo e torcida comemora'}],
   r:['Caro demais',{i:-2},{news:'Flamingo segue sem patrocinador master'}]},
 
  // ---------- Capítulo 2: O Poder ----------
@@ -727,7 +756,7 @@ const CARDS=[
   l:['Era brincadeira entre amigos',{i:-10,r:8},{news:'Rede Globa exibe áudio; banqueiro diz que era "piada interna"'}],
   r:['Processo a emissora',{c:-8,i:-4,p:3,r:4},{flag:'processou',ach:'processou',news:'Banqueiro processa Rede Globa e fala em "perseguição"'}]},
  {id:'doleiro',c:'doleiro',ch:[2],t:'Tem R$ 80 milhões parados que precisam virar dólar em Miami. Discreto, taxa boa, sem perguntas.',
-  l:['Faz',{c:14,r:16},{flag:'doleiro',then:'doleiro2',delay:6,news:'Remessas atípicas chamam atenção de analistas de câmbio'}],
+  l:['Faz',{c:14,r:16},{flag:'doleiro',item:'dolar',then:'doleiro2',delay:6,news:'Remessas atípicas chamam atenção de analistas de câmbio'}],
   r:['Não conheço você',{r:-2},{}]},
  {id:'socio1',c:'socio',ch:[2],req:s=>s.flags.socio_oculto,t:'Quero aparecer. Virar sócio visível custa 20% do banco. Ou eu continuo "oculto" e você continua me devendo.',
   l:['Aceito a diluição',{c:-10,r:-8,p:3},{news:'Maxter anuncia novo sócio e reorganização societária'}],
@@ -736,7 +765,7 @@ const CARDS=[
   l:['Converso: 25% do banco',{c:-14,r:-6},{news:'Reorganização societária do Maxter surpreende o mercado'}],
   r:['Manda o envelope',{i:-10,r:14},{news:'Envelope anônimo chega à redação com documentos do Maxter'}]},
  {id:'jato',c:'bolso',ch:[2],t:'O Bolsonarinho precisa de um voo pro comício em Goiânia. Seu jatinho tá livre sábado?',
-  l:['Jatinho liberado',{p:10,i:-6,r:8},{flag:'jato',then:'bolso2',delay:8,news:'Jato de banqueiro leva candidato a comício; campanha nega "favor"'}],
+  l:['Jatinho liberado',{p:10,i:-6,r:8},{flag:'jato',item:'jatinho',then:'bolso2',delay:8,news:'Jato de banqueiro leva candidato a comício; campanha nega "favor"'}],
   r:['Tá na revisão',{p:-4},{}]},
  {id:'aporte',c:'lulo',ch:[2],t:'O Lulo quer um aporte no fundo da campanha. Nada registrado. Discreto, como se diz.',
   l:['Aporte discreto',{p:10,i:-4,r:10,c:-8},{flag:'aporte',then:'lulo2',delay:8,news:'Campanha recebe reforço de caixa de "amigos do setor financeiro"'}],
@@ -754,13 +783,13 @@ const CARDS=[
   l:['Colaboro com tudo',{r:-8,p:-4,c:-5},{news:'Maxter entrega documentos e diz que "não tem nada a esconder"'}],
   r:['Aciono meus contatos no Senado',{r:7,p:4},{news:'Senadores pressionam MPF por "excesso de zelo" contra bancos'}]},
  {id:'churrasco',c:'stf',ch:[2,3],t:'Não trato de processos por mensagem. Mas o churrasco de domingo é um encontro social. Picanha é bem-vinda.',
-  l:['Levo a picanha',{p:14,i:-5,r:12},{flag:'churrasco',ach:'picanha',then:'stf2',delay:7,news:'Banqueiro é visto em churrasco com ministro; "evento social", diz gabinete'}],
+  l:['Levo a picanha',{p:14,i:-5,r:12},{flag:'churrasco',ach:'picanha',item:'faca',then:'stf2',delay:7,news:'Banqueiro é visto em churrasco com ministro; "evento social", diz gabinete'}],
   r:['Mando flores',{p:2,i:1},{}]},
  {id:'lisboa',c:'esposa',ch:[2,3],t:'Vi um apartamento lindo em Lisboa. Para "caso a gente precise". Você sabe do que eu tô falando.',
   l:['Compra',{c:-12,r:4},{flag:'lisboa',then:'lisboa2',delay:9,news:'Família de banqueiro compra imóvel de luxo em Portugal'}],
   r:['A gente não vai precisar',{i:2},{}]},
  {id:'show',c:'sertanejo',ch:[2],t:'Show privado no seu aniversário: R$ 3 milhões. Vai ter story, vai ter senador dançando.',
-  l:['Fecha o show',{c:-10,i:10,r:8,p:3},{flag:'festa',ach:'vip',news:'Festa de banqueiro tem sertanejo, senadores e story apagado em 10 minutos'}],
+  l:['Fecha o show',{c:-10,i:10,r:8,p:3},{flag:'festa',ach:'vip',item:'violao',news:'Festa de banqueiro tem sertanejo, senadores e story apagado em 10 minutos'}],
   r:['Festa discreta, só família',{i:2,c:-1},{}]},
  {id:'hacker',c:'hacker',ch:[2,3],t:'Tenho os prints do grupo "Maxter Top". R$ 2 milhões em cripto ou vai tudo pro Metrupolis.',
   l:['Pago',{c:-10,r:5},{flag:'pagou_hacker',news:'Analistas apontam saída atípica em cripto ligada ao Maxter'}],
@@ -772,7 +801,7 @@ const CARDS=[
   l:['Reconheço',{c:-8,p:6,r:8},{news:'Relator de emenda das fintechs muda de carro'}],
   r:['Já paguei o que devia',{p:-10,r:2},{news:'Câmara cria comissão para "revisar" marco das fintechs'}]},
  {id:'arabe',c:'arabe',ch:[2,3],t:'Investidores do Golfo querem comprar 30% do Maxter. Sem due diligence, sem perguntas, dinheiro amanhã.',
-  l:['Vendo os 30%',{c:20,r:8,p:4},{flag:'arabes',news:'Fundo estrangeiro compra fatia do Maxter em negócio relâmpago'}],
+  l:['Vendo os 30%',{c:20,r:8,p:4},{flag:'arabes',item:'relogio',news:'Fundo estrangeiro compra fatia do Maxter em negócio relâmpago'}],
   r:['Com due diligence ou nada',{i:3,c:-2},{news:'Maxter recusa investidor estrangeiro e mercado aplaude'}]},
  {id:'auditor',c:'auditor',ch:[2,3],t:'Posso assinar o balanço como está. Ou posso não assinar. Depende do nosso "relacionamento".',
   l:['Assina, e eu agradeço',{c:8,r:10},{flag:'auditor',news:'Auditoria aprova balanço do Maxter sem ressalvas'}],
@@ -916,19 +945,19 @@ const CARDS=[
 ,
  // ---------- Londres, uísque e charutos ----------
  {id:'londres',c:'forum',ch:[1,2],t:'O 1º Fórum Jurídico de Londres precisa de um patrocinador-máster. Vai ter ministro do Supremo, procurador-geral, diretor da PF, ex-presidente. Taça de champanhe e vídeo institucional. R$ 8 milhões.',
-  l:['Patrocino e apareço no vídeo',{c:-10,p:14,i:-3,r:9},{flag:'londres',ach:'londres',then:'londres2',delay:6,news:'Banco Maxter patrocina fórum jurídico em Londres com meia República na plateia'}],
+  l:['Patrocino e apareço no vídeo',{c:-10,p:14,i:-3,r:9},{flag:'londres',ach:'londres',item:'champanhe',then:'londres2',delay:6,news:'Banco Maxter patrocina fórum jurídico em Londres com meia República na plateia'}],
   r:['Patrocino, mas sem vídeo e sem meu nome',{c:-8,p:7,r:3},{flag:'londres_discreto',news:'Fórum em Londres reúne autoridades; patrocinador "prefere discrição"'}]},
  {id:'londres2',c:'globa',ch:[1,2,3],hidden:true,t:'Vazou o vídeo de Londres: você brindando entre o diretor da PF e o procurador-geral, todos de taça na mão. Vai ao ar às 20h. Quer comentar?',
   l:['Evento institucional, todos convidados',{i:-8,r:10,p:-4},{news:'Vídeo de brinde em Londres expõe autoridades ao lado do banqueiro'}],
   r:['Peço que cortem o vídeo',{c:-6,r:8,p:-8},{news:'Banqueiro tenta barrar vídeo do brinde em Londres; vídeo viraliza'}]},
  {id:'macallan',c:'marketeiro',ch:[1,2],req:s=>s.flags.londres||s.flags.londres_discreto,t:'Para o jantar de Londres: degustação de Macallan, R$ 60 mil a garrafa, e cada convidado leva uma pra casa. Ministro lembra de quem dá o uísque. Orçamento: US$ 640 mil.',
-  l:['Abre o Macallan, uma garrafa pra cada',{c:-12,p:12,r:8},{flag:'macallan',ach:'macallan',then:'macallan2',delay:8,news:'Degustação de uísque de R$ 60 mil reúne ministros e banqueiro em Londres'}],
+  l:['Abre o Macallan, uma garrafa pra cada',{c:-12,p:12,r:8},{flag:'macallan',ach:'macallan',item:'macallan',then:'macallan2',delay:8,news:'Degustação de uísque de R$ 60 mil reúne ministros e banqueiro em Londres'}],
   r:['Serve o da casa e ninguém leva nada',{c:-2,p:-3,i:2},{news:'Jantar de banqueiro em Londres termina cedo e sem lembrancinha'}]},
  {id:'macallan2',c:'dados',ch:[1,2,3],hidden:true,t:'Cruzei a nota do hotel de Londres com a lista de convidados. Ministro, procurador, diretor da PF: cada um saiu com uma garrafa de R$ 60 mil paga pelo Maxter. Publico amanhã. Quer explicar?',
   l:['Presente de cortesia, não tem valor',{i:-10,r:14,p:-6},{news:'"Garrafa de cortesia" de R$ 60 mil vira manchete e constrange autoridades'}],
   r:['Era do instituto, não do banco',{r:9,i:-4,c:-4},{news:'Instituto assume conta do uísque; jornalistas duvidam'}]},
  {id:'charutos',c:'coluna',ch:[2,3],req:s=>s.flags.londres||s.flags.macallan||s.flags.jantar_cirio,t:'Tenho uma foto sua com o procurador-geral entre copos de uísque e charutos cubanos. Publico com a legenda "amigos" ou "investigado e investigador"?',
-  l:['Me liga, a gente resolve',{c:-8,p:4,i:-2,r:6},{flag:'charuto',news:'Colunista "perde" foto de banqueiro com procurador entre charutos'}],
+  l:['Me liga, a gente resolve',{c:-8,p:4,i:-2,r:6},{flag:'charuto',item:'charutos',news:'Colunista "perde" foto de banqueiro com procurador entre charutos'}],
   r:['Publica. Charuto não é crime',{i:-9,r:10,p:-5},{news:'Foto de banqueiro com procurador entre charutos e uísque vira capa'}]},
  {id:'cirao1',c:'juridico',ch:[2],t:'O Cirão Gomes topou jantar. Ele vem batendo nos seus precatórios em todo podcast. Levo o Macallan de R$ 60 mil ou vamos só com os números?',
   l:['Leva o Macallan',{c:-5,p:6,r:5},{then:'cirao2',delay:5,news:'Banqueiro leva uísque raro a jantar com crítico dos precatórios'}],
@@ -936,6 +965,13 @@ const CARDS=[
  {id:'cirao2',c:'cirao',ch:[2,3],hidden:true,t:'Gostei do uísque. Não gostei dos precatórios. Vou falar dos dois no podcast amanhã. A garrafa, eu devolvo ou fico?',
   l:['Fica com a garrafa',{i:-6,r:8},{news:'Cirão Gomes conta em podcast que ganhou uísque de banqueiro "para esquecer os precatórios"'}],
   r:['Devolve, e esquece que eu existo',{p:-6,i:2,r:2},{news:'Político devolve uísque de banqueiro e vira meme'}]},
+ // ---------- Presentes ----------
+ {id:'presente_cirio',c:'cirio',ch:[2,3],req:s=>s.flags.jantar_cirio,t:'Mandei um Rolex pra você. Presente de amigo. Não precisa agradecer. Nem declarar.',
+  l:['Aceito e uso no próximo jantar',{p:6,r:7},{item:'rolex',news:'Senador presenteia banqueiro com relógio; "amizade", diz assessoria'}],
+  r:['Devolvo com um bilhete',{p:-5,i:3,r:-2},{news:'Banqueiro devolve relógio a senador e gabinete fica "magoado"'}]},
+ {id:'presente_quadro',c:'filho',ch:[2],t:'Pai, chegou um quadro de dois metros em casa, de um cliente. A mãe quer saber se é presente ou propina.',
+  l:['É presente. Pendura na sala',{i:-2,r:4},{item:'quadro',news:'Cliente do Maxter presenteia banqueiro com obra de arte'}],
+  r:['Devolve, e manda registrar',{r:-4,p:-2,c:-1},{news:'Banqueiro devolve obra de arte e registra oferta no compliance'}]},
  // ---------- Ocorrências: alertas aleatórios que encostam no Maxter de lado. Opção em função = resultado depende do que você já fez ----------
  {id:'oc_pf_cambio',oc:true,c:'narrador',ch:[1,2,3],t:'ALERTA: Polícia Federal deflagra a Operação Câmbio Negro contra o Banco Pirâmide. Um contrato de câmbio liga o Pirâmide ao Maxter.',
   l:['Rescindo o contrato e aviso o Banco Centrão',{c:-7,i:-3,r:-6},{news:'Maxter rompe com Banco Pirâmide e se antecipa ao Banco Centrão'}],
@@ -951,7 +987,7 @@ const CARDS=[
   r:['A culpa é da fintech',{i:-14,r:9},{then:'f6',delay:2,news:'Maxter culpa parceira por vazamento e clientes reagem'}]},
  {id:'oc_mala',oc:true,c:'narrador',ch:[2,3],t:'ALERTA: deputado aliado é preso com R$ 3 milhões numa mala. No celular dele, o seu número aparece 40 vezes.',
   l:['Me afasto e nego qualquer vínculo',s=>s.flags.jantar_cirio||s.flags.emenda||s.flags.lulinho?[{p:-12,r:8,i:-4},{news:'Fotos de jantar desmentem banqueiro que negou vínculo com deputado preso'}]:[{p:-10,r:-3},{news:'Banqueiro nega relação com deputado preso'}]],
-  r:['Pago a defesa dele',{c:-10,p:8,r:14},{news:'Banqueiro banca advogados de deputado preso com mala de dinheiro'}]},
+  r:['Pago a defesa dele',{c:-10,p:8,r:14},{item:'mala',news:'Banqueiro banca advogados de deputado preso com mala de dinheiro'}]},
  {id:'oc_corrida',oc:true,c:'narrador',ch:[1,2,3],t:'ALERTA: boato de quebra do Banco do Distrito gera fila de saques. Clientes perguntam se o Maxter é o próximo.',
   l:['Garanto liquidez em rede nacional',{c:-8,i:4,r:2},{news:'Vorkaro vai à TV e garante que "o Maxter paga todo mundo"'}],
   r:['Fico quieto e espero passar',(s,rng)=>rng()<0.5?[{c:-18,i:-8},{news:'Corrida bancária chega ao Maxter; app trava com saques'}]:[{c:1},{news:'Boato perde força e saques no Maxter voltam ao normal'}]]},
@@ -1006,7 +1042,7 @@ let s=null,rng=null,drag=null,audio=null,soundOn=store.get('sound',false);
 function newGame(mode){
   store.set('run',null);
   const seedStr=mode==='daily'?'daily:'+todayKey():'free:'+Date.now()+':'+Math.random();
-  s={mode,seed:seedStr,day:1,turn:0,caixa:55,poder:35,imagem:50,radar:15,flags:{},seen:[],queue:[],news:['Banco Maxter busca novos investidores',safe('Empresário Danilo Vorkaro ganha destaque no mercado')],ach:[],hot:0,over:null,card:null,side:null,favores:freeFavores(),appeals:0,log:[],zapRead:{}};
+  s={mode,seed:seedStr,day:1,turn:0,caixa:55,poder:35,imagem:50,radar:15,flags:{},seen:[],queue:[],news:['Banco Maxter busca novos investidores',safe('Empresário Danilo Vorkaro ganha destaque no mercado')],ach:[],items:[],hot:0,over:null,card:null,side:null,favores:freeFavores(),appeals:0,log:[],zapRead:{}};
   rng=mulberry(hash(seedStr));
   s.card='entrada';
   render();dealIn();
@@ -1043,6 +1079,7 @@ function choose(side){
   if(before.r>85)s.hot++;if(s.hot>=3)unlock('teflon');
   if(meta.flag)s.flags[meta.flag]=true;
   if(meta.ach)unlock(meta.ach);
+  const gift=meta.item&&ITEMS[meta.item]&&!(s.items=s.items||[]).includes(meta.item)?ITEMS[meta.item]:null;if(gift){s.items.push(meta.item);s.log.push({c:'narrador',t:'🎁 Novo item na coleção: '+gift[0]+' '+gift[1]+'. '+gift[2],a:null,day:s.day,kind:'news'})}
   if(meta.then)s.queue.push({id:meta.then,d:meta.delay||3});
   if(!s.seen.includes(k.id))s.seen.push(k.id);
   const head=meta.news||genHeadline(fx,rng);
@@ -1050,7 +1087,7 @@ function choose(side){
   if(obs){const o=OBS[obs];s.news.unshift(o);s.log.push({c:'narrador',t:'⚠️ '+o,a:null,day:s.day,kind:'news'})}
   else if(heat>=2&&rng()<0.35)s.news.unshift(HEAT[Math.floor(rng()*HEAT.length)]);
   s.news=s.news.slice(0,8);
-  toast(obs?'⚠️ Jogada previsível: só '+OBS_NAME[obs]+'? Os outros indicadores pagam a conta.':head);
+  toast(obs?'⚠️ Jogada previsível: só '+OBS_NAME[obs]+'? Os outros indicadores pagam a conta.':gift?'🎁 '+gift[0]+' '+gift[1]+' entrou na sua coleção. '+head:head);
   bumpStats(fx,before);
   haptic(fx);
   // endings
@@ -1072,6 +1109,7 @@ function finish(end){
   if(s.day<60)unlock('rapido');if(s.radar<20)unlock('santo');
   const ends=store.get('ends',{});ends[end]=(ends[end]||0)+1;store.set('ends',ends);
   const achs=store.get('ach',[]);s.ach.forEach(a=>{if(!achs.includes(a))achs.push(a)});store.set('ach',achs);
+  const col=store.get('items',[]);(s.items||[]).forEach(a=>{if(!col.includes(a))col.push(a)});store.set('items',col);
   const best=store.get('best',0);if(s.day>best)store.set('best',s.day);
   if(s.mode==='daily'){const d=store.get('daily',{});if(!d[todayKey()])d[todayKey()]={day:s.day,end};store.set('daily',d)}
   store.set('run',null);
@@ -1150,6 +1188,7 @@ const STAT_INFO={
   imagem:['📣 Imagem','<p><b>O que é.</b> A opinião pública sobre você: redes, TV, clientes e a sua mãe.</p><p><b>Sobe com</b> transparência, doações, entrevistas bem dadas e patrocínios. <b>Desce com</b> saques travados, prints vazados e respostas arrogantes.</p><p><b>Em 0</b> você é cancelado nacionalmente (final Cancelado). <b>Em 100</b> vira candidato a presidente (final Candidato).</p>'],
   radar:['🚨 Radar','<p><b>O que é.</b> O calor da investigação: MPF, PF, CPI, auditoria e imprensa de dados.</p><p><b>Sobe com</b> balanço "ajustado", doleiros, chantagens e concentração de favores. <b>Desce com</b> cooperação, auditoria, advogados e contatos no lugar certo. Acima de 70 em caixa, poder ou imagem, o radar sobe sozinho a cada decisão. A partir do capítulo O Poder, sobe sozinho um pouco a cada carta.</p><p><b>Em 100</b> a Operação Saldo Zero chega às 6h (final Preso). No modo livre, 2 favores pagam um recurso para continuar.</p>']
 };
+function showItem(k){const it=ITEMS[k];if(!it)return;const have=store.get('items',[]).includes(k);$('statTitle').innerHTML=(have?it[0]:'🎁')+' <em>'+(have?it[1]:'Item escondido')+'</em>';$('statBody').innerHTML=have?'<p><b>'+RARITY[it[3]]+'.</b> '+it[2]+'</p>':'<p>Você ainda não ganhou este item.</p><p><b>Dica:</b> '+it[4]+'</p>';$('statScreen').hidden=false}
 function showStat(k){const i=STAT_INFO[k];if(!i)return;$('statTitle').innerHTML=i[0].replace(/^(\S+) (.*)$/,'$1 <em>$2</em>');$('statBody').innerHTML=i[1]+(s?'<p><b>Agora:</b> '+(k==='caixa'?money(s[k]):s[k]+'/100')+'</p>':'');$('statScreen').hidden=false}
 document.querySelectorAll('.stat').forEach(el=>{el.onclick=()=>showStat(el.dataset.k);el.tabIndex=0;el.setAttribute('role','button');el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showStat(el.dataset.k)}}});
 $('statClose').onclick=()=>{$('statScreen').hidden=true};
@@ -1221,6 +1260,9 @@ function showStart(){
   const ends=store.get('ends',{});const got=Object.keys(ENDINGS).filter(k=>ends[k]).length;
   $('endCount').textContent=got+'/'+Object.keys(ENDINGS).length;
   $('endGrid').innerHTML=Object.entries(ENDINGS).map(([k,e])=>'<div class="'+(ends[k]?'':'locked')+'" title="'+(ends[k]?e.t:'Final ainda não descoberto')+'">'+(ends[k]?e.e:'❔')+'</div>').join('');
+  const col=store.get('items',[]);$('itemCount').textContent=col.length+'/'+Object.keys(ITEMS).length;
+  $('itemGrid').innerHTML=Object.entries(ITEMS).map(([k,it])=>'<div class="'+(col.includes(k)?'r'+it[3]:'locked')+'" data-item="'+k+'" role="button" tabindex="0" title="'+(col.includes(k)?it[1]:'Item ainda não encontrado')+'">'+(col.includes(k)?it[0]:'🎁')+'</div>').join('');
+  $('itemGrid').querySelectorAll('[data-item]').forEach(el=>{el.onclick=()=>showItem(el.dataset.item);el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showItem(el.dataset.item)}}});
   const best=store.get('best',0),ach=store.get('ach',[]);
   $('bestInfo').textContent=(best?'Recorde: '+best+' dias em liberdade. ':'Nenhuma partida ainda. ')+'Conquistas: '+ach.length+'/'+Object.keys(ACH).length+'.'+(auth&&favores?' 🎩 '+favores+' favores na conta.':'');
   if(NATIVE&&NATIVE.store)$('legalNote').textContent='Obra de ficção e sátira. Personagens, bancos, veículos e instituições são inventados. Compras opcionais apenas pela App Store.';
@@ -1229,7 +1271,7 @@ function showStart(){
 }
 function bars(v){const n=Math.round(v/20);return '▓'.repeat(n)+'░'.repeat(5-n)}
 function shareText(){const e=ENDINGS[s.over];const tag=s.mode==='daily'?'Diário #'+dailyNumber():'Modo livre';
-  return 'SALDO ZERO 🏦 '+tag+(auth?' · @'+auth.nick:'')+'\n'+e.e+' '+e.t+'\n⏱ '+s.day+' dias em liberdade · '+s.turn+' decisões\n💰'+bars(s.caixa)+' 🏛️'+bars(s.poder)+'\n📣'+bars(s.imagem)+' 🚨'+bars(s.radar)+(s.ach.length?'\n🏅 '+s.ach.map(a=>ACH[a][1]).join(', '):'')+'\nConsegue durar mais? '+shareURL()}
+  return 'SALDO ZERO 🏦 '+tag+(auth?' · @'+auth.nick:'')+'\n'+e.e+' '+e.t+'\n⏱ '+s.day+' dias em liberdade · '+s.turn+' decisões'+((s.items||[]).length?' · 🎁 '+s.items.length+' na coleção':'')+'\n💰'+bars(s.caixa)+' 🏛️'+bars(s.poder)+'\n📣'+bars(s.imagem)+' 🚨'+bars(s.radar)+(s.ach.length?'\n🏅 '+s.ach.map(a=>ACH[a][1]).join(', '):'')+'\nConsegue durar mais? '+shareURL()}
 function showEnd(){
   const e=ENDINGS[s.over];
   $('paper').innerHTML='<div class="pmast">'+MASTS[mastIndex()][0]+'</div><div class="pmeta"><span>'+gameDate()+'</span><span>'+(s.mode==='daily'?'Diário #'+dailyNumber():'Modo livre')+'</span><span>R$ 2,50</span></div>'+
@@ -1237,6 +1279,7 @@ function showEnd(){
     '<div class="ptitle">'+e.t+'</div><p class="psub">'+e.s+'</p>'+
     '<div class="pstats"><div>💰 Caixa<b>'+money(s.caixa)+'</b></div><div>🏛️ Poder<b>'+s.poder+'</b></div><div>📣 Imagem<b>'+s.imagem+'</b></div><div>🚨 Radar<b>'+s.radar+'</b></div></div>'+
     ((s.ach.length||s.appeals)?'<div class="badges">'+s.ach.map(a=>'<span>'+ACH[a][0]+' '+ACH[a][1]+'</span>').join('')+(s.appeals?'<span>⚖️ '+s.appeals+' recurso'+(s.appeals>1?'s':'')+'</span>':'')+'</div>':'')+
+    ((s.items||[]).length?'<p style="margin:10px 0 4px;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#6b6b6b">'+(s.over==='preso'?'🔒 Apreendidos pela PF e lacrados no Supremo':s.over==='falencia'?'📉 Leiloados para pagar credores':'🎁 Coleção desta partida')+'</p><div class="badges">'+s.items.map(a=>'<span>'+ITEMS[a][0]+' '+ITEMS[a][1]+'</span>').join('')+'</div>':'')+
     '<div class="stamp">'+e.e+' '+({preso:'PRESO',falencia:'FALIDO',miami:'SUMIU',dono:'DONO',descartado:'SOZINHO',cancelado:'CANCELADO',idolo:'CANDIDATO',delator:'DELATOR',exilio:'EXILADO',lenda:'LENDA'})[s.over]+'</div>';
   $('shareText').textContent=shareText();
   const ap=$('btnAppeal');ap.hidden=!canAppeal();if(!ap.hidden)ap.textContent='⚖️ Entrar com recurso e continuar · '+APPEAL.cost+' favores ('+(favTotal())+' disponíveis)';

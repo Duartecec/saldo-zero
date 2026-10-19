@@ -202,7 +202,8 @@ export function entitlementsOf(userId: number) {
 // Progresso (finais, conquistas, recorde): o servidor guarda a união com o que já tinha.
 export function mergeProgress(user: UserRow, incoming: any) {
   const cur = safeJSON(user.progress);
-  const next: any = { ends: { ...(cur.ends || {}) }, ach: [...new Set([...(cur.ach || []), ...((incoming?.ach as string[]) || []).filter((a) => typeof a === "string").slice(0, 50)])], best: Math.max(cur.best || 0, Number(incoming?.best) || 0) };
+  const strList = (list: unknown) => (Array.isArray(list) ? list : []).filter((a) => typeof a === "string" && /^[a-z0-9_]{2,24}$/.test(a)).slice(0, 100);
+  const next: any = { ends: { ...(cur.ends || {}) }, ach: [...new Set([...strList(cur.ach), ...strList(incoming?.ach)])], items: [...new Set([...strList(cur.items), ...strList(incoming?.items)])], best: Math.max(cur.best || 0, Number(incoming?.best) || 0) };
   for (const [k, v] of Object.entries(incoming?.ends || {})) if (/^[a-z]{3,16}$/.test(k)) next.ends[k] = Math.max(next.ends[k] || 0, Math.min(10_000, Number(v) || 0));
   db.run("UPDATE users SET progress = ? WHERE id = ?", [JSON.stringify(next), user.id]);
   return next;

@@ -48,7 +48,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 .stat .bar{height:6px;border-radius:99px;background:#0a0c18;margin-top:6px;overflow:hidden}
 .stat .bar i{display:block;height:100%;border-radius:99px;transition:width .5s cubic-bezier(.2,.8,.2,1);background:var(--st)}
 .stat[data-k="caixa"]{--st:var(--green)}.stat[data-k="poder"]{--st:var(--blue)}.stat[data-k="imagem"]{--st:var(--pink)}.stat[data-k="radar"]{--st:var(--red)}
-.stat .val{font-variant-numeric:tabular-nums;font-size:12px;color:var(--fg);font-weight:700;margin-top:3px}
+.stat .val{font-variant-numeric:tabular-nums;font-size:12px;color:var(--fg);font-weight:700;margin-top:3px;white-space:nowrap}.stat{cursor:pointer}.stat:hover{filter:brightness(1.1)}
 .stat .dot{position:absolute;top:6px;right:6px;width:0;height:0;border-radius:50%;background:#fff;box-shadow:0 0 0 2px var(--ink-2);transition:width .12s,height .12s;opacity:0}
 .stat .dot.on{opacity:1}
 .stat .dot.s1{width:7px;height:7px}.stat .dot.s2{width:11px;height:11px}.stat .dot.s3{width:16px;height:16px;background:var(--gold)}
@@ -142,7 +142,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 .paper .psub{font-size:14px;line-height:1.4;color:#3a3744;font-style:italic;text-wrap:pretty}
 .paper .pstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0 0;border-top:1px solid #b7ad93;padding-top:10px}
 .paper .pstats div{font-size:11px;color:var(--paper-mute);text-align:center}
-.paper .pstats b{display:block;font-family:var(--display);font-size:22px;color:var(--paper-ink);font-variant-numeric:tabular-nums}
+.paper .pstats b{display:block;font-family:var(--display);font-size:20px;white-space:nowrap;color:var(--paper-ink);font-variant-numeric:tabular-nums}
 .paper .days{position:absolute;top:60px;right:14px;background:var(--red);color:#fff;font-family:var(--display);font-size:13px;letter-spacing:1px;padding:8px 10px;transform:rotate(8deg);box-shadow:0 4px 10px #0005;text-align:center;line-height:1}
 .paper .days b{display:block;font-size:30px}
 .paper .stamp{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%) rotate(-14deg);font-family:var(--display);font-size:44px;color:#c01b2c99;border:5px solid #c01b2c99;padding:4px 14px;border-radius:8px;letter-spacing:3px;pointer-events:none;white-space:nowrap}
@@ -162,6 +162,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 .form{display:grid;gap:10px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:14px}.form h3{margin:0;font-family:var(--display);font-weight:400;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)}.form label{display:grid;gap:4px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mute);font-weight:700}.form input{font:inherit;font-size:16px;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0a0c18;color:var(--fg);min-width:0}.form input:focus{outline:2px solid var(--gold)}.form .err{color:var(--red);font-size:13px;min-height:1em}.linkish{color:var(--mute);font-size:13px;text-decoration:underline;padding:8px;justify-self:center}
 .movebar{display:flex;gap:10px;align-items:center}.movebar button.move{flex:1;background:linear-gradient(160deg,#3b2f6b,#241c4a);border:1px solid #7b6fd6;border-bottom:4px solid #141033;border-radius:14px;padding:12px;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:10px}.movebar button.move b{font-size:14px}.movebar button.move small{color:#c9c2ff;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700}.fav{display:inline-flex;align-items:center;gap:4px;background:#0a0c18;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .moves{display:grid;gap:8px}.moves button{display:flex;align-items:center;gap:12px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left}.moves button:disabled{opacity:.45}.moves .ico{font-size:26px}.moves .txt{flex:1;min-width:0}.moves .txt b{display:block}.moves .txt small{color:var(--mute);display:block}.moves .cost{white-space:nowrap;color:var(--gold);font-weight:800;font-size:13px}
+.legal h3{margin:0 0 8px;font-family:var(--display);font-weight:400;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)}.form select,.form textarea{font:inherit;font-size:16px;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0a0c18;color:var(--fg);min-width:0;width:100%}.ticket{border-top:1px solid var(--line);padding:10px 0}.ticket:first-of-type{border-top:0}.ticket b{display:block}.ticket .st{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-weight:700}.ticket .reply{margin-top:6px;padding:8px 10px;border-left:3px solid var(--green);background:#0a0c18;border-radius:6px;color:var(--fg)}
 .legal p{margin:0 0 10px;font-size:13.5px;line-height:1.5;color:var(--mute)}.legal p:last-child{margin:0}.legal b{color:var(--fg)}.legal .mail{color:var(--gold);user-select:all}
 .cols{gap:14px}.col{display:flex;flex-direction:column;gap:14px;min-width:0}.form .two{display:grid;gap:10px}
 @media (min-width:600px){.form .two{grid-template-columns:1fr 1fr}}
@@ -245,7 +246,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 
   <div class="foot">
     <span id="dayCount">Dia 1 em liberdade</span>
-    <span><button id="btnZap">💬 UatiZap<span id="zapUnread">0</span></button> <button id="btnSound" aria-pressed="false">🔇 Som</button> <button id="btnMenu">☰ Menu</button></span>
+    <span><button id="btnZap">💬 UatiZap<span id="zapUnread">0</span></button> <button id="btnHelp">❓ Ajuda</button> <button id="btnSound" aria-pressed="false">🔇 Som</button> <button id="btnMenu">☰ Menu</button></span>
   </div>
 
 <div class="screen zap" id="zapScreen" hidden>
@@ -275,6 +276,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
     <button class="big" id="playDaily">▶ Jogar o diário</button>
     <button class="big alt" id="playFree">Modo livre (cartas embaralhadas)</button>
     <button class="big alt" id="openShop" hidden>🛒 Loja · baralhos e capas</button>
+    <button class="big alt" id="openHelp">❓ Ajuda e suporte</button>
    </div>
    <div class="col">
     <div class="panel" id="accountPanel">
@@ -298,7 +300,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
       <p style="margin-top:8px" id="bestInfo"></p>
     </div>
     <div class="panel legend">
-      <span>💰 <b>Caixa</b> · liquidez do banco</span>
+      <span>💰 <b>Caixa</b> · dinheiro do banco (R$ 0 = falência)</span>
       <span>🏛️ <b>Poder</b> · amigos em Brasília</span>
       <span>📣 <b>Imagem</b> · opinião pública</span>
       <span>🚨 <b>Radar</b> · calor da investigação</span>
@@ -306,6 +308,43 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
     <p class="lead" style="font-size:12px" id="legalNote">Obra de ficção e sátira. Personagens, bancos, veículos e instituições são inventados. Nenhuma cobrança real.</p>
     <p class="lead" style="font-size:12px"><button class="linkish" id="legalLink" style="padding:0;justify-self:start">Aviso legal e de conteúdo</button></p>
    </div>
+  </div>
+</div>
+
+<div class="screen" id="statScreen" hidden>
+  <div class="inner" style="max-width:520px">
+    <div class="h1" id="statTitle" style="font-size:40px"></div>
+    <div class="panel legal" id="statBody"></div>
+    <button class="big alt" id="statClose">Fechar</button>
+  </div>
+</div>
+
+<div class="screen" id="helpScreen" hidden>
+  <div class="inner" style="max-width:640px">
+    <div class="h1" style="font-size:40px">Ajuda e <em>suporte</em></div>
+    <div class="panel legal">
+      <h3>Como se joga</h3>
+      <p><b>Objetivo.</b> Você é Danilo Vorkaro, dono do Banco Maxter. Sobreviva o máximo de dias em liberdade. Quem chega ao dia 730 vira lenda.</p>
+      <p><b>Cartas.</b> Cada carta é uma mensagem, reunião ou notícia. Arraste para a esquerda ou para a direita (ou use os dois botões, ou as setas do teclado) para decidir. Antes de soltar, as bolinhas sobre os indicadores mostram o tamanho do impacto; o sentido você descobre depois.</p>
+      <p><b>Indicadores.</b> 💰 Caixa é o dinheiro do banco, em reais: a R$ 0 o banco quebra; com R$ 100 mi você some com tudo. 🏛️ Poder são seus amigos em Brasília: em 0 ninguém atende; em 100 você vira dono do Congresso e todos se unem contra você. 📣 Imagem é a opinião pública: em 0 você é cancelado; em 100 vira candidato. 🚨 Radar é o calor da investigação: em 100, Operação Saldo Zero. Toque em qualquer indicador no jogo para ler isso de novo.</p>
+      <p><b>Consequências.</b> Escolhas de hoje voltam dias depois como chantagem, convocação ou manchete. O capítulo muda com o tempo: Ascensão, O Poder e A Crise, cada um mais perigoso.</p>
+      <p><b>🎩 Favores e jogadas do Vorkaro.</b> Toda partida começa com 2 favores. Eles pagam ações por iniciativa própria (ligar para o ministro, enterrar dinheiro em marketing, advogado de emergência…). No modo livre, 2 favores também pagam um recurso para continuar depois de cair. Pacotes extras ficam na sua conta e valem só no modo livre.</p>
+      <p><b>Diário e ranking.</b> No desafio diário todo mundo recebe a mesma sequência de cartas, com os mesmos 2 favores e sem recurso. O primeiro resultado do dia entra no ranking pelo seu apelido.</p>
+      <p><b>Conta.</b> Só apelido e PIN. Guarda compras, favores, finais e conquistas em qualquer aparelho. Esqueceu o PIN? Abra um chamado abaixo.</p>
+      <p><b>UatiZap.</b> Guarda todas as mensagens que você recebeu e respondeu na partida.</p>
+      <p><b>Compras.</b> Pagamento único pelo Asaas (Pix, cartão ou boleto). O conteúdo é liberado assim que o pagamento é confirmado. Se não liberar, abra um chamado com o apelido usado na compra.</p>
+      <p style="margin-top:8px"><button class="linkish" id="helpLegal" style="padding:0">Aviso legal e de conteúdo</button> · <a href="/privacidade" target="_blank" rel="noopener" style="color:var(--gold)">Política de privacidade</a></p>
+    </div>
+    <form class="form" id="supportForm">
+      <h3>Falar com o suporte</h3>
+      <label>Assunto<select id="supSubject"><option value="pagamento">Pagamento ou compra</option><option value="conta">Conta, apelido ou PIN</option><option value="bug">Erro no jogo</option><option value="conteudo">Conteúdo</option><option value="sugestao">Sugestão</option><option value="outro">Outro</option></select></label>
+      <label>Mensagem<textarea id="supMessage" rows="4" maxlength="2000" required placeholder="Conte o que aconteceu. Se for compra, diga o produto e o dia."></textarea></label>
+      <label id="supEmailLabel">E-mail para resposta<input id="supEmail" type="email" placeholder="opcional se você tiver conta"></label>
+      <div class="err" id="supError"></div>
+      <button class="big" type="submit">Enviar chamado</button>
+    </form>
+    <div class="panel" id="myTickets" hidden></div>
+    <button class="big alt" id="helpClose">Fechar</button>
   </div>
 </div>
 
@@ -962,6 +1001,29 @@ function renderZapChat(c){const ch=CH[c],msgs=(zapThreads().find(x=>x[0]===c)||[
 function closeZapChat(){zapOpen=null;$('zapChat').hidden=true;$('zapList').hidden=false;renderZap()}
 $('btnZap').onclick=()=>{$('zapScreen').hidden=false;renderZap()};$('btnZapClose').onclick=()=>{$('zapScreen').hidden=true};$('zapBack').onclick=closeZapChat;
 
+/* ============ Indicadores, ajuda e suporte ============ */
+function money(v){return 'R$ '+v+' mi'}
+const STAT_INFO={
+  caixa:['💰 Caixa','<p><b>O que é.</b> O dinheiro do Banco Maxter, em milhões de reais. É o que paga festas, advogados, campanhas e aportes.</p><p><b>Sobe com</b> captação, vendas de carteira, investidores e lucros. <b>Desce com</b> gastos, devoluções, doações e corridas bancárias.</p><p><b>Em R$ 0</b> o banco é liquidado e a partida acaba (final Falido). <b>Em R$ 100 mi</b> você some com o caixa cheio (final Sumiu).</p>'],
+  poder:['🏛️ Poder','<p><b>O que é.</b> Seus amigos em Brasília: senadores, ministros, relatores e quem atende seu telefone às 23h.</p><p><b>Sobe com</b> jantares, emendas, apoio a campanhas e favores. <b>Desce quando</b> você recusa pedidos, cola nos inimigos ou entrega aliados.</p><p><b>Em 0</b> ninguém atende mais (final Sozinho). <b>Em 100</b> você vira dono do Congresso e todos se unem contra você (final Dono).</p>'],
+  imagem:['📣 Imagem','<p><b>O que é.</b> A opinião pública sobre você: redes, TV, clientes e a sua mãe.</p><p><b>Sobe com</b> transparência, doações, entrevistas bem dadas e patrocínios. <b>Desce com</b> saques travados, prints vazados e respostas arrogantes.</p><p><b>Em 0</b> você é cancelado nacionalmente (final Cancelado). <b>Em 100</b> vira candidato a presidente (final Candidato).</p>'],
+  radar:['🚨 Radar','<p><b>O que é.</b> O calor da investigação: MPF, PF, CPI, auditoria e imprensa de dados.</p><p><b>Sobe com</b> balanço "ajustado", doleiros, chantagens e concentração de favores. <b>Desce com</b> cooperação, auditoria, advogados e contatos no lugar certo. A partir do capítulo O Poder, sobe sozinho um pouco a cada carta.</p><p><b>Em 100</b> a Operação Saldo Zero chega às 6h (final Preso). No modo livre, 2 favores pagam um recurso para continuar.</p>']
+};
+function showStat(k){const i=STAT_INFO[k];if(!i)return;$('statTitle').innerHTML=i[0].replace(/^(\S+) (.*)$/,'$1 <em>$2</em>');$('statBody').innerHTML=i[1]+(s?'<p><b>Agora:</b> '+(k==='caixa'?money(s[k]):s[k]+'/100')+'</p>':'');$('statScreen').hidden=false}
+document.querySelectorAll('.stat').forEach(el=>{el.onclick=()=>showStat(el.dataset.k);el.tabIndex=0;el.setAttribute('role','button');el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showStat(el.dataset.k)}}});
+$('statClose').onclick=()=>{$('statScreen').hidden=true};
+function openHelp(){$('helpScreen').hidden=false;$('helpScreen').scrollTop=0;$('supError').textContent='';$('supEmailLabel').hidden=!!auth;loadMyTickets()}
+$('btnHelp').onclick=openHelp;$('openHelp').onclick=openHelp;$('helpClose').onclick=()=>{$('helpScreen').hidden=true};
+$('helpLegal').onclick=()=>{$('legalOk').hidden=true;$('legalClose').hidden=false;$('legalScreen').hidden=false;$('legalScreen').scrollTop=0};
+async function loadMyTickets(){const el=$('myTickets');if(!auth||!ONLINE){el.hidden=true;return}
+  try{const d=await api('/api/support');if(!d.tickets.length){el.hidden=true;return}el.hidden=false;
+    el.innerHTML='<h3>Meus chamados</h3>'+d.tickets.map(t=>'<div class="ticket"><span class="st">#'+t.id+' · '+t.subject+' · '+t.status+'</span><b>'+esc(t.message.slice(0,140))+(t.message.length>140?'…':'')+'</b>'+(t.reply?'<div class="reply">'+esc(t.reply)+'</div>':'<small style="color:var(--mute)">Aguardando resposta.</small>')+'</div>').join('')}
+  catch{el.hidden=true}}
+function esc(x){return String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+$('supportForm').onsubmit=async e=>{e.preventDefault();if(!ONLINE){$('supError').textContent='Sem conexão com o servidor.';return}const btn=e.target.querySelector('button[type=submit]');btn.disabled=true;$('supError').textContent='';
+  try{await api('/api/support',{method:'POST',body:JSON.stringify({subject:$('supSubject').value,message:$('supMessage').value,email:$('supEmail').value})});$('supMessage').value='';toast('Chamado enviado. A resposta aparece aqui no menu Ajuda'+(auth?'':' ou no seu e-mail')+'.');loadMyTickets()}
+  catch(err){$('supError').textContent=err.message}btn.disabled=false};
+
 /* ============ Rendering ============ */
 const KEYS={caixa:'c',poder:'p',imagem:'i',radar:'r'};
 function render(){
@@ -969,7 +1031,7 @@ function render(){
   $('chapter').textContent=chapterName();$('date').textContent=gameDate();
   $('modePill').textContent=s.mode==='daily'?'DIÁRIO #'+dailyNumber():'MODO LIVRE';
   $('dayCount').textContent='Dia '+s.day+' em liberdade · '+s.turn+' decisões';renderFav();renderZap();
-  document.querySelectorAll('.stat').forEach(el=>{const k=el.dataset.k,v=s[k];el.querySelector('.bar i').style.width=v+'%';el.querySelector('.val').textContent=v;el.classList.toggle('danger',v>=85||v<=15)});
+  document.querySelectorAll('.stat').forEach(el=>{const k=el.dataset.k,v=s[k];el.querySelector('.bar i').style.width=v+'%';el.querySelector('.val').textContent=k==='caixa'?money(v):v;el.classList.toggle('danger',v>=85||v<=15)});
   $('track').innerHTML=s.news.map(n=>'<span>◆ '+n+'</span>').join('');
   const k=BY_ID[s.card];if(!k)return;
   const c=CH[k.c];const isNews=k.c==='narrador';const isZap=!isNews&&!['diretor','juridico','auditor','bc','cpi','fazenda'].includes(k.c);
@@ -1031,7 +1093,7 @@ function showEnd(){
   $('paper').innerHTML='<div class="pmast">'+MASTS[mastIndex()][0]+'</div><div class="pmeta"><span>'+gameDate()+'</span><span>'+(s.mode==='daily'?'Diário #'+dailyNumber():'Modo livre')+'</span><span>R$ 2,50</span></div>'+
     '<div class="days">DIAS<br>LIVRE<b>'+s.day+'</b></div>'+
     '<div class="ptitle">'+e.t+'</div><p class="psub">'+e.s+'</p>'+
-    '<div class="pstats"><div>💰 Caixa<b>'+s.caixa+'</b></div><div>🏛️ Poder<b>'+s.poder+'</b></div><div>📣 Imagem<b>'+s.imagem+'</b></div><div>🚨 Radar<b>'+s.radar+'</b></div></div>'+
+    '<div class="pstats"><div>💰 Caixa<b>'+money(s.caixa)+'</b></div><div>🏛️ Poder<b>'+s.poder+'</b></div><div>📣 Imagem<b>'+s.imagem+'</b></div><div>🚨 Radar<b>'+s.radar+'</b></div></div>'+
     ((s.ach.length||s.appeals)?'<div class="badges">'+s.ach.map(a=>'<span>'+ACH[a][0]+' '+ACH[a][1]+'</span>').join('')+(s.appeals?'<span>⚖️ '+s.appeals+' recurso'+(s.appeals>1?'s':'')+'</span>':'')+'</div>':'')+
     '<div class="stamp">'+e.e+' '+({preso:'PRESO',falencia:'FALIDO',miami:'SUMIU',dono:'DONO',descartado:'SOZINHO',cancelado:'CANCELADO',idolo:'CANDIDATO',delator:'DELATOR',exilio:'EXILADO',lenda:'LENDA'})[s.over]+'</div>';
   $('shareText').textContent=shareText();

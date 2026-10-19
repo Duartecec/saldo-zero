@@ -23,7 +23,7 @@ function normalizePin(raw: unknown) {
   return pin;
 }
 
-type UserRow = { id: number; nick: string; nick_display: string; pin_hash: string; progress: string; created_at: number; last_seen: number; favores: number };
+export type UserRow = { id: number; nick: string; nick_display: string; pin_hash: string; progress: string; created_at: number; last_seen: number; favores: number; blocked: number; note: string };
 
 export function nickAvailable(raw: unknown) {
   const { key, display } = normalizeNick(raw);
@@ -57,6 +57,7 @@ export async function enter(input: any) {
   checkLock(key);
   const row = db.query("SELECT * FROM users WHERE nick = ?").get(key) as UserRow | null;
   if (row) {
+    if (row.blocked) throw new AuthError("Esta conta foi bloqueada. Fale com o suporte pelo menu Ajuda.", 403);
     const ok = await Bun.password.verify(pin, row.pin_hash);
     if (!ok) { noteFailure(key); throw new AuthError("PIN incorreto para este apelido.", 401); }
     failures.delete(key);
@@ -79,6 +80,7 @@ export function userFromRequest(req: Request): UserRow | null {
   const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
   if (!/^[\w-]{40,120}$/.test(token)) return null;
   const row = db.query("SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?").get(token) as UserRow | null;
+  if (row && row.blocked) return null;
   if (row) db.run("UPDATE sessions SET last_seen = ? WHERE token = ?", [now(), token]);
   return row;
 }
@@ -147,4 +149,22 @@ export function leaderboard(day: string, userId?: number) {
     }
   }
   return { day, total, top, me };
+}
+
+// ---- Suporte: chamados abertos pelo jogo ----
+const SUBJECTS = new Set(["pagamento", "bug", "conta", "conteudo", "sugestao", "outro"]);
+export function createTicket(user: UserRow | null, input: any) {
+  const subject = String(input?.subject || "outro");
+  if (!SUBJECTS.has(subject)) throw new AuthError("Assunto inválido.");
+  const message = String(input?.message || "").trim();
+  if (message.length < 10 || message.length > 2000) throw new AuthError("Escreva pelo menos 10 caracteres (máximo 2000).");
+  const email = String(input?.email || "").trim().toLowerCase();
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) throw new AuthError("E-mail inválido.");
+  if (!user && !email) throw new AuthError("Sem conta, informe um e-mail para receber a resposta.");
+  const nick = user ? user.nick_display : String(input?.nick || "").trim().slice(0, 16);
+  const r = db.run("INSERT INTO tickets (user_id, nick, email, subject, message, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)", [user?.id ?? null, nick || null, email || null, subject, message, now(), now()]);
+  return { id: Number(r.lastInsertRowid) };
+}
+export function myTickets(user: UserRow) {
+  return db.query("SELECT id, subject, message, status, reply, created_at, updated_at FROM tickets WHERE user_id = ? ORDER BY created_at DESC LIMIT 50").all(user.id);
 }

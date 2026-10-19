@@ -118,7 +118,7 @@ export async function createCheckout(input: any, siteURL: string, userId: number
       callback: { successUrl: siteURL + "/?pedido=" + encodeURIComponent(ref), autoRedirect: true },
     }),
   });
-  db.run("INSERT OR IGNORE INTO orders (payment_id, ref, user_id, product_id, status, created_at) VALUES (?, ?, ?, ?, ?, ?)", [payment.id, ref, userId, productId, payment.status || "PENDING", now()]);
+  db.run("INSERT OR IGNORE INTO orders (payment_id, ref, user_id, product_id, status, created_at, value) VALUES (?, ?, ?, ?, ?, ?, ?)", [payment.id, ref, userId, productId, payment.status || "PENDING", now(), product.value]);
   return { paymentId: payment.id as string, ref, invoiceUrl: payment.invoiceUrl as string, productId };
 }
 
@@ -127,8 +127,8 @@ export function recordPayment(p: { id: string; status: string; externalReference
   const productId = productFromRef(p.externalReference);
   if (!productId) return null;
   const paid = PAID.has(p.status);
-  db.run("INSERT INTO orders (payment_id, ref, user_id, product_id, status, created_at, paid_at) VALUES (?, ?, NULL, ?, ?, ?, ?) ON CONFLICT(payment_id) DO UPDATE SET status = excluded.status, paid_at = COALESCE(orders.paid_at, excluded.paid_at)",
-    [p.id, p.externalReference, productId, p.status, now(), paid ? now() : null]);
+  db.run("INSERT INTO orders (payment_id, ref, user_id, product_id, status, created_at, paid_at, value) VALUES (?, ?, NULL, ?, ?, ?, ?, ?) ON CONFLICT(payment_id) DO UPDATE SET status = excluded.status, paid_at = COALESCE(orders.paid_at, excluded.paid_at)",
+    [p.id, p.externalReference, productId, p.status, now(), paid ? now() : null, PRODUCTS[productId].value]);
   if (paid) {
     const order = db.query("SELECT user_id FROM orders WHERE payment_id = ?").get(p.id) as { user_id: number | null } | null;
     if (order?.user_id) grantEntitlement(order.user_id, productId, p.id);

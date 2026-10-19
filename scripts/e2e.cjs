@@ -5,6 +5,7 @@
 const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://127.0.0.1:3125';
 const out = {};
+const acceptLegal = async (page) => { await page.waitForTimeout(150); if (await page.isVisible('#legalScreen')) { await page.click('#legalOk'); await page.waitForTimeout(200); } };
 (async () => {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
@@ -52,7 +53,7 @@ const out = {};
   out.ownedAfterPay = await page.$$eval('#shopList .owned', b => b.length);
   out.entLocal = await page.evaluate(() => [...ent]);
   // jogada do Vorkaro no modo livre: gasta os 2 da partida e depois 1 da conta
-  await page.click('#btnShopClose'); await page.click('#playFree'); await page.waitForTimeout(150); if (await page.isVisible('#tut')) await page.click('#tutOk');
+  await page.click('#btnShopClose'); await page.click('#playFree'); await acceptLegal(page); if (await page.isVisible('#tut')) await page.click('#tutOk');
   for (let i = 0; i < 3; i++) { await page.click('#btnMove'); await page.waitForTimeout(150); await page.click('#moveList button[data-id="marketing"]'); await page.waitForTimeout(400); }
   out.favoresAfterMoves = await page.evaluate(() => ({ run: s.favores, account: favores, badge: document.getElementById('favBadge').textContent, day: s.day }));
   // força um final por radar e usa o recurso
@@ -68,7 +69,7 @@ const out = {};
   out.entRestoredByLogin = await p2.evaluate(() => [...ent]);
 
   // 5. diário: termina uma partida e aparece no ranking
-  await page.click('#playDaily'); await page.waitForTimeout(150);
+  await page.click('#playDaily'); await acceptLegal(page);
   await page.click('#btnMove'); await page.waitForTimeout(150); out.dailyMoveBalance = await page.textContent('#moveBalance'); await page.click('#btnMoveClose');
   if (await page.isVisible('#tut')) await page.click('#tutOk');
   let t = 0; while (!(await page.isVisible('#endScreen')) && t < 150) { await page.click('#btnR'); await page.waitForTimeout(260); t++; }

@@ -3,7 +3,8 @@
 // - Serve o PWA: manifesto, service worker, ícones e fontes locais (public/).
 // - Serve as páginas legais /privacidade e /suporte.
 import { storeEnabled, storeConfig, createCheckout, getOrder, restorePurchases, webhookAuthorized, recordPayment, claimOrder, StoreError } from "./store";
-import { enter, nickAvailable, logout, userFromRequest, requireUser, publicUser, entitlementsOf, mergeProgress, submitDaily, leaderboard, spendFavores, AuthError } from "./auth";
+import { enter, nickAvailable, logout, userFromRequest, requireUser, publicUser, entitlementsOf, mergeProgress, submitDaily, leaderboard, spendFavores, createTicket, myTickets, AuthError } from "./auth";
+import { adminEnabled, adminAuthorized, overview, listOrders, listUsers, userDetail, userAction, listTickets, answerTicket } from "./admin";
 
 const root = new URL("./", import.meta.url);
 const fragmentRaw = await Bun.file(new URL("./game.html", root)).text();
@@ -54,6 +55,7 @@ const head = (title: string, desc: string) => `<!doctype html>
 `;
 const swRegister = `<script>if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{})})}</script>`;
 const html = head("Saldo Zero · Sobreviva ao poder", description) + fragment + swRegister + "\n</body>\n</html>\n";
+const adminPage = await Bun.file(new URL("./admin.html", root)).text();
 
 const legalStyle = `<style>body{margin:0;background:#0d1020;color:#f4f1ea;font:16px/1.6 -apple-system,system-ui,sans-serif}main{max-width:680px;margin:0 auto;padding:32px 20px 60px}h1{font-size:28px;line-height:1.15}h2{font-size:18px;margin-top:28px}a{color:#f5c04a}p,li{color:#d6d8e6}small{color:#9ea4c4}</style>`;
 const legal = (title: string, inner: string) => head(title, title + " · Saldo Zero") + `<title>${title}</title>` + legalStyle + "<main>" + inner + "</main>\n</body>\n</html>\n";
@@ -64,6 +66,8 @@ const privacy = legal("Política de privacidade · Saldo Zero", `
 <p><b>Saldo Zero</b> é um jogo de ficção e sátira que roda no navegador. Ele não exige cadastro e não pede nome, e-mail, telefone, localização nem acesso a contatos, câmera ou microfone.</p>
 <h2>Conta de jogo (opcional)</h2>
 <p>Para aparecer no ranking e guardar compras, você pode criar uma conta informando apenas um <b>apelido</b> e um <b>PIN numérico</b>. Guardamos o apelido, o PIN em forma criptografada (hash, sem como recuperá-lo), o progresso (finais, conquistas, recorde), os resultados do desafio diário e o saldo de favores. O apelido é público no ranking; nada mais é exibido. Para apagar a conta e todos os dados, escreva para o e-mail abaixo informando o apelido.</p>
+<h2>Suporte</h2>
+<p>Chamados abertos pelo menu Ajuda ficam registrados com o apelido (ou o e-mail informado), o assunto e a mensagem, para que o desenvolvedor responda. A resposta aparece no próprio menu Ajuda. Podemos bloquear contas que violem as regras do jogo ou abusem da loja.</p>
 <h2>Sem conta</h2>
 <p>Sem conta, o progresso fica salvo apenas no seu navegador, no armazenamento local, e não é enviado a nenhum servidor nosso.</p>
 <h2>Compras opcionais</h2>
@@ -111,8 +115,8 @@ const json = (data: unknown, status = 200) => Response.json(data, { status, head
 
 // Limite simples por IP para as rotas que chamam o Asaas (protege a chave contra abuso).
 const hits = new Map<string, { n: number; t: number }>();
-function limited(req: Request, max = 30) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "local";
+function limited(req: Request, max = 30, bucket = "api") {
+  const ip = (req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "local") + ":" + bucket;
   const now = Date.now();
   const h = hits.get(ip);
   if (!h || now - h.t > 60_000) { hits.set(ip, { n: 1, t: now }); return false; }
@@ -129,7 +133,7 @@ async function api(req: Request, pathname: string): Promise<Response | null> {
       return json(nickAvailable(nick));
     }
     if (req.method === "POST" && pathname === "/api/auth/enter") {
-      if (limited(req, 20)) return json({ error: "Muitas tentativas. Aguarde um minuto." }, 429);
+      if (limited(req, 20, "auth")) return json({ error: "Muitas tentativas. Aguarde um minuto." }, 429);
       const body = await req.json();
       const result = await enter(body);
       if (typeof body?.claim === "string" && body.claim.startsWith("sz:")) claimOrder(body.claim, result.user.id);
@@ -157,20 +161,43 @@ async function api(req: Request, pathname: string): Promise<Response | null> {
       return json(leaderboard(day, userFromRequest(req)?.id));
     }
 
+    // ---- suporte ----
+    if (req.method === "POST" && pathname === "/api/support") {
+      if (limited(req, 5, "support")) return json({ error: "Muitos chamados em pouco tempo. Aguarde um minuto." }, 429);
+      return json(createTicket(userFromRequest(req), await req.json()));
+    }
+    if (req.method === "GET" && pathname === "/api/support") return json({ tickets: myTickets(requireUser(req)) });
+
+    // ---- painel do desenvolvedor ----
+    if (pathname.startsWith("/api/admin/")) {
+      if (!adminAuthorized(req)) return json({ error: adminEnabled ? "Token inválido." : "Painel desligado: defina ADMIN_TOKEN." }, 401);
+      const url = new URL(req.url);
+      if (pathname === "/api/admin/overview") return json(overview());
+      if (pathname === "/api/admin/orders") return json({ orders: listOrders() });
+      if (pathname === "/api/admin/users" && req.method === "GET") return json(listUsers(url.searchParams.get("q") || "", Number(url.searchParams.get("page") || 1)));
+      const um = pathname.match(/^\/api\/admin\/users\/(\d+)$/);
+      if (um && req.method === "GET") return json(userDetail(Number(um[1])));
+      if (um && req.method === "POST") return json(await userAction(Number(um[1]), await req.json()));
+      if (pathname === "/api/admin/tickets" && req.method === "GET") return json({ tickets: listTickets(url.searchParams.get("status") || "") });
+      const tm = pathname.match(/^\/api\/admin\/tickets\/(\d+)$/);
+      if (tm && req.method === "POST") return json(answerTicket(Number(tm[1]), await req.json()));
+      return json({ error: "Rota não encontrada." }, 404);
+    }
+
     // ---- loja ----
     if (!storeEnabled) return json({ error: "Loja desligada." }, 503);
     if (req.method === "POST" && pathname === "/api/checkout") {
-      if (limited(req)) return json({ error: "Muitas tentativas. Aguarde um minuto." }, 429);
+      if (limited(req, 30, "checkout")) return json({ error: "Muitas tentativas. Aguarde um minuto." }, 429);
       const u = userFromRequest(req);
       if (!u) return json({ error: "Entre com seu apelido antes de comprar: a compra fica guardada na sua conta." }, 401);
       return json(await createCheckout(await req.json(), SITE, u.id));
     }
     if (req.method === "GET" && pathname.startsWith("/api/order/")) {
-      if (limited(req, 120)) return json({ error: "Muitas tentativas." }, 429);
+      if (limited(req, 120, "order")) return json({ error: "Muitas tentativas." }, 429);
       return json(await getOrder(decodeURIComponent(pathname.slice("/api/order/".length))));
     }
     if (req.method === "POST" && pathname === "/api/restore") {
-      if (limited(req, 10)) return json({ error: "Muitas tentativas. Aguarde um minuto." }, 429);
+      if (limited(req, 10, "restore")) return json({ error: "Muitas tentativas. Aguarde um minuto." }, 429);
       return json(await restorePurchases(await req.json(), userFromRequest(req)?.id ?? null));
     }
     if (req.method === "POST" && pathname === "/api/webhook/asaas") {
@@ -198,6 +225,7 @@ Bun.serve({
     if (pathname === "/privacidade" || pathname === "/privacy") return new Response(privacy, { headers: htmlHeaders });
     if (pathname === "/suporte" || pathname === "/support") return new Response(support, { headers: htmlHeaders });
     if (pathname === "/aviso" || pathname === "/legal") return new Response(legalNotice, { headers: htmlHeaders });
+    if (pathname === "/admin") return new Response(adminPage, { headers: { ...htmlHeaders, "x-robots-tag": "noindex" } });
     if (pathname === "/sw.js") return new Response(swSource, { headers: { "content-type": MIME.js, "cache-control": "no-cache", "service-worker-allowed": "/" } });
 
     // Arquivos estáticos de public/ (manifesto, ícones, fontes, imagem de preview).

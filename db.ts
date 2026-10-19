@@ -50,10 +50,26 @@ CREATE TABLE IF NOT EXISTS results (
   UNIQUE (user_id, day)
 );
 CREATE INDEX IF NOT EXISTS results_day ON results(day, days DESC);
+CREATE TABLE IF NOT EXISTS tickets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  nick TEXT,
+  email TEXT,
+  subject TEXT NOT NULL,
+  message TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'aberto',   -- aberto | respondido | fechado
+  reply TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS tickets_status ON tickets(status, created_at DESC);
 `);
 
 // Migrações simples (colunas novas em bancos já existentes).
-const userCols = (db.query("PRAGMA table_info(users)").all() as { name: string }[]).map((c) => c.name);
-if (!userCols.includes("favores")) db.exec("ALTER TABLE users ADD COLUMN favores INTEGER NOT NULL DEFAULT 0");
+const cols = (table: string) => (db.query("PRAGMA table_info(" + table + ")").all() as { name: string }[]).map((c) => c.name);
+if (!cols("users").includes("favores")) db.exec("ALTER TABLE users ADD COLUMN favores INTEGER NOT NULL DEFAULT 0");
+if (!cols("users").includes("blocked")) db.exec("ALTER TABLE users ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0");
+if (!cols("users").includes("note")) db.exec("ALTER TABLE users ADD COLUMN note TEXT NOT NULL DEFAULT ''");
+if (!cols("orders").includes("value")) db.exec("ALTER TABLE orders ADD COLUMN value REAL NOT NULL DEFAULT 0");
 
 export const now = () => Date.now();

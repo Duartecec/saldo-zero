@@ -213,11 +213,12 @@ async function api(req: Request, pathname: string): Promise<Response | null> {
     }
     if (req.method === "GET" && pathname.startsWith("/api/order/")) {
       if (limited(req, 120, "order")) return json({ error: "Muitas tentativas." }, 429);
+      if (!userFromRequest(req)) return json({ error: "Entre na sua conta." }, 401);
       return json(await getOrder(decodeURIComponent(pathname.slice("/api/order/".length))));
     }
     if (req.method === "POST" && pathname === "/api/restore") {
-      if (limited(req, 10, "restore")) return json({ error: "Muitas tentativas. Aguarde um minuto." }, 429);
-      return json(await restorePurchases(await req.json(), userFromRequest(req)?.id ?? null));
+      // Desligada até a correção: permitia resgatar compras de terceiros pelo CPF.
+      return json({ error: "Restauração temporariamente indisponível. Fale com o suporte." }, 503);
     }
     if (req.method === "POST" && pathname === "/api/webhook/asaas") {
       if (!webhookAuthorized(req)) return json({ error: "token inválido" }, 401);

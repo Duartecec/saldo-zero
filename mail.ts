@@ -15,11 +15,15 @@ export async function sendMail(to: string, subject: string, html: string, text: 
     headers: { authorization: "Bearer " + KEY, "content-type": "application/json" },
     body: JSON.stringify({ from: FROM, to: [to], subject, html, text }),
   });
+  const body = await res.text();
   if (!res.ok) {
-    console.error("[mail] Resend respondeu " + res.status + ": " + (await res.text()).slice(0, 300));
-    return { sent: false };
+    console.error("[mail] Resend respondeu " + res.status + " para " + to + ": " + body.slice(0, 300));
+    return { sent: false, error: body.slice(0, 200) };
   }
-  return { sent: true };
+  let id = "";
+  try { id = JSON.parse(body)?.id || ""; } catch {}
+  console.log("[mail] enviado para " + to + " · " + subject + " · id " + id);
+  return { sent: true, id };
 }
 
 const shell = (title: string, body: string) => `<!doctype html><html lang="pt-BR"><body style="margin:0;background:#0d1020;padding:28px 16px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#f4f1ea">

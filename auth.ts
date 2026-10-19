@@ -38,12 +38,16 @@ async function issueCode(userId: number, kind: "verify" | "reset") {
   const code = newCode();
   db.run("UPDATE users SET code = ?, code_kind = ?, code_expires = ?, code_attempts = 0 WHERE id = ?", [code, kind, now() + 30 * 60_000, userId]);
   const u = db.query("SELECT nick_display, email FROM users WHERE id = ?").get(userId) as { nick_display: string; email: string | null };
+  let sent = false;
   if (u?.email) {
     const tpl = kind === "verify" ? verifyEmailTemplate(u.nick_display, code) : resetPinTemplate(u.nick_display, code);
-    await sendMail(u.email, tpl.subject, tpl.html, tpl.text);
+    sent = (await sendMail(u.email, tpl.subject, tpl.html, tpl.text)).sent;
   }
+  lastSent.set(userId, sent);
   return code;
 }
+const lastSent = new Map<number, boolean>();
+const sentFlag = (userId: number) => ({ sent: lastSent.get(userId) === true });
 function consumeCode(user: UserRow, kind: string, given: unknown) {
   const code = String(given || "").trim();
   if (!/^\d{6}$/.test(code)) throw new AuthError("Código: 6 números.");
@@ -104,7 +108,7 @@ export async function enter(input: any) {
   }
   const created = db.query("SELECT * FROM users WHERE nick = ?").get(key) as UserRow;
   const code = await issueCode(created.id, "verify");
-  return { token: await newSession(created.id), user: publicUser(created), created: true, ...(DEV_CODES ? { devCode: code } : {}) };
+  return { token: await newSession(created.id), user: publicUser(created), created: true, ...sentFlag(created.id), ...(DEV_CODES ? { devCode: code } : {}) };
 }
 
 export function userFromRequest(req: Request): UserRow | null {
@@ -148,7 +152,7 @@ export async function resendVerification(user: UserRow) {
   if (!fresh?.email) throw new AuthError("Cadastre um e-mail primeiro.");
   if (fresh.email_verified) return { ok: true, already: true };
   const code = await issueCode(user.id, "verify");
-  return { ok: true, ...(DEV_CODES ? { devCode: code } : {}) };
+  return { ok: true, ...sentFlag(user.id), ...(DEV_CODES ? { devCode: code } : {}) };
 }
 export async function setEmail(user: UserRow, input: any) {
   const email = normalizeEmail(input?.email);
@@ -156,7 +160,7 @@ export async function setEmail(user: UserRow, input: any) {
   if (other) throw new AuthError("Este e-mail já está em outra conta.", 409);
   db.run("UPDATE users SET email = ?, email_verified = 0 WHERE id = ?", [email, user.id]);
   const code = await issueCode(user.id, "verify");
-  return { ok: true, ...(DEV_CODES ? { devCode: code } : {}) };
+  return { ok: true, ...sentFlag(user.id), ...(DEV_CODES ? { devCode: code } : {}) };
 }
 export async function forgotPin(input: any) {
   const { key } = normalizeNick(input?.nick);

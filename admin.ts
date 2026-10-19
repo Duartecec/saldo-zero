@@ -51,7 +51,7 @@ export function listUsers(qstr: string, page = 1) {
 }
 
 export function userDetail(id: number) {
-  const user = db.query("SELECT id, nick_display AS nick, email, email_verified, created_at, last_seen, favores, blocked, note, progress FROM users WHERE id = ?").get(id) as any;
+  const user = db.query("SELECT id, nick_display AS nick, email, email_verified, created_at, last_seen, favores, blocked, note, progress, code, code_kind, code_expires FROM users WHERE id = ?").get(id) as any;
   if (!user) throw new AuthError("Usuário não encontrado.", 404);
   return {
     user,

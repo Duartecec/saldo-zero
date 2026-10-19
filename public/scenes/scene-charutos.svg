@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Pote de charutos com fumaça subindo num escritório escuro">
+<style>
+.c-sm{transform-box:fill-box;transform-origin:50% 100%;opacity:0;--dx:30px;animation:c-sm 7s ease-out infinite}
+.c-sm.b{animation-duration:8.5s;animation-delay:-3s;--dx:-34px}
+.c-sm.c{animation-duration:6.5s;animation-delay:-5s;--dx:26px}
+.c-sm.d{animation-delay:-1.5s;--dx:18px}
+.c-sm.e{animation-duration:9s;animation-delay:-6s;--dx:-20px}
+@keyframes c-sm{0%{opacity:0;transform:translate(0,0) scale(.5)}12%{opacity:.5}60%{opacity:.28}100%{opacity:0;transform:translate(var(--dx),-420px) scale(2.6)}}
+.c-em{animation:c-em 1.8s ease-in-out infinite}
+.c-em.b{animation-delay:-.7s}.c-em.c{animation-delay:-1.2s}
+@keyframes c-em{0%,100%{fill:#e8283c}50%{fill:#ffb347}}
+.c-glow{animation:c-gl 5s ease-in-out infinite}
+@keyframes c-gl{0%,100%{opacity:.35}50%{opacity:.6}}
+.c-bl{animation:c-bl 6s ease-in-out infinite}
+@keyframes c-bl{0%,100%{opacity:.16}50%{opacity:.3}}
+</style>
+<defs>
+<linearGradient id="c-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d1020"/><stop offset="1" stop-color="#1a1d38"/></linearGradient>
+<radialGradient id="c-lg" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#f5c04a" stop-opacity=".9"/><stop offset="1" stop-color="#f5c04a" stop-opacity="0"/></radialGradient>
+<pattern id="c-ht" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.1" fill="#0d1020" opacity=".22"/></pattern>
+<radialGradient id="c-vig" cx=".5" cy=".55" r=".75"><stop offset=".5" stop-color="#0d1020" stop-opacity="0"/><stop offset="1" stop-color="#0d1020" stop-opacity=".8"/></radialGradient>
+</defs>
+<rect width="400" height="800" fill="url(#c-bg)"/>
+<rect x="40" y="60" width="320" height="230" fill="#171b33" stroke="#232a4d" stroke-width="4"/>
+<g class="c-bl" fill="#f5c04a"><rect x="44" y="76" width="312" height="8"/><rect x="44" y="104" width="312" height="8"/><rect x="44" y="132" width="312" height="8"/><rect x="44" y="160" width="312" height="8"/><rect x="44" y="188" width="312" height="8"/><rect x="44" y="216" width="312" height="8"/><rect x="44" y="244" width="312" height="8"/></g>
+<circle class="c-glow" cx="64" cy="470" r="120" fill="url(#c-lg)"/>
+<path d="M44 420Q64 390 84 420Z" fill="#0f7a4a" stroke="#1b1a24" stroke-width="2.5"/>
+<rect x="60" y="420" width="8" height="150" fill="#f5c04a"/>
+<ellipse cx="64" cy="570" rx="26" ry="8" fill="#f5c04a"/>
+<path d="M0 640H400V800H0Z" fill="#2a1f2e"/>
+<path d="M0 640H400" stroke="#f5c04a" stroke-width="3" opacity=".7"/>
+<path d="M0 700H400M0 760H400" stroke="#1b1a24" stroke-width="2" opacity=".6"/>
+<g transform="translate(284 592)"><rect width="84" height="40" rx="3" fill="#cfd8a5" stroke="#1b1a24" stroke-width="2.5"/><rect y="-14" width="84" height="40" rx="3" fill="#dfe6b8" stroke="#1b1a24" stroke-width="2.5"/><rect x="30" y="-14" width="22" height="40" fill="#f5c04a" stroke="#1b1a24" stroke-width="2"/><text x="41" y="10" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="12" fill="#1b1a24">R$</text></g>
+<g transform="translate(30 596)"><path d="M0 0H36L32 44H4Z" fill="#f3ecd9" fill-opacity=".25" stroke="#f3ecd9" stroke-width="2.5"/><path d="M3 14H33L31 42H5Z" fill="#c9782b"/></g>
+<g stroke="#1b1a24" stroke-width="2.5" stroke-linejoin="round">
+ <g transform="rotate(-9 150 560)"><rect x="140" y="400" width="22" height="190" rx="8" fill="#7a4a26"/><rect x="140" y="470" width="22" height="16" fill="#f5c04a"/><rect x="140" y="400" width="22" height="14" rx="6" fill="#bdb6a6"/><circle class="c-em" cx="151" cy="400" r="7" fill="#e8283c"/></g>
+ <g transform="rotate(4 200 560)"><rect x="190" y="380" width="24" height="210" rx="8" fill="#6b3e22"/><rect x="190" y="460" width="24" height="16" fill="#e8283c"/><rect x="190" y="380" width="24" height="14" rx="6" fill="#bdb6a6"/><circle class="c-em b" cx="202" cy="380" r="7.5" fill="#e8283c"/></g>
+ <g transform="rotate(13 250 560)"><rect x="240" y="410" width="22" height="180" rx="8" fill="#8a5630"/><rect x="240" y="480" width="22" height="16" fill="#f5c04a"/><rect x="240" y="410" width="22" height="14" rx="6" fill="#bdb6a6"/><circle class="c-em c" cx="251" cy="410" r="7" fill="#e8283c"/></g>
+ <g transform="rotate(-20 118 580)"><rect x="108" y="470" width="20" height="130" rx="8" fill="#6b3e22"/><rect x="108" y="500" width="20" height="14" fill="#f5c04a"/></g>
+ <g transform="rotate(24 284 580)"><rect x="274" y="470" width="20" height="130" rx="8" fill="#7a4a26"/><rect x="274" y="500" width="20" height="14" fill="#e8283c"/></g>
+</g>
+<path d="M96 490H306L296 636Q200 652 106 636Z" fill="#f3ecd9" fill-opacity=".2" stroke="#f3ecd9" stroke-width="4" stroke-linejoin="round"/>
+<ellipse cx="201" cy="490" rx="105" ry="12" fill="none" stroke="#f3ecd9" stroke-width="4"/>
+<path d="M118 510L126 624" stroke="#f3ecd9" stroke-width="5" opacity=".55" stroke-linecap="round"/>
+<rect x="136" y="548" width="130" height="58" rx="4" fill="#e8283c" stroke="#1b1a24" stroke-width="3"/>
+<text x="201" y="573" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="17" fill="#f3ecd9" letter-spacing="2">RESERVA</text>
+<text x="201" y="596" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="17" fill="#f5c04a" letter-spacing="3">MAXTER</text>
+<g fill="#e6dcc2">
+ <g transform="translate(151 392)"><g class="c-sm"><circle r="14"/><circle cx="12" cy="-10" r="11"/><circle cx="-10" cy="-14" r="10"/></g></g>
+ <g transform="translate(202 372)"><g class="c-sm b"><circle r="16"/><circle cx="-12" cy="-10" r="12"/><circle cx="10" cy="-16" r="10"/></g></g>
+ <g transform="translate(251 402)"><g class="c-sm c"><circle r="14"/><circle cx="10" cy="-12" r="11"/></g></g>
+ <g transform="translate(202 372)"><g class="c-sm d"><circle r="12"/><circle cx="-8" cy="-12" r="9"/></g></g>
+ <g transform="translate(151 392)"><g class="c-sm e"><circle r="12"/><circle cx="8" cy="-10" r="10"/></g></g>
+</g>
+<rect width="400" height="800" fill="url(#c-ht)"/>
+<rect width="400" height="800" fill="url(#c-vig)"/>
+</svg>

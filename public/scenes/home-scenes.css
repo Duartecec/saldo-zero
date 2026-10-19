@@ -1,0 +1,12 @@
+/* Cenas de fundo da home do Saldo Zero. O desfoque/escurecimento fica a cargo do CSS da home (#homeScenes). */
+#homeScenes{position:absolute;inset:0;overflow:hidden;background:#0d1020;pointer-events:none}
+#homeScenes .hs-scene{position:absolute;inset:0;opacity:0;transition:opacity 1.1s ease-in-out;will-change:opacity}
+#homeScenes .hs-scene.is-active{opacity:1}
+#homeScenes .hs-scene svg{display:block;width:100%;height:100%}
+/* só a cena visível anima; as outras ficam congeladas (economiza bateria) */
+#homeScenes .hs-scene:not(.is-active) svg *{animation-play-state:paused!important}
+#homeScenes.hs-paused svg *{animation-play-state:paused!important}
+@media (prefers-reduced-motion:reduce){
+  #homeScenes .hs-scene{transition:none}
+  #homeScenes svg *{animation:none!important}
+}

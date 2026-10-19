@@ -105,20 +105,26 @@ export function nickAvailable(raw: unknown) {
 }
 
 // ---- bloqueio progressivo do PIN, persistido por conta ----
-// 5 erros seguidos: 1 min; cada erro seguinte dobra (2, 4, 8 min...) até 24 h. Acertar zera.
+// 5 erros seguidos: 1 min; cada erro seguinte dobra (2, 4, 8 min...) até 60 min. Acertar zera.
+// O teto curto evita que alguém bloqueie por um dia a conta de outro pelo apelido público do ranking.
 const FREE_FAILS = 5;
-function lockMinutes(fails: number) { return fails < FREE_FAILS ? 0 : Math.min(24 * 60, 2 ** (fails - FREE_FAILS)); }
+function lockMinutes(fails: number) { return fails < FREE_FAILS ? 0 : Math.min(60, 2 ** (fails - FREE_FAILS)); }
 function checkLock(row: UserRow) {
   if (row.locked_until > now()) {
     const min = Math.ceil((row.locked_until - now()) / 60_000);
     throw new AuthError("Muitas tentativas erradas. Tente de novo em " + min + " min ou use \"Esqueci o PIN\".", 429);
   }
 }
-function noteFailure(row: UserRow) {
-  const fails = (row.pin_fails || 0) + 1;
-  const min = lockMinutes(fails);
-  db.run("UPDATE users SET pin_fails = ?, locked_until = ? WHERE id = ?", [fails, min ? now() + min * 60_000 : 0, row.id]);
+/// Reserva a tentativa ANTES de conferir o PIN, de forma atômica: tentativas em paralelo não escapam do contador.
+/// Se acertar, quem chamou zera pin_fails/locked_until.
+function reserveAttempt(row: UserRow) {
+  checkLock(row);
+  const r = db.query("UPDATE users SET pin_fails = pin_fails + 1 WHERE id = ? AND locked_until <= ? RETURNING pin_fails").get(row.id, now()) as { pin_fails: number } | null;
+  if (!r) throw new AuthError("Muitas tentativas erradas. Tente de novo em alguns minutos ou use \"Esqueci o PIN\".", 429);
+  const min = lockMinutes(r.pin_fails);
+  if (min) db.run("UPDATE users SET locked_until = ? WHERE id = ?", [now() + min * 60_000, row.id]);
 }
+const clearFailures = (id: number) => db.run("UPDATE users SET pin_fails = 0, locked_until = 0 WHERE id = ?", [id]);
 
 // ---- sessões ----
 export const SESSION_MAX_AGE = 90 * DAY;   // expiração absoluta
@@ -148,9 +154,9 @@ export async function enter(input: any) {
   if (row) {
     const pin = normalizePin(input?.pin, "login");
     if (row.blocked) throw new AuthError("Esta conta foi bloqueada. Fale com o suporte pelo menu Ajuda.", 403);
-    checkLock(row);
+    reserveAttempt(row);
     const ok = await Bun.password.verify(pin, row.pin_hash);
-    if (!ok) { noteFailure(row); throw new AuthError("PIN incorreto para este apelido.", 401); }
+    if (!ok) { throw new AuthError("PIN incorreto para este apelido.", 401); }
     db.run("UPDATE users SET last_seen = ?, pin_fails = 0, locked_until = 0 WHERE id = ?", [now(), row.id]);
     return { token: newSession(row.id), user: publicUser(row), created: false };
   }
@@ -273,9 +279,11 @@ function safeJSON(s: string) { try { return JSON.parse(s || "{}"); } catch { ret
 export async function deleteAccount(user: UserRow, input: any, requirePin = true) {
   if (requirePin) {
     const pin = normalizePin(input?.pin, "login");
+    reserveAttempt(user);
     const ok = await Bun.password.verify(pin, user.pin_hash);
     // 403 (e não 401): o jogo trata 401 como sessão perdida e deslogaria a pessoa por um PIN digitado errado.
-    if (!ok) { noteFailure(user); throw new AuthError("PIN incorreto.", 403); }
+    if (!ok) throw new AuthError("PIN incorreto.", 403);
+    clearFailures(user.id);
   }
   eraseUser(user.id);
   return { ok: true };
@@ -283,7 +291,7 @@ export async function deleteAccount(user: UserRow, input: any, requirePin = true
 export function eraseUser(userId: number) {
   db.transaction(() => {
     db.run("DELETE FROM tickets WHERE user_id = ?", [userId]);
-    db.run("UPDATE orders SET user_id = NULL WHERE user_id = ?", [userId]);
+    db.run("UPDATE orders SET user_id = NULL, erased = 1 WHERE user_id = ?", [userId]);
     db.run("DELETE FROM sessions WHERE user_id = ?", [userId]);
     db.run("DELETE FROM results WHERE user_id = ?", [userId]);
     db.run("DELETE FROM entitlements WHERE user_id = ?", [userId]);

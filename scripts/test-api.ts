@@ -204,6 +204,14 @@ try {
   await startServer();
   const afterRestart = await call("POST", "/api/auth/enter", { nick: "carla_t", pin: "905172" }, undefined, freshIP());
   ok(afterRestart.status === 429, "bloqueio continua após reiniciar o servidor (PIN certo recusado)", afterRestart.data);
+  {
+    await verifiedUser("dani_t", "905173");
+    const par = await Promise.all(Array.from({ length: 40 }, () => call("POST", "/api/auth/enter", { nick: "dani_t", pin: "111119" }, undefined, freshIP())));
+    const db = new Database(join(DATA, "saldozero.sqlite"), { readonly: true });
+    const u = db.query("SELECT pin_fails, locked_until FROM users WHERE nick = 'dani_t'").get() as any;
+    db.close();
+    ok(u.pin_fails >= 5 && u.locked_until > Date.now() && par.some((r) => r.status === 429) && !par.some((r) => r.status === 200), "tentativas em paralelo não escapam do bloqueio", u);
+  }
 
   console.log("\n# exclusão de conta (LGPD)");
   ok((await call("DELETE", "/api/me", { pin: "000000" }, tA2, freshIP())).status === 403, "excluir com PIN errado = 403 (não desloga)");
@@ -212,9 +220,9 @@ try {
   {
     const db = new Database(join(DATA, "saldozero.sqlite"), { readonly: true });
     const u = db.query("SELECT COUNT(*) AS n FROM users WHERE nick = 'alice_t'").get() as any;
-    const o = db.query("SELECT COUNT(*) AS n, SUM(user_id IS NULL) AS anon FROM orders WHERE payment_id = ?").get(pid) as any;
+    const o = db.query("SELECT COUNT(*) AS n, SUM(user_id IS NULL) AS anon, SUM(erased) AS erased FROM orders WHERE payment_id = ?").get(pid) as any;
     const t = db.query("SELECT COUNT(*) AS n FROM results").get() as any;
-    ok(u.n === 0 && o.n === 1 && o.anon === 1 && t.n === 0, "conta e resultados apagados; pedido mantido anonimizado", { u, o, t });
+    ok(u.n === 0 && o.n === 1 && o.anon === 1 && o.erased === 1 && t.n === 0, "conta e resultados apagados; pedido mantido anonimizado", { u, o, t });
     db.close();
   }
   void tC;

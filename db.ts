@@ -73,6 +73,7 @@ addCol("users", "favores", "INTEGER NOT NULL DEFAULT 0");
 addCol("users", "blocked", "INTEGER NOT NULL DEFAULT 0");
 addCol("users", "note", "TEXT NOT NULL DEFAULT ''");
 addCol("orders", "value", "REAL NOT NULL DEFAULT 0");
+addCol("orders", "erased", "INTEGER NOT NULL DEFAULT 0");   // pedido de conta excluída: não pode ser restaurado por CPF
 addCol("users", "email", "TEXT");
 addCol("users", "email_verified", "INTEGER NOT NULL DEFAULT 0");
 if (!cols("users").includes("code")) db.exec("ALTER TABLE users ADD COLUMN code TEXT; ALTER TABLE users ADD COLUMN code_kind TEXT; ALTER TABLE users ADD COLUMN code_expires INTEGER NOT NULL DEFAULT 0; ALTER TABLE users ADD COLUMN code_attempts INTEGER NOT NULL DEFAULT 0");

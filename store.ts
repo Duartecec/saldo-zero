@@ -189,7 +189,7 @@ export function revokeEntitlement(paymentId: string) {
 /// Liga um pedido ainda sem dono ao usuário que acabou de entrar. Nunca troca o dono de um pedido que já tem dono.
 export function claimOrder(ref: string, userId: number) {
   db.transaction(() => {
-    db.run("UPDATE orders SET user_id = ? WHERE ref = ? AND user_id IS NULL", [userId, ref]);
+    db.run("UPDATE orders SET user_id = ? WHERE ref = ? AND user_id IS NULL AND erased = 0", [userId, ref]);
     const o = db.query("SELECT payment_id FROM orders WHERE ref = ? AND user_id = ?").get(ref, userId) as { payment_id: string } | null;
     if (o) syncEntitlement(o.payment_id);
   })();
@@ -241,7 +241,7 @@ export async function restorePurchases(input: any, userId: number) {
       if (!id || !PAID.has(p.status) || p.customer !== c.id) continue;
       const mine = db.transaction(() => {
         recordPayment(p);
-        db.run("UPDATE orders SET user_id = ? WHERE payment_id = ? AND user_id IS NULL", [userId, p.id]);
+        db.run("UPDATE orders SET user_id = ? WHERE payment_id = ? AND user_id IS NULL AND erased = 0", [userId, p.id]);
         const o = db.query("SELECT user_id, status FROM orders WHERE payment_id = ?").get(p.id) as { user_id: number | null; status: string } | null;
         if (!o || o.user_id !== userId || !PAID.has(o.status)) return false;
         syncEntitlement(p.id);

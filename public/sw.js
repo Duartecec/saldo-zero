@@ -19,6 +19,8 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  // A API nunca passa pelo cache: conta, loja e ranking precisam de resposta fresca.
+  if (url.pathname.startsWith('/api/')) return;
 
   // Página do jogo: rede primeiro (para receber cartas novas), cache se estiver off-line.
   if (req.mode === 'navigate' || url.pathname === '/') {

@@ -159,6 +159,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 .shake{animation:shake .4s}
 @keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 .shop{display:grid;gap:10px}.shop .item{display:flex;align-items:center;gap:12px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:12px}.shop .ico{font-size:28px}.shop .txt{flex:1;min-width:0}.shop .txt b{display:block}.shop .txt small{color:var(--mute);display:block;margin-top:2px}.shop .buy{background:linear-gradient(170deg,#ffd76a,#f0a33c);color:#2a1b05;font-family:var(--display);letter-spacing:1px;padding:10px 14px;border-radius:10px;white-space:nowrap;border-bottom:3px solid #9a5a12}.shop .buy:disabled{opacity:.5}.shop .owned{color:var(--green);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.form{display:grid;gap:10px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:14px}.form h3{margin:0;font-family:var(--display);font-weight:400;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)}.form label{display:grid;gap:4px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mute);font-weight:700}.form input{font:inherit;font-size:16px;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0a0c18;color:var(--fg);min-width:0}.form input:focus{outline:2px solid var(--gold)}.form .err{color:var(--red);font-size:13px;min-height:1em}.linkish{color:var(--mute);font-size:13px;text-decoration:underline;padding:8px;justify-self:center}
+.movebar{display:flex;gap:10px;align-items:center}.movebar button.move{flex:1;background:linear-gradient(160deg,#3b2f6b,#241c4a);border:1px solid #7b6fd6;border-bottom:4px solid #141033;border-radius:14px;padding:12px;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:10px}.movebar button.move b{font-size:14px}.movebar button.move small{color:#c9c2ff;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700}.fav{display:inline-flex;align-items:center;gap:4px;background:#0a0c18;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.moves{display:grid;gap:8px}.moves button{display:flex;align-items:center;gap:12px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left}.moves button:disabled{opacity:.45}.moves .ico{font-size:26px}.moves .txt{flex:1;min-width:0}.moves .txt b{display:block}.moves .txt small{color:var(--mute);display:block}.moves .cost{white-space:nowrap;color:var(--gold);font-weight:800;font-size:13px}
+.rank{margin:0;padding-left:22px;display:grid;gap:5px;font-size:14px}.rank li{display:flex;justify-content:space-between;gap:10px}.rank li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.rank li b{white-space:nowrap;font-variant-numeric:tabular-nums}
 .mastpick{display:flex;gap:8px;flex-wrap:wrap}.mastpick button{font-family:var(--display);font-size:12px;letter-spacing:1px;padding:8px 10px;border-radius:9px;background:var(--ink-2);border:1px solid var(--line);color:var(--mute)}.mastpick button.on{color:var(--gold);border-color:var(--gold)}
 @media (max-width:380px){.brand{font-size:26px}.stage{height:360px}.h1{font-size:40px}.paper .ptitle{font-size:30px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
@@ -195,6 +199,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
     <button id="btnR"><small>DIREITA ▶</small><b id="lblR">…</b></button>
   </div>
 
+  <div class="movebar">
+    <button class="move" id="btnMove"><span><b>⚡ Jogada do Vorkaro</b><br><small>Ações por sua iniciativa</small></span><span class="fav" id="favBadge">🎩 2</span></button>
+  </div>
+
   <div class="foot">
     <span id="dayCount">Dia 1 em liberdade</span>
     <span><button id="btnSound" aria-pressed="false">🔇 Som</button> <button id="btnMenu">☰ Menu</button></span>
@@ -214,6 +222,19 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
     <button class="big" id="playDaily">▶ Jogar o diário</button>
     <button class="big alt" id="playFree">Modo livre (cartas embaralhadas)</button>
     <button class="big alt" id="openShop" hidden>🛒 Loja · baralhos e capas</button>
+    <div class="panel" id="accountPanel">
+      <h3>Sua conta de jogo</h3>
+      <form id="loginForm" class="form" style="padding:0;border:0;background:none" autocomplete="on">
+        <label>Apelido<input id="nickInput" name="username" autocomplete="username" maxlength="16" placeholder="ex.: rei_do_pix" required></label>
+        <div class="err" id="nickHint" style="color:var(--mute)"></div>
+        <label>PIN (4 a 8 números)<input id="pinInput" name="password" type="password" inputmode="numeric" autocomplete="current-password" maxlength="8" required></label>
+        <div class="err" id="loginError"></div>
+        <button class="big" type="submit" id="loginBtn">Entrar</button>
+      </form>
+      <div id="accountInfo" hidden></div>
+      <p style="margin-top:8px">Sem e-mail, sem senha longa. O apelido é único, aparece no ranking e guarda suas compras e conquistas em qualquer aparelho.</p>
+    </div>
+    <div class="panel" id="rankPanel"><h3>Ranking de hoje</h3><div id="rankList"><p>Carregando…</p></div></div>
     <div class="panel">
       <h3>Finais descobertos <span id="endCount"></span></h3>
       <div class="ends" id="endGrid"></div>
@@ -229,13 +250,42 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
   </div>
 </div>
 
+<div class="screen" id="moveScreen" hidden>
+  <div class="inner">
+    <div class="h1">Jogada do <em>Vorkaro</em></div>
+    <p class="lead" id="moveLead">Ações por iniciativa própria. Cada uma custa favores e passa alguns dias.</p>
+    <div class="panel"><p id="moveBalance"></p></div>
+    <div class="moves" id="moveList"></div>
+    <div class="row"><button class="big alt" id="btnMoveShop" hidden>🎩 Comprar favores</button><button class="big alt" id="btnMoveClose">Voltar</button></div>
+  </div>
+</div>
+
 <div class="screen" id="shopScreen" hidden>
   <div class="inner">
     <div class="h1">Loja do <em>Maxter</em></div>
-    <p class="lead">Compras únicas pela App Store. O jogo completo continua gratuito; os extras valem no modo livre.</p>
+    <p class="lead" id="shopLead">Compras únicas. O jogo completo continua gratuito; os extras valem no modo livre.</p>
+    <div class="panel" id="shopBalance" hidden></div>
     <div id="shopList" class="shop"></div>
+    <div class="panel" id="payStatus" hidden></div>
+    <form class="form" id="payForm" hidden autocomplete="on">
+      <h3 id="payTitle">Pagamento</h3>
+      <label>Nome completo<input name="name" id="payName" autocomplete="name" required maxlength="80"></label>
+      <label>E-mail<input name="email" id="payEmail" type="email" autocomplete="email" required maxlength="120"></label>
+      <label>CPF ou CNPJ<input name="cpf" id="payCpf" inputmode="numeric" autocomplete="off" required placeholder="000.000.000-00"></label>
+      <div class="err" id="payError"></div>
+      <button class="big" type="submit">Ir para o pagamento</button>
+      <button class="linkish" type="button" id="payBack">Voltar</button>
+      <p class="lead" style="font-size:12px;margin:0">Você paga na página segura do Asaas, por Pix, cartão ou boleto. Os dados servem só para emitir a cobrança.</p>
+    </form>
+    <form class="form" id="restoreForm" hidden>
+      <h3>Restaurar compras</h3>
+      <label>CPF ou CNPJ usado na compra<input name="cpf" id="restoreCpf" inputmode="numeric" required placeholder="000.000.000-00"></label>
+      <div class="err" id="restoreError"></div>
+      <button class="big" type="submit">Buscar compras</button>
+      <button class="linkish" type="button" id="restoreBack">Voltar</button>
+    </form>
     <div class="row"><button class="big alt" id="btnRestore">Restaurar compras</button><button class="big alt" id="btnShopClose">Fechar</button></div>
-    <p class="lead" style="font-size:12px">O valor é cobrado na sua conta da App Store ao confirmar a compra. Itens não consumíveis podem ser restaurados em qualquer aparelho com a mesma conta.</p>
+    <p class="lead" style="font-size:12px" id="shopLegal">Itens não consumíveis podem ser restaurados em qualquer aparelho.</p>
   </div>
 </div>
 
@@ -248,6 +298,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
       <button class="big" id="btnCopy">Copiar resultado</button>
       <button class="big alt" id="btnShare" hidden>Compartilhar</button>
     </div>
+    <button class="big" id="btnAppeal" hidden>⚖️ Entrar com recurso · 2 favores</button>
     <div class="row">
       <button class="big alt" id="btnAgain">Jogar de novo</button>
       <button class="big alt" id="btnHome">Início</button>
@@ -274,21 +325,98 @@ const NATIVE=window.MasterEscapeNative||null;
 function native(msg){try{window.webkit.messageHandlers.native.postMessage(msg);return true}catch{return false}}
 function shareURL(){return (NATIVE&&NATIVE.shareURL)||location.href.split('#')[0]}
 const PRODUCTS={
+  'com.saldozero.favores10':{icon:'🎩',name:'10 favores',desc:'Para jogadas do Vorkaro e recursos no modo livre. Ficam na sua conta.',kind:'consumable',favores:10},
+  'com.saldozero.favores30':{icon:'🎩',name:'30 favores',desc:'O pacote de quem pretende durar. Ficam na sua conta.',kind:'consumable',favores:30},
   'com.saldozero.deck.eleicao':{icon:'🗳️',name:'Baralho Ano Eleitoral',desc:'12 cartas extras no modo livre: debates, pesquisas, urnas e promessas.',kind:'non'},
-  'com.saldozero.capas':{icon:'📰',name:'Pacote de capas',desc:'Três jornais alternativos para estampar a sua capa final.',kind:'non'},
-  'com.saldozero.apoio':{icon:'☕',name:'Cafezinho do banqueiro',desc:'Apoie o jogo e ganhe o selo de apoiador na capa.',kind:'consumable'}
+  'com.saldozero.capas':{icon:'📰',name:'Pacote de capas',desc:'Três jornais alternativos para estampar a sua capa final.',kind:'non'}
 };
-let ent=new Set(store.get('ent',[])),priceOf={};
+const FREE_FAVORES=2;
+let ent=new Set(store.get('ent',[])),priceOf={},favores=store.get('favores',0);
 function owns(id){return ent.has(id)}
 window.MasterEscapeBridge={
   onProducts(list){(list||[]).forEach(p=>{priceOf[p.id]=p.price});renderShop()},
   onEntitlements(ids){ent=new Set(ids||[]);store.set('ent',[...ent]);renderShop();if(!$('startScreen').hidden)showStart()},
-  onPurchase(r){if(r&&r.ok){if(r.id==='com.saldozero.apoio')store.set('apoiador',true);else{ent.add(r.id);store.set('ent',[...ent])}toast(r.id==='com.saldozero.apoio'?'Obrigado pelo cafezinho! ☕':'Compra concluída. Bom jogo!');renderShop();if(!$('startScreen').hidden)showStart()}else if(r&&r.error&&r.error!=='cancelled')toast('Não foi possível concluir: '+r.error);else renderShop()},
+  onPurchase(r){if(r&&r.ok){grant(r.id);toast('Compra concluída. Bom jogo!');renderShop();if(!$('startScreen').hidden)showStart()}else if(r&&r.error&&r.error!=='cancelled')toast('Não foi possível concluir: '+r.error);else renderShop()},
   onRestore(r){toast(r&&r.count?'Compras restauradas: '+r.count:'Nenhuma compra para restaurar nesta conta')}
 };
-function renderShop(){const el=$('shopList');if(!el)return;el.innerHTML=Object.entries(PRODUCTS).map(([id,p])=>{const own=p.kind==='non'&&owns(id);return '<div class="item"><span class="ico">'+p.icon+'</span><div class="txt"><b>'+p.name+'</b><small>'+p.desc+'</small></div>'+(own?'<span class="owned">Adquirido ✓</span>':'<button class="buy" data-id="'+id+'">'+(priceOf[id]||'Comprar')+'</button>')+'</div>'}).join('');
-  el.querySelectorAll('.buy').forEach(b=>b.onclick=()=>{b.disabled=true;b.textContent='…';native({type:'store',action:'buy',id:b.dataset.id});setTimeout(renderShop,6000)})}
-function openShop(){$('shopScreen').hidden=false;renderShop();native({type:'store',action:'products'})}
+/* ---- Conta de jogo: apelido único + PIN. Guarda compras, progresso e ranking diário. ---- */
+let auth=store.get('auth',null);const ONLINE=!NATIVE&&/^https?:$/.test(location.protocol);
+async function api(path,opts={}){const h=Object.assign({'content-type':'application/json'},opts.headers||{});if(auth&&auth.token)h.authorization='Bearer '+auth.token;
+  const r=await fetch(path,Object.assign({cache:'no-store'},opts,{headers:h}));let d={};try{d=await r.json()}catch{}
+  if(r.status===401&&auth&&!path.startsWith('/api/auth/'))setAuth(null);
+  if(!r.ok)throw Object.assign(new Error(d.error||'Falha de conexão.'),{status:r.status});return d}
+function setAuth(a){auth=a;store.set('auth',a);renderAccount()}
+function renderAccount(){const f=$('loginForm'),i=$('accountInfo');if(!ONLINE){$('accountPanel').hidden=true;$('rankPanel').hidden=true;return}
+  if(auth){f.hidden=true;i.hidden=false;i.innerHTML='<p style="color:var(--fg);margin:0">Você está como <b>@'+auth.nick+'</b>.</p><div class="row" style="margin-top:8px"><button class="big alt" id="logoutBtn">Sair</button></div>';$('logoutBtn').onclick=async()=>{try{await api('/api/auth/logout',{method:'POST'})}catch{}setAuth(null);setFavores(0);loadRank()}}
+  else{f.hidden=false;i.hidden=true}}
+let nickTimer=null;
+$('nickInput').oninput=()=>{clearTimeout(nickTimer);const v=$('nickInput').value.trim();$('nickHint').textContent='';$('loginBtn').textContent='Entrar';if(v.length<3)return;
+  nickTimer=setTimeout(async()=>{try{const d=await api('/api/auth/check?nick='+encodeURIComponent(v));$('nickHint').textContent=d.available?'✓ Apelido livre. Escolha um PIN e crie sua conta.':'Apelido já existe. Digite o seu PIN para entrar.';$('loginBtn').textContent=d.available?'Criar conta':'Entrar'}catch(e){$('nickHint').textContent=e.message}},350)};
+$('loginForm').onsubmit=async e=>{e.preventDefault();$('loginError').textContent='';const btn=$('loginBtn');btn.disabled=true;
+  try{const body={nick:$('nickInput').value.trim(),pin:$('pinInput').value,claim:(WEBSTORE.pending&&WEBSTORE.pending.ref)||null};let d;
+    try{d=await api('/api/auth/enter',{method:'POST',body:JSON.stringify(body)})}
+    catch(err){if(err.status===404)d=await api('/api/auth/enter',{method:'POST',body:JSON.stringify(Object.assign(body,{create:true}))});else throw err}
+    setAuth({token:d.token,nick:d.user.nick});syncFromServer(d.user.progress,d.entitlements,d.user.favores);$('pinInput').value='';
+    toast(d.created?'Conta criada. Bem-vindo, @'+d.user.nick+'!':'Bem-vindo de volta, @'+d.user.nick+'!');pushProgress();showStart()}
+  catch(err){$('loginError').textContent=err.message}btn.disabled=false};
+function syncFromServer(progress,entitlements,fav){(entitlements||[]).forEach(grant);if(typeof fav==='number')setFavores(fav);
+  if(progress){const ends=store.get('ends',{});for(const [k,v] of Object.entries(progress.ends||{}))if(ENDINGS[k])ends[k]=Math.max(ends[k]||0,v);store.set('ends',ends);
+    const ach=store.get('ach',[]);(progress.ach||[]).forEach(a=>{if(ACH[a]&&!ach.includes(a))ach.push(a)});store.set('ach',ach);store.set('best',Math.max(store.get('best',0),progress.best||0))}
+  renderShop()}
+async function pushProgress(){if(!auth)return;try{await api('/api/me/progress',{method:'PUT',body:JSON.stringify({ends:store.get('ends',{}),ach:store.get('ach',[]),best:store.get('best',0)})})}catch{}}
+async function loadMe(){if(!auth)return;try{const d=await api('/api/me');syncFromServer(d.user.progress,d.entitlements,d.user.favores);if(!$('startScreen').hidden)showStart()}catch{}}
+async function loadRank(){if(!ONLINE)return;const el=$('rankList');
+  try{const d=await api('/api/daily?day='+todayKey());
+    if(!d.total){el.innerHTML='<p>Ninguém jogou o diário de hoje ainda. Seja o primeiro.</p>';return}
+    el.innerHTML='<ol class="rank">'+d.top.slice(0,10).map(r=>'<li><span>@'+r.nick+'</span><b>'+r.days+' dias '+(ENDINGS[r.ending]?ENDINGS[r.ending].e:'')+'</b></li>').join('')+'</ol>'+
+      (d.me?'<p style="margin-top:8px">Você: <b>'+d.me.rank+'º</b> de '+d.total+'. Durou mais que '+d.me.percentile+'% dos jogadores.</p>':auth?'<p style="margin-top:8px">Jogue o diário de hoje para entrar no ranking.</p>':'<p style="margin-top:8px">Entre com um apelido para aparecer aqui.</p>')}
+  catch{el.innerHTML='<p>Ranking indisponível no momento.</p>'}}
+async function submitDailyResult(){if(!auth||s.mode!=='daily'||!ONLINE)return;
+  try{const d=await api('/api/daily',{method:'POST',body:JSON.stringify({day:todayKey(),days:s.day,turns:s.turn,ending:s.over})});
+    if(d.me)$('endAch').innerHTML+='<p style="margin-top:8px;color:var(--fg)">🏆 Ranking de hoje: <b>'+d.me.rank+'º</b> de '+d.total+'. Você durou mais que '+d.me.percentile+'% dos jogadores.</p>'}catch{}}
+
+/* ---- Loja web (Asaas): usada quando o jogo roda no navegador e o servidor tem a loja ligada ---- */
+const WEBSTORE={enabled:false,pending:store.get('pending',null)};
+let orderTimer=null;
+function storeOn(){return !!((NATIVE&&NATIVE.store)||WEBSTORE.enabled)}
+async function initWebStore(){if(NATIVE||!/^https?:$/.test(location.protocol))return;
+  try{const r=await fetch('/api/store/config',{cache:'no-store'});if(!r.ok)return;const c=await r.json();if(!c.enabled)return;
+    WEBSTORE.enabled=true;c.products.forEach(p=>{priceOf[p.id]=p.price});$('openShop').hidden=false;
+    $('legalNote').textContent='Obra de ficção e sátira. Personagens, bancos, veículos e instituições são inventados. Extras opcionais pagos pelo Asaas (Pix, cartão ou boleto).';
+    $('shopLead').textContent='Pagamento único pelo Asaas: Pix, cartão ou boleto. O jogo completo continua gratuito; os extras valem no modo livre.';
+    $('shopLegal').textContent='A cobrança é emitida pelo Asaas em nome do jogo. Para liberar em outro aparelho, use "Restaurar compras" com o mesmo CPF.';
+    const q=new URLSearchParams(location.search).get('pedido');
+    if(q){WEBSTORE.pending=Object.assign({},WEBSTORE.pending||{},{ref:q});store.set('pending',WEBSTORE.pending);history.replaceState(null,'',location.pathname)}
+    renderShop();if(WEBSTORE.pending){openShop();watchOrder()}}catch{}}
+function buyWeb(id){if(!auth){toast('Entre com seu apelido para comprar.');$('shopScreen').hidden=true;showStart();$('accountPanel').scrollIntoView({behavior:'smooth',block:'start'});$('nickInput').focus();return}const f=$('payForm');$('restoreForm').hidden=true;f.hidden=false;f.dataset.id=id;$('payTitle').textContent=PRODUCTS[id].name+' · '+(priceOf[id]||'');
+  const b=store.get('buyer',{});$('payName').value=b.name||'';$('payEmail').value=b.email||'';$('payCpf').value=b.cpf||'';$('payError').textContent='';f.scrollIntoView({behavior:'smooth',block:'start'})}
+$('payBack').onclick=()=>{$('payForm').hidden=true};$('restoreBack').onclick=()=>{$('restoreForm').hidden=true};
+$('payForm').onsubmit=async e=>{e.preventDefault();const f=e.target,btn=f.querySelector('button[type=submit]');
+  const body={productId:f.dataset.id,name:$('payName').value,email:$('payEmail').value,cpfCnpj:$('payCpf').value};
+  store.set('buyer',{name:body.name,email:body.email,cpf:body.cpfCnpj});btn.disabled=true;btn.textContent='Gerando cobrança…';$('payError').textContent='';
+  try{const d=await api('/api/checkout',{method:'POST',body:JSON.stringify(body)});
+    WEBSTORE.pending={ref:d.ref,paymentId:d.paymentId,productId:d.productId,invoiceUrl:d.invoiceUrl};store.set('pending',WEBSTORE.pending);location.href=d.invoiceUrl}
+  catch(err){$('payError').textContent=err.message;btn.disabled=false;btn.textContent='Ir para o pagamento'}};
+function clearPending(){WEBSTORE.pending=null;store.set('pending',null);clearInterval(orderTimer);orderTimer=null;$('payStatus').hidden=true}
+function grant(productId){if(!productId||!PRODUCTS[productId]||PRODUCTS[productId].favores)return;ent.add(productId);store.set('ent',[...ent])}
+function setFavores(n){favores=Math.max(0,n|0);store.set('favores',favores);renderFav()}
+async function checkOrder(){const p=WEBSTORE.pending;if(!p)return;
+  let d;try{d=await api('/api/order/'+encodeURIComponent(p.paymentId||p.ref))}catch(err){if(err.status===404)clearPending();return}
+  try{
+    if(d.paid){clearPending();grant(d.productId);toast('Pagamento confirmado. Conteúdo liberado!');loadMe();renderShop();if(!$('startScreen').hidden)showStart();return}
+    if(d.invoiceUrl)p.invoiceUrl=d.invoiceUrl;renderPending();
+    if(['OVERDUE','REFUNDED','DELETED','REFUND_REQUESTED'].includes(d.status)){clearPending();toast('Cobrança expirada ou cancelada.')}}catch{}}
+function renderPending(){const p=WEBSTORE.pending,el=$('payStatus');if(!p){el.hidden=true;return}el.hidden=false;
+  el.innerHTML='<h3>Aguardando pagamento</h3><p>Assim que o Asaas confirmar, o conteúdo é liberado aqui. Pix costuma levar segundos; boleto, até 2 dias úteis.</p><div class="row" style="margin-top:10px"><button class="big alt" id="payCheck">Já paguei</button>'+(p.invoiceUrl?'<a class="big alt" style="text-decoration:none;display:flex;align-items:center;justify-content:center" href="'+p.invoiceUrl+'">Abrir cobrança</a>':'')+'</div><div style="text-align:center"><button class="linkish" id="payCancel">Descartar este pedido</button></div>';
+  $('payCheck').onclick=()=>{toast('Verificando…');checkOrder()};$('payCancel').onclick=()=>{clearPending();toast('Pedido descartado. A cobrança expira sozinha.')}}
+function watchOrder(){renderPending();checkOrder();clearInterval(orderTimer);let n=0;orderTimer=setInterval(()=>{n++;if(n>45||!WEBSTORE.pending){clearInterval(orderTimer);return}checkOrder()},4000)}
+$('restoreForm').onsubmit=async e=>{e.preventDefault();const btn=e.target.querySelector('button[type=submit]');btn.disabled=true;$('restoreError').textContent='';
+  try{const d=await api('/api/restore',{method:'POST',body:JSON.stringify({cpfCnpj:$('restoreCpf').value})});
+    (d.products||[]).forEach(grant);renderShop();if(!$('startScreen').hidden)showStart();$('restoreForm').hidden=true;toast(d.count?'Compras restauradas: '+d.count:'Nenhuma compra encontrada para este CPF')}
+  catch(err){$('restoreError').textContent=err.message}btn.disabled=false};
+function renderShop(){const el=$('shopList');if(!el)return;const sb=$('shopBalance');if(sb){sb.hidden=!storeOn();sb.innerHTML=auth?'<p style="color:var(--fg)">🎩 <b>'+favores+'</b> favores na conta de <b>@'+auth.nick+'</b>. Cada partida ainda começa com '+FREE_FAVORES+' grátis.</p>':'<p>Entre com seu apelido antes de comprar: favores e baralhos ficam guardados na conta e valem em qualquer aparelho.</p>'}el.innerHTML=Object.entries(PRODUCTS).map(([id,p])=>{const own=p.kind==='non'&&owns(id);return '<div class="item"><span class="ico">'+p.icon+'</span><div class="txt"><b>'+p.name+'</b><small>'+p.desc+'</small></div>'+(own?'<span class="owned">Adquirido ✓</span>':'<button class="buy" data-id="'+id+'">'+(priceOf[id]||'Comprar')+'</button>')+'</div>'}).join('');
+  el.querySelectorAll('.buy').forEach(b=>b.onclick=()=>{if(NATIVE){b.disabled=true;b.textContent='…';native({type:'store',action:'buy',id:b.dataset.id});setTimeout(renderShop,6000)}else buyWeb(b.dataset.id)})}
+function openShop(){$('shopScreen').hidden=false;$('payForm').hidden=true;$('restoreForm').hidden=true;renderShop();if(NATIVE)native({type:'store',action:'products'});else renderPending()}
 const MASTS=[['METRUPOLIS',false],['O GLOBA DIÁRIO',true],['FOLHA DE BRASÍLIA',true],['CORREIO DO PODER',true]];
 function mastIndex(){const i=store.get('mast',0);return (i>0&&!owns('com.saldozero.capas'))?0:Math.min(i,MASTS.length-1)}
 
@@ -630,7 +758,7 @@ function genHeadline(fx,rng){let best=null,bv=0;for(const k of 'cpir'){const v=M
 let s=null,rng=null,drag=null,audio=null,soundOn=store.get('sound',false);
 function newGame(mode){
   const seedStr=mode==='daily'?'daily:'+todayKey():'free:'+Date.now()+':'+Math.random();
-  s={mode,seed:seedStr,day:1,turn:0,caixa:55,poder:35,imagem:50,radar:15,flags:{},seen:[],queue:[],news:['Banco Maxter busca novos investidores',safe('Empresário Danilo Vorkaro ganha destaque no mercado')],ach:[],hot:0,over:null,card:null,side:null};
+  s={mode,seed:seedStr,day:1,turn:0,caixa:55,poder:35,imagem:50,radar:15,flags:{},seen:[],queue:[],news:['Banco Maxter busca novos investidores',safe('Empresário Danilo Vorkaro ganha destaque no mercado')],ach:[],hot:0,over:null,card:null,side:null,favores:FREE_FAVORES,appeals:0};
   rng=mulberry(hash(seedStr));
   s.card='entrada';
   render();dealIn();
@@ -691,8 +819,45 @@ function finish(end){
   const achs=store.get('ach',[]);s.ach.forEach(a=>{if(!achs.includes(a))achs.push(a)});store.set('ach',achs);
   const best=store.get('best',0);if(s.day>best)store.set('best',s.day);
   if(s.mode==='daily'){const d=store.get('daily',{});if(!d[todayKey()])d[todayKey()]={day:s.day,end};store.set('daily',d)}
-  render();showEnd();snapshot();
+  render();showEnd();snapshot();pushProgress();submitDailyResult();
 }
+
+/* ============ Jogadas do Vorkaro (iniciativa própria) e recurso ============ */
+const ACTIONS=[
+  {id:'ministro',icon:'📞',name:'Ligar para o ministro',desc:'Esfria a investigação. Custa um favor político.',cost:1,fx:{r:-12,p:-4},news:'Ligação de banqueiro a ministro vira assunto em Brasília'},
+  {id:'marketing',icon:'📣',name:'Enterrar dinheiro em marketing',desc:'A imagem sobe. O caixa, não.',cost:1,fx:{i:10,c:-9},news:'Maxter lança campanha nacional para limpar a imagem'},
+  {id:'auditoria',icon:'🧾',name:'Auditoria independente',desc:'Mostra as contas antes que alguém peça.',cost:1,fx:{r:-8,c:-6,i:3},news:'Maxter contrata auditoria e abre os números ao mercado'},
+  {id:'dossie',icon:'🕵️',name:'Vazar dossiê de um rival',desc:'Poder sobe. O radar também.',cost:1,fx:{p:9,r:7,i:-2},news:'Dossiê contra rival de banqueiro circula na imprensa'},
+  {id:'jatinho',icon:'✈️',name:'Jatinho para Brasília',desc:'Reuniões que não cabem em mensagem.',cost:1,fx:{p:7,c:-5,r:2},news:'Jato do Maxter faz três pousos em Brasília no mesmo dia'},
+  {id:'penitencia',icon:'🙏',name:'Entrevista de penitência',desc:'Chorar na TV funciona com o público, não com os aliados.',cost:1,fx:{i:9,p:-5,r:-2},news:'Banqueiro chora em entrevista e diz que "errou feio"'},
+  {id:'advogado',icon:'🧯',name:'Advogado de emergência',desc:'Só com o radar acima de 70. Caro, mas segura.',cost:2,req:s=>s.radar>=70,fx:{r:-22,c:-14},news:'Maxter contrata banca de defesa com honorários milionários'},
+  {id:'aporte',icon:'💰',name:'Aporte do sócio',desc:'Só com o caixa abaixo de 30. Dilui o seu poder.',cost:2,req:s=>s.caixa<=30,fx:{c:20,p:-8,r:3},news:'Sócio injeta dinheiro no Maxter e ganha cadeira no conselho'}
+];
+const APPEAL={cost:2,fix:{preso:['radar',55],falencia:['caixa',35],cancelado:['imagem',35],descartado:['poder',35]}};
+function favTotal(){return (s?s.favores:0)+((s&&s.mode==='free'&&auth)?favores:0)}
+function renderFav(){const b=$('favBadge');if(b&&s)b.textContent='🎩 '+favTotal()}
+async function spendFavores(n){
+  if(s.favores>=n){s.favores-=n;renderFav();return true}
+  if(s.mode!=='free'){toast('No diário todo mundo tem só os '+FREE_FAVORES+' favores da partida.');return false}
+  if(!auth){toast('Entre com seu apelido para usar os favores da conta.');return false}
+  if(favores<n){toast('Favores insuficientes.');openShop();return false}
+  try{const d=await api('/api/favores/spend',{method:'POST',body:JSON.stringify({n})});setFavores(d.favores);return true}catch(e){toast(e.message);if(e.status===402)openShop();return false}}
+function openMoves(){if(!s||s.over)return;$('moveScreen').hidden=false;$('btnMoveShop').hidden=!(storeOn()&&s.mode==='free');
+  $('moveBalance').innerHTML='🎩 <b>'+s.favores+'</b> favor'+(s.favores===1?'':'es')+' desta partida'+(s.mode==='free'?(auth?' + <b>'+favores+'</b> na conta de @'+auth.nick:' · entre para usar os favores da conta'):' · no diário não há favores extras');
+  $('moveList').innerHTML=ACTIONS.map(a=>{const ok=(!a.req||a.req(s))&&favTotal()>=a.cost;return '<button data-id="'+a.id+'" '+(ok?'':'disabled')+'><span class="ico">'+a.icon+'</span><span class="txt"><b>'+a.name+'</b><small>'+a.desc+'</small></span><span class="cost">'+a.cost+' 🎩</span></button>'}).join('');
+  $('moveList').querySelectorAll('button').forEach(b=>b.onclick=()=>doMove(b.dataset.id))}
+async function doMove(id){const a=ACTIONS.find(x=>x.id===id);if(!a||s.over)return;if(a.req&&!a.req(s))return;
+  if(!(await spendFavores(a.cost)))return;$('moveScreen').hidden=true;
+  const before={c:s.caixa,p:s.poder,i:s.imagem,r:s.radar},fx=a.fx;
+  s.caixa=clamp(s.caixa+(fx.c||0));s.poder=clamp(s.poder+(fx.p||0));s.imagem=clamp(s.imagem+(fx.i||0));s.radar=clamp(s.radar+(fx.r||0));
+  s.day+=2;s.news.unshift(a.news);s.news=s.news.slice(0,8);toast(a.news);bumpStats(fx,before);haptic(fx);sfx('swipe');
+  let end=null;if(s.radar>=100)end='preso';else if(s.caixa<=0)end='falencia';else if(s.caixa>=100)end='miami';else if(s.poder>=100)end='dono';else if(s.poder<=0)end='descartado';else if(s.imagem<=0)end='cancelado';else if(s.imagem>=100)end='idolo';
+  if(end){finish(end);return}render();snapshot()}
+function canAppeal(){return s&&s.over&&s.mode==='free'&&APPEAL.fix[s.over]&&s.appeals<2}
+async function appeal(){if(!canAppeal())return;if(!(await spendFavores(APPEAL.cost)))return;
+  const [k,v]=APPEAL.fix[s.over];s[k]=v;s.appeals++;s.over=null;s.news.unshift('Recurso de última hora mantém Vorkaro no jogo');s.day+=5;
+  $('endScreen').hidden=true;s.card=pickCard();render();dealIn();toast('⚖️ Recurso aceito. Por enquanto.');snapshot()}
+$('btnMove').onclick=openMoves;$('btnMoveClose').onclick=()=>{$('moveScreen').hidden=true};$('btnMoveShop').onclick=()=>{$('moveScreen').hidden=true;openShop()};$('btnAppeal').onclick=appeal;
 
 /* ============ Rendering ============ */
 const KEYS={caixa:'c',poder:'p',imagem:'i',radar:'r'};
@@ -700,7 +865,7 @@ function render(){
   if(!s)return;
   $('chapter').textContent=chapterName();$('date').textContent=gameDate();
   $('modePill').textContent=s.mode==='daily'?'DIÁRIO #'+dailyNumber():'MODO LIVRE';
-  $('dayCount').textContent='Dia '+s.day+' em liberdade · '+s.turn+' decisões';
+  $('dayCount').textContent='Dia '+s.day+' em liberdade · '+s.turn+' decisões';renderFav();
   document.querySelectorAll('.stat').forEach(el=>{const k=el.dataset.k,v=s[k];el.querySelector('.bar i').style.width=v+'%';el.querySelector('.val').textContent=v;el.classList.toggle('danger',v>=85||v<=15)});
   $('track').innerHTML=s.news.map(n=>'<span>◆ '+n+'</span>').join('');
   const k=BY_ID[s.card];if(!k)return;
@@ -748,24 +913,25 @@ function showStart(){
   $('endCount').textContent=got+'/'+Object.keys(ENDINGS).length;
   $('endGrid').innerHTML=Object.entries(ENDINGS).map(([k,e])=>'<div class="'+(ends[k]?'':'locked')+'" title="'+(ends[k]?e.t:'Final ainda não descoberto')+'">'+(ends[k]?e.e:'❔')+'</div>').join('');
   const best=store.get('best',0),ach=store.get('ach',[]);
-  $('bestInfo').textContent=(best?'Recorde: '+best+' dias em liberdade. ':'Nenhuma partida ainda. ')+'Conquistas: '+ach.length+'/'+Object.keys(ACH).length+'.'+(store.get('apoiador',false)?' ☕ Apoiador do jogo.':'');
+  $('bestInfo').textContent=(best?'Recorde: '+best+' dias em liberdade. ':'Nenhuma partida ainda. ')+'Conquistas: '+ach.length+'/'+Object.keys(ACH).length+'.'+(auth&&favores?' 🎩 '+favores+' favores na conta.':'');
   if(NATIVE&&NATIVE.store)$('legalNote').textContent='Obra de ficção e sátira. Personagens, bancos, veículos e instituições são inventados. Compras opcionais apenas pela App Store.';
-  $('startScreen').hidden=false;$('endScreen').hidden=true;
+  $('startScreen').hidden=false;$('endScreen').hidden=true;renderAccount();loadRank();
 }
 function bars(v){const n=Math.round(v/20);return '▓'.repeat(n)+'░'.repeat(5-n)}
 function shareText(){const e=ENDINGS[s.over];const tag=s.mode==='daily'?'Diário #'+dailyNumber():'Modo livre';
-  return 'SALDO ZERO 🏦 '+tag+'\n'+e.e+' '+e.t+'\n⏱ '+s.day+' dias em liberdade · '+s.turn+' decisões\n💰'+bars(s.caixa)+' 🏛️'+bars(s.poder)+'\n📣'+bars(s.imagem)+' 🚨'+bars(s.radar)+(s.ach.length?'\n🏅 '+s.ach.map(a=>ACH[a][1]).join(', '):'')+'\nConsegue durar mais? '+shareURL()}
+  return 'SALDO ZERO 🏦 '+tag+(auth?' · @'+auth.nick:'')+'\n'+e.e+' '+e.t+'\n⏱ '+s.day+' dias em liberdade · '+s.turn+' decisões\n💰'+bars(s.caixa)+' 🏛️'+bars(s.poder)+'\n📣'+bars(s.imagem)+' 🚨'+bars(s.radar)+(s.ach.length?'\n🏅 '+s.ach.map(a=>ACH[a][1]).join(', '):'')+'\nConsegue durar mais? '+shareURL()}
 function showEnd(){
   const e=ENDINGS[s.over];
   $('paper').innerHTML='<div class="pmast">'+MASTS[mastIndex()][0]+'</div><div class="pmeta"><span>'+gameDate()+'</span><span>'+(s.mode==='daily'?'Diário #'+dailyNumber():'Modo livre')+'</span><span>R$ 2,50</span></div>'+
     '<div class="days">DIAS<br>LIVRE<b>'+s.day+'</b></div>'+
     '<div class="ptitle">'+e.t+'</div><p class="psub">'+e.s+'</p>'+
     '<div class="pstats"><div>💰 Caixa<b>'+s.caixa+'</b></div><div>🏛️ Poder<b>'+s.poder+'</b></div><div>📣 Imagem<b>'+s.imagem+'</b></div><div>🚨 Radar<b>'+s.radar+'</b></div></div>'+
-    ((s.ach.length||store.get('apoiador',false))?'<div class="badges">'+s.ach.map(a=>'<span>'+ACH[a][0]+' '+ACH[a][1]+'</span>').join('')+(store.get('apoiador',false)?'<span>☕ Apoiador</span>':'')+'</div>':'')+
+    ((s.ach.length||s.appeals)?'<div class="badges">'+s.ach.map(a=>'<span>'+ACH[a][0]+' '+ACH[a][1]+'</span>').join('')+(s.appeals?'<span>⚖️ '+s.appeals+' recurso'+(s.appeals>1?'s':'')+'</span>':'')+'</div>':'')+
     '<div class="stamp">'+e.e+' '+({preso:'PRESO',falencia:'FALIDO',miami:'SUMIU',dono:'DONO',descartado:'SOZINHO',cancelado:'CANCELADO',idolo:'CANDIDATO',delator:'DELATOR',exilio:'EXILADO',lenda:'LENDA'})[s.over]+'</div>';
   $('shareText').textContent=shareText();
+  const ap=$('btnAppeal');ap.hidden=!canAppeal();if(!ap.hidden)ap.textContent='⚖️ Entrar com recurso e continuar · '+APPEAL.cost+' favores ('+(favTotal())+' disponíveis)';
   $('btnShare').hidden=!(NATIVE||navigator.share);
-  const mp=$('mastPick');mp.hidden=!(NATIVE&&NATIVE.store);if(!mp.hidden){mp.innerHTML=MASTS.map((m,i)=>'<button class="'+(i===mastIndex()?'on':'')+'" data-i="'+i+'">'+(m[1]&&!owns('com.saldozero.capas')?'🔒 ':'')+m[0]+'</button>').join('');mp.querySelectorAll('button').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(MASTS[i][1]&&!owns('com.saldozero.capas')){openShop();return}store.set('mast',i);showEnd()})}
+  const mp=$('mastPick');mp.hidden=!storeOn();if(!mp.hidden){mp.innerHTML=MASTS.map((m,i)=>'<button class="'+(i===mastIndex()?'on':'')+'" data-i="'+i+'">'+(m[1]&&!owns('com.saldozero.capas')?'🔒 ':'')+m[0]+'</button>').join('');mp.querySelectorAll('button').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(MASTS[i][1]&&!owns('com.saldozero.capas')){openShop();return}store.set('mast',i);showEnd()})}
   const ends=store.get('ends',{});const got=Object.keys(ENDINGS).filter(k=>ends[k]).length;
   const newAch=s.ach.map(a=>'<span>'+ACH[a][0]+' <b>'+ACH[a][1]+'</b>: '+ACH[a][2]+'</span>').join('<br>');
   $('endAch').innerHTML='<h3>Finais descobertos '+got+'/'+Object.keys(ENDINGS).length+'</h3><p>'+(ends[s.over]===1?'Final novo desbloqueado! ':'')+(newAch||'Nenhuma conquista nesta partida. Tente arriscar mais.')+'</p>';
@@ -774,7 +940,7 @@ function showEnd(){
 }
 $('btnCopy').onclick=async()=>{const t=shareText();try{await navigator.clipboard.writeText(t);$('btnCopy').textContent='Copiado ✓'}catch{const r=document.createRange();r.selectNodeContents($('shareText'));const sel=getSelection();sel.removeAllRanges();sel.addRange(r);$('btnCopy').textContent='Selecionado: copie'}setTimeout(()=>$('btnCopy').textContent='Copiar resultado',2000)};
 $('btnShare').onclick=async()=>{if(NATIVE){native({type:'share',text:shareText()});return}try{await navigator.share({text:shareText()})}catch{}};
-$('openShop').hidden=!(NATIVE&&NATIVE.store);$('openShop').onclick=openShop;$('btnShopClose').onclick=()=>{$('shopScreen').hidden=true};$('btnRestore').onclick=()=>{toast('Verificando compras…');native({type:'store',action:'restore'})};
+$('openShop').hidden=!(NATIVE&&NATIVE.store);$('openShop').onclick=openShop;$('btnShopClose').onclick=()=>{$('shopScreen').hidden=true};$('btnRestore').onclick=()=>{if(NATIVE){toast('Verificando compras…');native({type:'store',action:'restore'});return}$('payForm').hidden=true;const f=$('restoreForm');f.hidden=false;$('restoreCpf').value=(store.get('buyer',{}).cpf)||'';f.scrollIntoView({behavior:'smooth',block:'start'})};
 $('btnAgain').onclick=()=>{$('endScreen').hidden=true;newGame(s.mode)};
 $('btnHome').onclick=showStart;
 $('btnMenu').onclick=showStart;
@@ -788,6 +954,6 @@ function start(data){
   else{showStart()}
 }
 applySafeNames();
-if(NATIVE&&NATIVE.store)native({type:'store',action:'entitlements'});
+if(NATIVE&&NATIVE.store)native({type:'store',action:'entitlements'});else{initWebStore();loadMe()}
 try{window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{})}catch{start({})}
 </script>

@@ -10,13 +10,33 @@ Requer [Bun](https://bun.sh/).
 bun run start
 ```
 
-O servidor usa a variável `PORT` (padrão `3000`) e, opcionalmente, `SITE_URL` (domínio público usado nas tags de preview). Ele monta a página em memória a partir de `game.html`, troca o Google Fonts pelas fontes locais, serve o PWA (manifesto, service worker, ícones) e as páginas `/privacidade` e `/suporte`. `./build.sh` gera um `index.html` standalone (não versionado) quando for preciso um arquivo estático.
+O servidor monta a página em memória a partir de `game.html`, troca o Google Fonts pelas fontes locais, serve o PWA (manifesto, service worker, ícones), as páginas `/privacidade` e `/suporte` e a API (conta de jogo, loja, ranking). `./build.sh` gera um `index.html` standalone (não versionado) quando for preciso um arquivo estático.
+
+### Variáveis de ambiente
+
+| Variável | Para quê |
+|---|---|
+| `PORT` | porta (padrão 3000) |
+| `SITE_URL` | domínio público, usado nas tags de preview e no retorno do pagamento (ex.: `https://vorkaro.site`) |
+| `DATA_DIR` | pasta do banco SQLite (no Railway, o volume em `/data`) |
+| `ASAAS_API_KEY` | chave da API do Asaas; sem ela a loja fica desligada |
+| `ASAAS_ENV` | `sandbox` (padrão) ou `production` |
+| `ASAAS_WEBHOOK_TOKEN` | token configurado no webhook do Asaas (header `asaas-access-token`) |
+
+### Conta de jogo, loja e ranking
+
+- Conta: apelido único (3 a 16 caracteres, sem acento) + PIN de 4 a 8 números. Sem e-mail. Guarda compras, progresso e favores.
+- Favores: moeda das jogadas do Vorkaro e dos recursos no modo livre. Toda partida começa com 2; pacotes de 10 e 30 ficam na conta.
+- Loja (Asaas, checkout hospedado com Pix, cartão e boleto): `POST /api/checkout` cria a cobrança, o jogador paga na página do Asaas e volta para `SITE_URL/?pedido=<ref>`; `GET /api/order/:id` confirma; `POST /api/webhook/asaas` recebe os eventos. Compras exigem login.
+- Ranking diário: `POST /api/daily` grava o primeiro resultado do dia por conta; `GET /api/daily?day=` lista o top 50.
+- Testes: `scripts/fake-asaas.ts` imita o Asaas; `scripts/e2e.cjs` percorre conta, compra, jogadas, recurso e ranking (Playwright).
 
 ## Arquivos
 
 - `game.html` — todo o jogo (estilos, baralho, mecânicas, telas, ponte com o app nativo).
 - `server.ts` — servidor Bun.
-- `scripts/sim.js` — joga dezenas de partidas aleatórias em Chromium headless e imprime a distribuição de finais e erros de console.
+- `store.ts`, `auth.ts`, `db.ts` — loja (Asaas), conta de jogo e banco SQLite.
+- `scripts/sim.cjs` — joga dezenas de partidas aleatórias em Chromium headless e imprime a distribuição de finais e erros de console.
 - `public/` — manifesto do PWA, service worker, ícones, imagem de preview (`og.png`) e fontes.
 - App iOS (xtool + StoreKit) guardado na branch `claude/ios-app`, caso a distribuição em loja volte à pauta.
 

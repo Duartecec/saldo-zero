@@ -71,7 +71,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
   repeating-linear-gradient(0deg,transparent 0 3px,#0000000a 3px 4px),
   linear-gradient(170deg,var(--paper),var(--paper-2));
   color:var(--paper-ink);box-shadow:0 20px 40px #0008,0 2px 0 #fff8 inset;border:1px solid #d9cfb1;
-  display:flex;flex-direction:column;padding:16px 16px 14px;z-index:1;user-select:none;-webkit-user-select:none;touch-action:pan-y;will-change:transform;cursor:grab}
+  display:flex;flex-direction:column;padding:16px 16px 14px;z-index:1;user-select:none;-webkit-user-select:none;touch-action:none;will-change:transform;cursor:grab}
 .card.dragging{cursor:grabbing;transition:none}
 .card.out{transition:transform .32s ease-in,opacity .32s;opacity:0}
 .card.in{animation:dealin .38s cubic-bezier(.2,.9,.3,1.2)}
@@ -162,6 +162,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 .form{display:grid;gap:10px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:14px}.form h3{margin:0;font-family:var(--display);font-weight:400;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)}.form label{display:grid;gap:4px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mute);font-weight:700}.form input{font:inherit;font-size:16px;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0a0c18;color:var(--fg);min-width:0}.form input:focus{outline:2px solid var(--gold)}.form .err{color:var(--red);font-size:13px;min-height:1em}.linkish{color:var(--mute);font-size:13px;text-decoration:underline;padding:8px;justify-self:center}
 .movebar{display:flex;gap:10px;align-items:center}.movebar button.move{flex:1;background:linear-gradient(160deg,#3b2f6b,#241c4a);border:1px solid #7b6fd6;border-bottom:4px solid #141033;border-radius:14px;padding:12px;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:10px}.movebar button.move b{font-size:14px}.movebar button.move small{color:#c9c2ff;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700}.fav{display:inline-flex;align-items:center;gap:4px;background:#0a0c18;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .moves{display:grid;gap:8px}.moves button{display:flex;align-items:center;gap:12px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left}.moves button:disabled{opacity:.45}.moves .ico{font-size:26px}.moves .txt{flex:1;min-width:0}.moves .txt b{display:block}.moves .txt small{color:var(--mute);display:block}.moves .cost{white-space:nowrap;color:var(--gold);font-weight:800;font-size:13px}
+.cols{gap:14px}.col{display:flex;flex-direction:column;gap:14px;min-width:0}.form .two{display:grid;gap:10px}
+@media (min-width:600px){.form .two{grid-template-columns:1fr 1fr}}
+@media (min-width:1000px){#startScreen .inner{max-width:1080px;display:grid;grid-template-columns:1.05fr .95fr;gap:14px 40px;align-items:start}#startScreen .h1{font-size:58px}}
 .rank{margin:0;padding-left:22px;display:grid;gap:5px;font-size:14px}.rank li{display:flex;justify-content:space-between;gap:10px}.rank li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.rank li b{white-space:nowrap;font-variant-numeric:tabular-nums}
 .mastpick{display:flex;gap:8px;flex-wrap:wrap}.mastpick button{font-family:var(--display);font-size:12px;letter-spacing:1px;padding:8px 10px;border-radius:9px;background:var(--ink-2);border:1px solid var(--line);color:var(--mute)}.mastpick button.on{color:var(--gold);border-color:var(--gold)}
 /* UatiZap */
@@ -259,7 +262,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 <div class="toast" id="toast" role="status"><b>MANCHETE</b><span id="toastText"></span></div>
 
 <div class="screen" id="startScreen">
-  <div class="inner">
+  <div class="inner cols">
+   <div class="col">
     <div class="h1">Sobreviva ao <em>poder</em>.<br>Até quando der.</div>
     <p class="lead">Você é Danilo Vorkaro, dono do Banco Maxter. Senadores, ministros, jornalistas, doleiros e sua mãe vão mandar mensagem. Cada resposta mexe no caixa, no poder, na imagem e no radar da investigação.</p>
     <div class="panel">
@@ -270,12 +274,16 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
     <button class="big" id="playDaily">▶ Jogar o diário</button>
     <button class="big alt" id="playFree">Modo livre (cartas embaralhadas)</button>
     <button class="big alt" id="openShop" hidden>🛒 Loja · baralhos e capas</button>
+   </div>
+   <div class="col">
     <div class="panel" id="accountPanel">
       <h3>Sua conta de jogo</h3>
       <form id="loginForm" class="form" style="padding:0;border:0;background:none" autocomplete="on">
-        <label>Apelido<input id="nickInput" name="username" autocomplete="username" maxlength="16" placeholder="ex.: rei_do_pix" required></label>
+        <div class="two">
+          <label>Apelido<input id="nickInput" name="username" autocomplete="username" maxlength="16" placeholder="ex.: rei_do_pix" required></label>
+          <label>PIN (4 a 8 números)<input id="pinInput" name="password" type="password" inputmode="numeric" autocomplete="current-password" maxlength="8" required></label>
+        </div>
         <div class="err" id="nickHint" style="color:var(--mute)"></div>
-        <label>PIN (4 a 8 números)<input id="pinInput" name="password" type="password" inputmode="numeric" autocomplete="current-password" maxlength="8" required></label>
         <div class="err" id="loginError"></div>
         <button class="big" type="submit" id="loginBtn">Entrar</button>
       </form>
@@ -295,6 +303,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
       <span>🚨 <b>Radar</b> · calor da investigação</span>
     </div>
     <p class="lead" style="font-size:12px" id="legalNote">Obra de ficção e sátira. Personagens, bancos, veículos e instituições são inventados. Nenhuma cobrança real.</p>
+   </div>
   </div>
 </div>
 
@@ -962,12 +971,14 @@ let toastT=null;function toast(t){$('toastText').textContent=t;$('toast').classL
 
 /* ============ Drag ============ */
 const card=$('card');
-card.addEventListener('pointerdown',e=>{if(s?.over||!$('tut').hidden)return;drag={x:e.clientX,y:e.clientY,dx:0,id:e.pointerId};card.setPointerCapture(e.pointerId);card.classList.add('dragging')});
+card.addEventListener('pointerdown',e=>{if(s?.over||!$('tut').hidden)return;if(e.pointerType==='mouse'&&e.button!==0)return;e.preventDefault();drag={x:e.clientX,y:e.clientY,dx:0,id:e.pointerId};try{card.setPointerCapture(e.pointerId)}catch{}card.classList.add('dragging')});
+card.addEventListener('touchend',e=>{if(e.cancelable)e.preventDefault()},{passive:false});
 card.addEventListener('pointermove',e=>{if(!drag)return;drag.dx=e.clientX-drag.x;const dy=e.clientY-drag.y;const rot=drag.dx/18;card.style.transform='translate('+drag.dx+'px,'+(dy*0.2)+'px) rotate('+rot+'deg)';const amt=Math.min(1,Math.abs(drag.dx)/90);const side=drag.dx<0?'l':'r';card.querySelector('.tag.l').style.opacity=side==='l'?amt:0;card.querySelector('.tag.r').style.opacity=side==='r'?amt:0;previewDots(side,amt)});
 function endDrag(){if(!drag)return;const dx=drag.dx;drag=null;card.classList.remove('dragging');card.querySelectorAll('.tag').forEach(t=>t.style.opacity=0);previewDots(null,0);if(Math.abs(dx)>90)fling(dx<0?'l':'r');else card.style.transform=''}
 card.addEventListener('pointerup',endDrag);card.addEventListener('pointercancel',endDrag);
-function fling(side){if(s.over)return;sfx('swipe');card.classList.add('out');card.style.transform='translate('+(side==='l'?-520:520)+'px,-40px) rotate('+(side==='l'?-25:25)+'deg)';setTimeout(()=>choose(side),240)}
-$('btnL').onclick=()=>{if(!$('tut').hidden)return;fling('l')};$('btnR').onclick=()=>{if(!$('tut').hidden)return;fling('r')};
+let lastFling=0;
+function fling(side){if(s.over||Date.now()-lastFling<400)return;lastFling=Date.now();sfx('swipe');card.classList.add('out');card.style.transform='translate('+(side==='l'?-520:520)+'px,-40px) rotate('+(side==='l'?-25:25)+'deg)';setTimeout(()=>choose(side),240)}
+$('btnL').onclick=()=>{if(!$('tut').hidden||Date.now()-lastFling<400)return;fling('l')};$('btnR').onclick=()=>{if(!$('tut').hidden||Date.now()-lastFling<400)return;fling('r')};
 document.addEventListener('keydown',e=>{if(!s||s.over||!$('startScreen').hidden||!$('tut').hidden)return;if(e.key==='ArrowLeft')fling('l');if(e.key==='ArrowRight')fling('r')});
 $('tutOk').onclick=()=>{$('tut').hidden=true;store.set('tutDone',true)};
 

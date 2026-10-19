@@ -164,6 +164,42 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 .moves{display:grid;gap:8px}.moves button{display:flex;align-items:center;gap:12px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left}.moves button:disabled{opacity:.45}.moves .ico{font-size:26px}.moves .txt{flex:1;min-width:0}.moves .txt b{display:block}.moves .txt small{color:var(--mute);display:block}.moves .cost{white-space:nowrap;color:var(--gold);font-weight:800;font-size:13px}
 .rank{margin:0;padding-left:22px;display:grid;gap:5px;font-size:14px}.rank li{display:flex;justify-content:space-between;gap:10px}.rank li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.rank li b{white-space:nowrap;font-variant-numeric:tabular-nums}
 .mastpick{display:flex;gap:8px;flex-wrap:wrap}.mastpick button{font-family:var(--display);font-size:12px;letter-spacing:1px;padding:8px 10px;border-radius:9px;background:var(--ink-2);border:1px solid var(--line);color:var(--mute)}.mastpick button.on{color:var(--gold);border-color:var(--gold)}
+/* UatiZap */
+.zap .inner{gap:0;background:#0b1512;border:1px solid #1f3a31;border-radius:18px;overflow:hidden;min-height:70vh}
+.zap-top{display:flex;justify-content:space-between;align-items:center;background:#14312a;padding:14px 16px;border-bottom:1px solid #245244}
+.zap-top b{font-family:var(--display);font-size:22px;letter-spacing:1px;color:#b9f5d8}.zap-top small{display:block;color:#8fc9b0;font-size:12px}
+.zap-close{color:#b9f5d8;font-size:20px;padding:4px 8px}
+.zap-list{display:flex;flex-direction:column}
+.zap-list button{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #16302a;text-align:left;width:100%}
+.zap-list button:hover{background:#10231e}
+.zap-list .body{flex:1;min-width:0}.zap-list .body b{display:block;font-size:14px;color:#eafff4}.zap-list .body small{display:block;color:#8fb5a4;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zap-list .meta{text-align:right;font-size:11px;color:#6f9a89;white-space:nowrap}.zap-list .meta i{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:10px;background:#25d366;color:#07251b;font-style:normal;font-weight:800;margin-top:4px;font-size:11px;padding:0 6px}
+.zap-empty{padding:40px 20px;text-align:center;color:#8fb5a4}
+.zap-chat{display:flex;flex-direction:column;min-height:60vh}
+.zap-head{display:flex;align-items:center;gap:10px;background:#14312a;padding:10px 12px;border-bottom:1px solid #245244}.zap-head button{font-size:26px;color:#b9f5d8;padding:0 6px}.zap-head b{display:block;font-size:14px;color:#eafff4}.zap-head small{display:block;color:#8fc9b0;font-size:11px}
+.zap-msgs{flex:1;display:flex;flex-direction:column;gap:8px;padding:14px 12px 20px;background:radial-gradient(circle at 20% 10%,#17352c66,transparent 50%),#0b1512}
+.zap-day{align-self:center;background:#1c2f2a;color:#9fd1bb;font-size:10px;letter-spacing:1px;padding:4px 10px;border-radius:8px;margin:6px 0}
+.zap-b{max-width:86%;padding:9px 12px 16px;border-radius:12px;font-size:14px;line-height:1.35;position:relative}
+.zap-b.in{align-self:flex-start;background:#1e2d2a;color:#eafff4;border-top-left-radius:3px}
+.zap-b.out{align-self:flex-end;background:#1f6f52;color:#f2fff8;border-top-right-radius:3px}
+.zap-b.news{align-self:stretch;max-width:100%;background:#2b1d22;border-left:4px solid var(--red);color:#ffe1e6;font-weight:600}
+.zap-b small{position:absolute;right:8px;bottom:3px;font-size:9.5px;color:#9fd1bb}.zap-b.out small{color:#c7f1dc}
+#btnZap{position:relative}#zapUnread{display:none;position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:9px;background:#25d366;color:#07251b;font-size:11px;font-weight:800;align-items:center;justify-content:center;padding:0 5px}#zapUnread.on{display:inline-flex}
+
+/* Tablet */
+@media (min-width:600px){.app{max-width:560px}.stage{height:420px}.screen .inner{max-width:560px}}
+/* Desktop: jogo à esquerda, UatiZap fixo à direita */
+@media (min-width:1000px){
+  .app{max-width:1200px;display:grid;grid-template-columns:minmax(0,520px) minmax(380px,1fr);grid-template-areas:"mast mast" "stats zap" "ticker zap" "stage zap" "choices zap" "movebar zap" "foot zap";column-gap:32px;align-items:start;padding-block:18px 32px}
+  .mast{grid-area:mast}.stats{grid-area:stats}.ticker{grid-area:ticker}.stage{grid-area:stage;height:460px}.choices{grid-area:choices}.movebar{grid-area:movebar}.foot{grid-area:foot}
+  #zapScreen{grid-area:zap;position:sticky;top:12px;inset:auto;padding:0;background:none;backdrop-filter:none;overflow:visible;z-index:1;max-height:calc(100vh - 24px)}
+  #zapScreen[hidden]{display:block!important}
+  #zapScreen .inner{max-width:none;min-height:0;max-height:calc(100vh - 24px);overflow:auto}
+  #btnZap,.zap-close{display:none}
+  .screen .inner{max-width:640px}
+  .h1{font-size:54px}
+  .card .say{font-size:19px}
+}
 @media (max-width:380px){.brand{font-size:26px}.stage{height:360px}.h1{font-size:40px}.paper .ptitle{font-size:30px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
@@ -205,8 +241,19 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 
   <div class="foot">
     <span id="dayCount">Dia 1 em liberdade</span>
-    <span><button id="btnSound" aria-pressed="false">🔇 Som</button> <button id="btnMenu">☰ Menu</button></span>
+    <span><button id="btnZap">💬 UatiZap<span id="zapUnread">0</span></button> <button id="btnSound" aria-pressed="false">🔇 Som</button> <button id="btnMenu">☰ Menu</button></span>
   </div>
+
+<div class="screen zap" id="zapScreen" hidden>
+  <div class="inner">
+    <div class="zap-top"><div><b>UatiZap</b><small id="zapSub">mensagens desta partida</small></div><button class="zap-close" id="btnZapClose" aria-label="Fechar">✕</button></div>
+    <div id="zapList" class="zap-list"></div>
+    <div id="zapChat" class="zap-chat" hidden>
+      <div class="zap-head"><button id="zapBack" aria-label="Voltar">‹</button><span id="zapAvatar"></span><div><b id="zapName"></b><small id="zapRole"></small></div></div>
+      <div id="zapMsgs" class="zap-msgs"></div>
+    </div>
+  </div>
+</div>
 </div>
 
 <div class="toast" id="toast" role="status"><b>MANCHETE</b><span id="toastText"></span></div>
@@ -219,6 +266,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
       <h3>Desafio diário</h3>
       <p id="dailyInfo">Todo mundo joga a mesma sequência de cartas hoje. Compare seu resultado com os amigos.</p>
     </div>
+    <button class="big" id="btnResume" hidden>▶ Continuar a partida</button>
     <button class="big" id="playDaily">▶ Jogar o diário</button>
     <button class="big alt" id="playFree">Modo livre (cartas embaralhadas)</button>
     <button class="big alt" id="openShop" hidden>🛒 Loja · baralhos e capas</button>
@@ -757,8 +805,9 @@ function genHeadline(fx,rng){let best=null,bv=0;for(const k of 'cpir'){const v=M
 /* ============ State ============ */
 let s=null,rng=null,drag=null,audio=null,soundOn=store.get('sound',false);
 function newGame(mode){
+  store.set('run',null);
   const seedStr=mode==='daily'?'daily:'+todayKey():'free:'+Date.now()+':'+Math.random();
-  s={mode,seed:seedStr,day:1,turn:0,caixa:55,poder:35,imagem:50,radar:15,flags:{},seen:[],queue:[],news:['Banco Maxter busca novos investidores',safe('Empresário Danilo Vorkaro ganha destaque no mercado')],ach:[],hot:0,over:null,card:null,side:null,favores:FREE_FAVORES,appeals:0};
+  s={mode,seed:seedStr,day:1,turn:0,caixa:55,poder:35,imagem:50,radar:15,flags:{},seen:[],queue:[],news:['Banco Maxter busca novos investidores',safe('Empresário Danilo Vorkaro ganha destaque no mercado')],ach:[],hot:0,over:null,card:null,side:null,favores:FREE_FAVORES,appeals:0,log:[],zapRead:{}};
   rng=mulberry(hash(seedStr));
   s.card='entrada';
   render();dealIn();
@@ -782,6 +831,7 @@ function choose(side){
   if(s.over||!s.card)return;
   const k=BY_ID[s.card],opt=side==='l'?k.l:k.r,fx=opt[1],meta=opt[2]||{};
   s.side=side;
+  (s.log=s.log||[]).push({c:k.c,t:k.t,a:opt[0],day:s.day,kind:k.c==='narrador'?'news':'msg'});
   const before={c:s.caixa,p:s.poder,i:s.imagem,r:s.radar};
   s.caixa=clamp(s.caixa+(fx.c||0));s.poder=clamp(s.poder+(fx.p||0));s.imagem=clamp(s.imagem+(fx.i||0));s.radar=clamp(s.radar+(fx.r||0));
   // time + pressure
@@ -819,6 +869,7 @@ function finish(end){
   const achs=store.get('ach',[]);s.ach.forEach(a=>{if(!achs.includes(a))achs.push(a)});store.set('ach',achs);
   const best=store.get('best',0);if(s.day>best)store.set('best',s.day);
   if(s.mode==='daily'){const d=store.get('daily',{});if(!d[todayKey()])d[todayKey()]={day:s.day,end};store.set('daily',d)}
+  store.set('run',null);
   render();showEnd();snapshot();pushProgress();submitDailyResult();
 }
 
@@ -850,7 +901,7 @@ async function doMove(id){const a=ACTIONS.find(x=>x.id===id);if(!a||s.over)retur
   if(!(await spendFavores(a.cost)))return;$('moveScreen').hidden=true;
   const before={c:s.caixa,p:s.poder,i:s.imagem,r:s.radar},fx=a.fx;
   s.caixa=clamp(s.caixa+(fx.c||0));s.poder=clamp(s.poder+(fx.p||0));s.imagem=clamp(s.imagem+(fx.i||0));s.radar=clamp(s.radar+(fx.r||0));
-  s.day+=2;s.news.unshift(a.news);s.news=s.news.slice(0,8);toast(a.news);bumpStats(fx,before);haptic(fx);sfx('swipe');
+  s.day+=2;s.news.unshift(a.news);s.news=s.news.slice(0,8);(s.log=s.log||[]).push({c:'narrador',t:a.news,a:null,day:s.day,kind:'news',move:a.icon+' '+a.name});toast(a.news);bumpStats(fx,before);haptic(fx);sfx('swipe');
   let end=null;if(s.radar>=100)end='preso';else if(s.caixa<=0)end='falencia';else if(s.caixa>=100)end='miami';else if(s.poder>=100)end='dono';else if(s.poder<=0)end='descartado';else if(s.imagem<=0)end='cancelado';else if(s.imagem>=100)end='idolo';
   if(end){finish(end);return}render();snapshot()}
 function canAppeal(){return s&&s.over&&s.mode==='free'&&APPEAL.fix[s.over]&&s.appeals<2}
@@ -859,13 +910,36 @@ async function appeal(){if(!canAppeal())return;if(!(await spendFavores(APPEAL.co
   $('endScreen').hidden=true;s.card=pickCard();render();dealIn();toast('⚖️ Recurso aceito. Por enquanto.');snapshot()}
 $('btnMove').onclick=openMoves;$('btnMoveClose').onclick=()=>{$('moveScreen').hidden=true};$('btnMoveShop').onclick=()=>{$('moveScreen').hidden=true;openShop()};$('btnAppeal').onclick=appeal;
 
+/* ============ UatiZap: conversas da partida ============ */
+let zapOpen=null;
+function zapThreads(){const by={};(s&&s.log||[]).forEach((m,i)=>{(by[m.c]=by[m.c]||[]).push(Object.assign({i},m))});return Object.entries(by).sort((a,b)=>b[1].at(-1).i-a[1].at(-1).i)}
+function zapUnreadOf(c,list){return list.length-((s.zapRead||{})[c]||0)}
+function renderZap(){if(!s)return;const threads=zapThreads();let total=0;
+  const list=$('zapList');list.innerHTML=threads.length?threads.map(([c,msgs])=>{const ch=CH[c],last=msgs.at(-1),un=zapUnreadOf(c,msgs);total+=un;
+    const preview=last.a?'Você: '+last.a:last.t;
+    return '<button data-c="'+c+'">'+avatar(c,46)+'<span class="body"><b>'+(c==='narrador'?'Plantão (canal)':ch.n)+'</b><small>'+preview+'</small></span><span class="meta">Dia '+last.day+'<br>'+(un?'<i>'+un+'</i>':'')+'</span></button>'}).join(''):
+    '<div class="zap-empty"><div style="font-size:40px">💬</div>Ninguém mandou mensagem ainda. Responda a primeira carta.</div>';
+  list.querySelectorAll('button').forEach(b=>b.onclick=()=>openZapChat(b.dataset.c));
+  const badge=$('zapUnread');badge.textContent=total;badge.classList.toggle('on',total>0);
+  $('zapSub').textContent=threads.length?threads.length+' conversa'+(threads.length>1?'s':'')+' · '+(s.log||[]).length+' mensagens':'mensagens desta partida';
+  if(zapOpen)renderZapChat(zapOpen)}
+function openZapChat(c){zapOpen=c;s.zapRead=s.zapRead||{};s.zapRead[c]=(zapThreads().find(x=>x[0]===c)||[c,[]])[1].length;renderZapChat(c);$('zapList').hidden=true;$('zapChat').hidden=false;renderZap();snapshot()}
+function renderZapChat(c){const ch=CH[c],msgs=(zapThreads().find(x=>x[0]===c)||[c,[]])[1];
+  $('zapAvatar').innerHTML=avatar(c,36);$('zapName').textContent=c==='narrador'?'Plantão (canal)':ch.n;$('zapRole').textContent=c==='narrador'?'manchetes e jogadas suas':ch.r+' · personagem fictício';
+  let lastDay=null,html='';msgs.forEach(m=>{if(m.day!==lastDay){html+='<div class="zap-day">DIA '+m.day+'</div>';lastDay=m.day}
+    if(m.kind==='news')html+='<div class="zap-b news">'+(m.move?'<span style="opacity:.8">'+m.move+'</span><br>':'')+m.t+'</div>';else html+='<div class="zap-b in">'+m.t+'<small>dia '+m.day+'</small></div>';
+    if(m.a)html+='<div class="zap-b out">'+m.a+'<small>✓✓</small></div>'});
+  const el=$('zapMsgs');el.innerHTML=html;el.scrollTop=el.scrollHeight}
+function closeZapChat(){zapOpen=null;$('zapChat').hidden=true;$('zapList').hidden=false;renderZap()}
+$('btnZap').onclick=()=>{$('zapScreen').hidden=false;renderZap()};$('btnZapClose').onclick=()=>{$('zapScreen').hidden=true};$('zapBack').onclick=closeZapChat;
+
 /* ============ Rendering ============ */
 const KEYS={caixa:'c',poder:'p',imagem:'i',radar:'r'};
 function render(){
   if(!s)return;
   $('chapter').textContent=chapterName();$('date').textContent=gameDate();
   $('modePill').textContent=s.mode==='daily'?'DIÁRIO #'+dailyNumber():'MODO LIVRE';
-  $('dayCount').textContent='Dia '+s.day+' em liberdade · '+s.turn+' decisões';renderFav();
+  $('dayCount').textContent='Dia '+s.day+' em liberdade · '+s.turn+' decisões';renderFav();renderZap();
   document.querySelectorAll('.stat').forEach(el=>{const k=el.dataset.k,v=s[k];el.querySelector('.bar i').style.width=v+'%';el.querySelector('.val').textContent=v;el.classList.toggle('danger',v>=85||v<=15)});
   $('track').innerHTML=s.news.map(n=>'<span>◆ '+n+'</span>').join('');
   const k=BY_ID[s.card];if(!k)return;
@@ -915,6 +989,7 @@ function showStart(){
   const best=store.get('best',0),ach=store.get('ach',[]);
   $('bestInfo').textContent=(best?'Recorde: '+best+' dias em liberdade. ':'Nenhuma partida ainda. ')+'Conquistas: '+ach.length+'/'+Object.keys(ACH).length+'.'+(auth&&favores?' 🎩 '+favores+' favores na conta.':'');
   if(NATIVE&&NATIVE.store)$('legalNote').textContent='Obra de ficção e sátira. Personagens, bancos, veículos e instituições são inventados. Compras opcionais apenas pela App Store.';
+  const run=store.get('run',null);const rb=$('btnResume');rb.hidden=!(run&&!run.over&&run.card&&BY_ID[run.card]);if(!rb.hidden)rb.textContent='▶ Continuar a partida · dia '+run.day+(run.mode==='daily'?' (diário)':' (livre)');
   $('startScreen').hidden=false;$('endScreen').hidden=true;renderAccount();loadRank();
 }
 function bars(v){const n=Math.round(v/20);return '▓'.repeat(n)+'░'.repeat(5-n)}
@@ -945,10 +1020,11 @@ $('btnAgain').onclick=()=>{$('endScreen').hidden=true;newGame(s.mode)};
 $('btnHome').onclick=showStart;
 $('btnMenu').onclick=showStart;
 $('playDaily').onclick=()=>{$('startScreen').hidden=true;newGame('daily')};
+$('btnResume').onclick=()=>{const run=store.get('run',null);if(!run||run.over||!BY_ID[run.card])return;s=run;s.log=s.log||[];s.zapRead=s.zapRead||{};rng=mulberry(hash(s.seed+':'+s.turn));$('startScreen').hidden=true;$('tut').hidden=true;render();dealIn()};
 $('playFree').onclick=()=>{$('startScreen').hidden=true;newGame('free')};
 
 /* ============ Boot (with hot-reload snapshot for the artifact viewer) ============ */
-function snapshot(){try{window.claude?.hot?.snapshot?.(()=>({s,rngState:null}))}catch{}}
+function snapshot(){try{window.claude?.hot?.snapshot?.(()=>({s,rngState:null}))}catch{}store.set('run',(s&&!s.over)?s:null)}
 function start(data){
   if(data&&data.s&&!data.s.over&&data.s.card){s=data.s;rng=mulberry(hash(s.seed+':'+s.turn));render();dealIn();$('startScreen').hidden=true;$('tut').hidden=true}
   else{showStart()}

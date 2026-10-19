@@ -644,6 +644,7 @@ const CH={
   governo:{n:'Assessor do governo eleito',r:'Palácio',f:{skin:'#e0b08a',hair:'#2f2a2a',s:1,b:0,g:0,bg:'#b5c7a8'}},
   forum:{n:'Diretor do Fórum Brasil de Ideais',r:'Instituto jurídico · Londres',f:{skin:'#e2b48e',hair:'#4a4a52',s:1,b:1,g:1,bg:'#9fb0d8'}},
   cirao:{n:'Cirão Gomes',r:'Político · bate em todo mundo',f:{skin:'#dcae88',hair:'#8d8a8a',s:1,b:0,g:0,bg:'#d9a08c'}},
+  ministra:{n:'Vivi Moraisco',r:'Esposa do ministro · advogada',f:{skin:'#e6b996',hair:'#c98a4b',s:2,b:0,g:0,bg:'#e8b4c8'}},
   narrador:{n:'Plantão',r:'Acontecimento',f:{skin:'#f3ecd9',hair:'#f3ecd9',s:0,b:0,g:0,bg:'#e8283c',news:1}}
 };
 function avatar(k,size=60){const f=CH[k].f;if(f.news)return '<svg viewBox="0 0 72 72" style="width:'+size+'px;height:'+size+'px" aria-hidden="true"><circle cx="36" cy="36" r="35" fill="'+f.bg+'"/><text x="36" y="47" text-anchor="middle" font-size="30" font-family="Anton,Impact,sans-serif" fill="#fff">!</text></svg>';
@@ -680,6 +681,7 @@ const ITEMS={
   mala:['💼','Mala de couro','Igual à do deputado. Vazia, oficialmente.',1,'Pague a defesa de um deputado preso com mala.'],
   jatinho:['✈️','Miniatura do jato','Lembrança do voo para o comício em Goiânia.',0,'Libere o jatinho para a campanha.'],
   dolar:['💵','Dólar emoldurado','O primeiro dólar da remessa para Miami. Tony Câmbio insistiu.',1,'Aceite a remessa do operador de câmbio.'],
+  etiqueta:['🧳','Mala de Paris','Etiqueta de bagagem do voo da esposa do ministro. Semana de moda, volta domingo.',1,'Libere o jato para a esposa do ministro.'],
   quadro:['🖼️','Quadro de 2 metros','Presente de um cliente. Sua mãe chama de "a prova".',0,'Pendure o quadro que chegou em casa.']
 };
 const RARITY=['comum','raro','lendário'];
@@ -965,6 +967,12 @@ const CARDS=[
  {id:'cirao2',c:'cirao',ch:[2,3],hidden:true,t:'Gostei do uísque. Não gostei dos precatórios. Vou falar dos dois no podcast amanhã. A garrafa, eu devolvo ou fico?',
   l:['Fica com a garrafa',{i:-6,r:8},{news:'Cirão Gomes conta em podcast que ganhou uísque de banqueiro "para esquecer os precatórios"'}],
   r:['Devolve, e esquece que eu existo',{p:-6,i:2,r:2},{news:'Político devolve uísque de banqueiro e vira meme'}]},
+ {id:'jato_ministra',c:'ministra',ch:[2,3],t:'O ministro não pode pedir, então peço eu: o jatinho pra Paris na sexta, eu e as meninas. Semana de moda. Voltamos domingo. Ele nem precisa saber.',
+  l:['Jato liberado, com champanhe a bordo',{p:14,c:-6,r:12},{flag:'jato_ministra',item:'etiqueta',then:'jato_ministra2',delay:6,news:'Jato do Maxter faz Paris e volta no fim de semana; passageiros "da família"'}],
+  r:['O jato está em manutenção',{p:-8,i:2},{news:'Esposa de ministro cancela viagem a Paris; gabinete nega pedido'}]},
+ {id:'jato_ministra2',c:'dados',ch:[2,3],hidden:true,t:'O plano de voo do seu jato mostra Paris, sexta, com a esposa do ministro e três amigas a bordo. O escritório dela tem contrato com o Maxter. Publico amanhã.',
+  l:['Voo da empresa, passageiros convidados',{i:-9,r:15,p:-4},{news:'Jornal revela voo de esposa de ministro em jato de banqueiro'}],
+  r:['Ligo pro ministro antes de você publicar',{p:-10,r:8,c:-5},{news:'Ministro diz que "não sabia do voo" e se afasta de banqueiro'}]},
  // ---------- Presentes ----------
  {id:'presente_cirio',c:'cirio',ch:[2,3],req:s=>s.flags.jantar_cirio,t:'Mandei um Rolex pra você. Presente de amigo. Não precisa agradecer. Nem declarar.',
   l:['Aceito e uso no próximo jantar',{p:6,r:7},{item:'rolex',news:'Senador presenteia banqueiro com relógio; "amizade", diz assessoria'}],

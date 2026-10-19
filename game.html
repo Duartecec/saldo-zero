@@ -287,7 +287,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
           <label>Apelido<input id="nickInput" name="username" autocomplete="username" maxlength="16" placeholder="ex.: rei_do_pix" required></label>
           <label>PIN (4 a 8 números)<input id="pinInput" name="password" type="password" inputmode="numeric" autocomplete="current-password" maxlength="8" required></label>
         </div>
-        <label id="emailLabel" hidden>E-mail (para confirmar a conta e recuperar o PIN)<input id="emailInput" name="email" type="email" autocomplete="email" maxlength="120" placeholder="voce@exemplo.com"></label>
+        <label id="emailLabel">E-mail · obrigatório para criar a conta<input id="emailInput" name="email" type="email" autocomplete="email" maxlength="120" placeholder="voce@exemplo.com"></label>
+        <div class="err" id="emailHint" style="color:var(--mute)">Você recebe um código de confirmação e usa o e-mail para recuperar o PIN. Quem já tem conta não precisa informar.</div>
         <div class="err" id="nickHint" style="color:var(--mute)"></div>
         <div class="err" id="loginError"></div>
         <button class="big" type="submit" id="loginBtn">Entrar</button>
@@ -497,13 +498,13 @@ $('forgotLink').onclick=async()=>{const nick=$('nickInput').value.trim();if(nick
 $('resetBack').onclick=()=>{$('resetForm').hidden=true;$('loginForm').hidden=false};
 $('resetForm').onsubmit=async e=>{e.preventDefault();$('resetError').textContent='';try{await api('/api/auth/reset',{method:'POST',body:JSON.stringify({nick:$('resetForm').dataset.nick,code:$('resetCode').value,pin:$('resetPin').value})});toast('PIN trocado. Entre com o novo PIN.');$('resetForm').hidden=true;$('loginForm').hidden=false;$('pinInput').value='';$('pinInput').focus()}catch(err){$('resetError').textContent=err.message}};
 let nickTimer=null;
-$('nickInput').oninput=()=>{clearTimeout(nickTimer);const v=$('nickInput').value.trim();$('nickHint').textContent='';$('loginBtn').textContent='Entrar';if(v.length<3)return;
-  nickTimer=setTimeout(async()=>{try{const d=await api('/api/auth/check?nick='+encodeURIComponent(v));$('nickHint').textContent=d.available?'✓ Apelido livre. Informe e-mail e PIN para criar sua conta.':'Apelido já existe. Digite o seu PIN para entrar.';$('loginBtn').textContent=d.available?'Criar conta':'Entrar';$('emailLabel').hidden=!d.available;$('emailInput').required=d.available}catch(e){$('nickHint').textContent=e.message}},350)};
+$('nickInput').oninput=()=>{clearTimeout(nickTimer);const v=$('nickInput').value.trim();$('nickHint').textContent='';$('loginBtn').textContent='Entrar';$('emailLabel').hidden=false;$('emailHint').hidden=false;if(v.length<3)return;
+  nickTimer=setTimeout(async()=>{try{const d=await api('/api/auth/check?nick='+encodeURIComponent(v));$('nickHint').textContent=d.available?'✓ Apelido livre. Informe e-mail e PIN para criar sua conta.':'Apelido já existe. Digite o seu PIN para entrar.';$('loginBtn').textContent=d.available?'Criar conta':'Entrar';$('emailLabel').hidden=!d.available;$('emailHint').hidden=!d.available;$('emailInput').required=d.available}catch(e){$('nickHint').textContent=e.message}},350)};
 $('loginForm').onsubmit=async e=>{e.preventDefault();$('loginError').textContent='';const btn=$('loginBtn');btn.disabled=true;
   try{const body={nick:$('nickInput').value.trim(),pin:$('pinInput').value,claim:(WEBSTORE.pending&&WEBSTORE.pending.ref)||null};let d;
     try{d=await api('/api/auth/enter',{method:'POST',body:JSON.stringify(body)})}
     catch(err){if(err.status===404){const email=$('emailInput').value.trim();if(!email){$('emailLabel').hidden=false;$('emailInput').required=true;$('emailInput').focus();throw new Error('Apelido livre: informe um e-mail para criar a conta.')}d=await api('/api/auth/enter',{method:'POST',body:JSON.stringify(Object.assign(body,{create:true,email}))})}else throw err}
-    if(d.devCode)window.__devCode=d.devCode;setAuth({token:d.token,nick:d.user.nick});setAcct({email:d.user.email,emailVerified:d.user.emailVerified,vip:d.user.vip});syncFromServer(d.user.progress,d.entitlements,d.user.favores);$('pinInput').value='';$('emailLabel').hidden=true;
+    if(d.devCode)window.__devCode=d.devCode;setAuth({token:d.token,nick:d.user.nick});setAcct({email:d.user.email,emailVerified:d.user.emailVerified,vip:d.user.vip});syncFromServer(d.user.progress,d.entitlements,d.user.favores);$('pinInput').value='';$('emailInput').value='';
     toast(d.created?'Conta criada. Bem-vindo, @'+d.user.nick+'!':'Bem-vindo de volta, @'+d.user.nick+'!');pushProgress();showStart()}
   catch(err){$('loginError').textContent=err.message}btn.disabled=false};
 function syncFromServer(progress,entitlements,fav){(entitlements||[]).forEach(grant);if(typeof fav==='number')setFavores(fav);
